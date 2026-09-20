@@ -11,6 +11,10 @@ const BOARD_ROOT = "https://live.learnstage.com/exceled/excelhighschool/sis/dash
 const LMS_DASHBOARD = "https://live.lms.learnstage.com/exceled/excelhighschool/sis/lms/dashboard";
 const FAIL_DIR = path.join(__dirname, "data", "failure");
 const IDLE_MS = 30000; // longest single element/navigation wait
+// The LMS feed renders timestamps in the browser's local timezone. Without a
+// pinned zone a UTC CI runner shifts evening events into the next day (+4h vs
+// America/New_York), corrupting day assignment and session times.
+const TIMEZONE = "America/New_York";
 
 // The dashboard 401s to identity with a redirect_url built from school data
 // that may not have loaded yet on a cold visit, yielding "//login/auth" (empty
@@ -46,7 +50,7 @@ async function main() {
   const config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json"), "utf8"));
 
   const browser = await chromium.launch();
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, timezoneId: TIMEZONE });
   await context.tracing.start({ screenshots: true, snapshots: true });
 
   const consoleLines = [];
