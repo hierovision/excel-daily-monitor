@@ -11,26 +11,36 @@
   .nav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
   .nav button, .nav input { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; }
   .nav button:disabled { opacity: .4; }
-  .card { border: 1px solid #ccc3; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
-  .card [data-testid=day-title] { margin: 0 0 6px; font-size: 1.05rem; }
-  .muted { color: #888; font-size: .8rem; }
-  .range { margin: 0 0 2px; font-size: .9rem; }
-  .bar-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
-  .bar-row .label { flex: 0 0 42%; font-size: .85rem; }
-  .bar-row .bar { flex: 1; height: 10px; border-radius: 5px; background: #9ac9ec; min-width: 4px; }
-  .bar-row .mins { flex: 0 0 auto; font-size: .8rem; color: #556; }
+  .week-band { border: 1px solid #ccc3; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .week-band h2 { margin: 0 0 6px; font-size: 1rem; }
+  .week-band p { margin: 2px 0; font-size: .9rem; }
+  .day { border: 1px solid #ccc3; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; }
+  .day summary { cursor: pointer; }
+  .day summary h3 { display: inline; margin: 0; font-size: 1rem; }
+  .day-meta { font-size: .9rem; }
+  .badge { display: inline-block; font-size: .75rem; border: 1px solid #9ac9ec; border-radius: 999px; padding: 1px 8px; color: #225566; }
+  .day-detail { margin-top: 6px; font-size: .88rem; }
+  .day.empty h3 { display: inline; margin: 0; font-size: 1rem; }
+  .range { margin: 6px 0 2px; }
+  .muted { color: #6b6b6b; font-size: .8rem; }
+  .day.empty .muted { margin-left: 6px; }
   ul { margin: 4px 0 0; padding-left: 18px; font-size: .85rem; }
-  .stale { color: #b05900; font-size: .8rem; margin-top: 2px; }
+  .stale { color: #8a4b00; font-size: .8rem; margin-top: 2px; }
+  @media (prefers-color-scheme: dark) {
+    .muted { color: #b0b0b0; }
+    .stale { color: #e0a060; }
+    .badge { color: #bcdcf5; border-color: #4a6b86; }
+  }
 </style>
 </head>
 <body>
 <main>
 <h1>Excel High School — Daily Activity</h1>
-<div class="nav">
+<nav class="nav" aria-label="Week navigation">
   <button type="button" data-testid="prev-week">← Prev week</button>
   <input type="date" data-testid="picker" aria-label="Show the 7 days ending on">
   <button type="button" data-testid="next-week">Next week →</button>
-</div>
+</nav>
 <div id="days"><p class="muted">Loading…</p></div>
 </main>
 <script>
@@ -40,7 +50,51 @@ const state = { dates: [], anchor: null, minAnchor: null, maxAnchor: null, cache
 const addDays = (date, n) => new Date(Date.parse(date + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtMin = (m) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
-const range = (low, high) => low === high ? fmtMin(low) : `${fmtMin(low)}–${fmtMin(high)}`;
+const mid = (low, high) => Math.round((low + high) / 2);
+const hhmm = (t) => (t ? String(t).slice(0, 5) : "—");
+
+function dayStats(d) {
+  if (typeof d.active_minutes_low === "number") {
+    return { v2: true, low: d.active_minutes_low, high: d.active_minutes_high };
+  }
+  return { v2: false, low: d.estimated_active_minutes, high: d.estimated_active_minutes };
+}
+function rangeText(label, low, high, primary) {
+  return low === high
+    ? `${label}: about ${fmtMin(low)}`
+    : `${label}: about ${fmtMin(primary)} · range ${fmtMin(low)}–${fmtMin(high)}`;
+}
+function rangeLabel(label, low, high) {
+  return low === high
+    ? `${label}: ${fmtMin(low)} (estimated)`
+    : `${label}: between ${fmtMin(low)} and ${fmtMin(high)} (estimated)`;
+}
+function rangeLine(testid, label, low, high) {
+  return `<p class="range" role="group" data-testid="${testid}" aria-label="${esc(rangeLabel(label, low, high))}">${rangeText(`${label} (estimated)`, low, high, low)}</p>`;
+}
+function quizLine(d) {
+  const m = d.measured_quiz_minutes || 0;
+  const n = (d.submissions_and_grades || []).length;
+  return `<p class="range" role="group" data-testid="quiz-line" aria-label="${esc(`Quizzes (measured): ${fmtMin(m)}, ${n} submitted`)}">Quizzes (measured): ${fmtMin(m)} · ${n} submitted</p>`;
+}
+function coursesBlock(d, v2) {
+  const courses = d.by_course || [];
+  if (!courses.length) return "";
+  return `<div data-testid="courses">${courses.map((c) => `
+    <p class="course-line" data-testid="course-line">${esc(c.course)} — ${fmtMin(v2 ? c.active_minutes_low : c.estimated_minutes)} active</p>`).join("")}</div>`;
+}
+function sessionsBlock(d) {
+  const sessions = d.sessions || [];
+  const items = sessions.length
+    ? sessions.map((s) => `<li>${esc(s.start)}–${esc(s.end)}</li>`).join("")
+    : "<li>none</li>";
+  return `<details data-testid="sessions"><summary>Session times</summary><ul>${items}</ul></details>`;
+}
+function subsBlock(d) {
+  const subs = d.submissions_and_grades || [];
+  if (!subs.length) return "";
+  return `<ul data-testid="submissions">${subs.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul>`;
+}
 
 async function loadDay(date) {
   if (!state.dates.includes(date)) return null;
@@ -52,54 +106,61 @@ async function loadDay(date) {
   } catch { return null; }
 }
 
-function sessionsLine(d) {
-  const sessions = (d.sessions || []).map((s) => `${s.start}–${s.end}`).join(", ");
-  return `<p class="muted">Sessions: ${esc(sessions || "none")}</p>`;
-}
-function subs(d) {
-  if (!(d.submissions_and_grades || []).length) return "";
-  return `<ul>${d.submissions_and_grades.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul>`;
-}
-function bars(d, value) {
-  const max = Math.max(1, ...d.by_course.map(value));
-  return d.by_course.map((c) => `
-    <div class="bar-row">
-      <span class="label">${esc(c.course)}</span>
-      <span class="bar" style="flex:${Math.max(1, value(c)) / max * 10}"></span>
-      <span class="mins">${fmtMin(value(c))}</span>
-    </div>`).join("");
+function renderBand(days) {
+  const present = days.filter(Boolean);
+  let low = 0, high = 0, quizzes = 0;
+  const items = [];
+  for (const d of present) {
+    const s = dayStats(d);
+    low += s.low;
+    high += s.high;
+    for (const sub of d.submissions_and_grades || []) { quizzes++; items.push(sub); }
+  }
+  const submissions = items.length
+    ? `<details><summary>Show submissions</summary><ul data-testid="week-submissions">${items.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul></details>`
+    : "";
+  return `<section class="week-band" data-testid="week-band" aria-live="polite">
+    <h2>This week</h2>
+    <p data-testid="week-worked">Worked ${present.length} of ${WINDOW_DAYS} days</p>
+    <p role="group" data-testid="week-active" aria-label="${esc(rangeLabel("Active", low, high))}">${rangeText("Active (estimated)", low, high, mid(low, high))}</p>
+    <p data-testid="week-quizzes">Quizzes submitted: ${quizzes}</p>
+    ${submissions}
+  </section>`;
 }
 
-function renderDay(d) {
-  const title = `<h2 data-testid="day-title">${esc(d.date)}</h2>`;
-  const asOf = `<p class="stale" data-testid="data-as-of">data as of ${esc(d.date)} (${esc(d.last_activity_at || "no activity")})</p>`;
-  if (typeof d.active_minutes_low !== "number") {
-    return `<section class="card history" data-testid="day-card">
-      ${title}
-      <p class="range" data-testid="active-minutes">${d.estimated_active_minutes} min active (span ${d.span_minutes} min)</p>
-      ${sessionsLine(d)}
-      ${bars(d, (c) => c.estimated_minutes)}
-      ${subs(d)}
-      ${asOf}
-    </section>`;
-  }
+function renderActiveDay(d) {
+  const s = dayStats(d);
   const quizzes = (d.submissions_and_grades || []).length;
-  return `<section class="card history" data-testid="day-card">
-    ${title}
-    <p class="range" data-testid="active-minutes">Active (est.): ${range(d.active_minutes_low, d.active_minutes_high)} · span ${fmtMin(d.span_minutes)}</p>
-    <p class="range" data-testid="reading-quizzes">Reading (est.): ${range(d.reading_minutes_low, d.reading_minutes_high)} · Quizzes (measured): ${fmtMin(d.measured_quiz_minutes)} (${quizzes})</p>
-    ${sessionsLine(d)}
-    ${bars(d, (c) => c.active_minutes_low)}
-    ${subs(d)}
-    ${asOf}
-  </section>`;
+  const badge = quizzes === 0 ? "" : `<span class="badge">${quizzes === 1 ? "Quiz submitted" : `${quizzes} quizzes`}</span>`;
+  const meta = s.v2
+    ? `about ${fmtMin(mid(s.low, s.high))} active`
+    : `about ${d.estimated_active_minutes}m active`;
+  const active = s.v2
+    ? rangeLine("active-minutes", "Active", s.low, s.high)
+    : `<p class="range" data-testid="active-minutes">${d.estimated_active_minutes} min active (span ${d.span_minutes} min)</p>`;
+  const detail = (s.v2
+    ? active + quizLine(d) + rangeLine("reading-line", "Reading", d.reading_minutes_low, d.reading_minutes_high)
+    : active) +
+    coursesBlock(d, s.v2) + sessionsBlock(d) +
+    `<p class="range" data-testid="first-last">First to last activity: ${esc(hhmm(d.first_activity_at))}–${esc(hhmm(d.last_activity_at))}</p>` +
+    subsBlock(d);
+  return `<details class="day" data-testid="day-card">
+    <summary data-testid="day-summary">
+      <h3 data-testid="day-title">${esc(d.date)}</h3>
+      <span class="day-meta">${meta}</span>
+      ${badge}
+    </summary>
+    <div class="day-detail">
+      ${detail}
+    </div>
+  </details>`;
 }
 
 function renderEmpty(date) {
-  return `<section class="card history" data-testid="day-card">
-    <h2 data-testid="day-title">${date}</h2>
-    <p class="muted">no activity recorded</p>
-  </section>`;
+  return `<div class="day empty" data-testid="day-card">
+    <h3 data-testid="day-title">${date}</h3>
+    <span class="muted">no activity</span>
+  </div>`;
 }
 
 async function render() {
@@ -108,7 +169,11 @@ async function render() {
   const dates = [];
   for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, -i));
   const days = await Promise.all(dates.map(loadDay));
-  root.innerHTML = days.map((d, i) => d ? renderDay(d) : renderEmpty(dates[i])).join("");
+  const latest = days.find((d) => d && d.last_activity_at);
+  const footer = latest
+    ? `<p class="stale" data-testid="week-footer">Data as of ${esc(latest.date)} ${esc(hhmm(latest.last_activity_at))}</p>`
+    : `<p class="stale" data-testid="week-footer">Data as of —</p>`;
+  root.innerHTML = renderBand(days) + days.map((d, i) => d ? renderActiveDay(d) : renderEmpty(dates[i])).join("") + footer;
   root.removeAttribute("aria-busy");
   document.querySelector("[data-testid=prev-week]").disabled = state.anchor <= state.minAnchor;
   document.querySelector("[data-testid=next-week]").disabled = state.anchor >= state.maxAnchor;
@@ -141,8 +206,8 @@ async function main() {
   state.anchor = state.maxAnchor;
 
   const picker = document.querySelector("[data-testid=picker]");
-  picker.min = dates[0];
-  picker.max = dates[dates.length - 1];
+  picker.min = state.minAnchor;
+  picker.max = state.maxAnchor;
   document.querySelector("[data-testid=prev-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, -WINDOW_DAYS)));
   document.querySelector("[data-testid=next-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, WINDOW_DAYS)));
   picker.addEventListener("change", () => setAnchor(picker.value));

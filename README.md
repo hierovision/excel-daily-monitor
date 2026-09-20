@@ -3,10 +3,14 @@
 Nightly summary of your child's Excel High School (LearnStage) activity,
 delivered as a phone-friendly GitHub Pages page.
 
-**You will see, for each day:** estimated active time shown as a range,
-split into measured quiz time and estimated reading/work time; the session
-timeline; per-course breakdown; and quiz submissions. The page opens on a
-rolling 7-day window with Prev/Next week buttons and a date picker.
+**At a glance:** a week band above the day list shows how many days had
+activity, the estimated active total (an `about` midpoint plus its range),
+and quiz submissions; each day is one collapsed line (`about 1h 07m active`,
+or `no activity`) that expands to the full detail — measured quiz time,
+estimated reading range, per-course lines, session times, first-to-last
+activity, and submissions. A single footer stamps the data's `Data as of`
+date and time. The page opens on a rolling 7-day window with Prev/Next week
+buttons and a date picker.
 
 How the numbers are built:
 
