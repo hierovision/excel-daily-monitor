@@ -44,6 +44,7 @@ jobs:
             data/failure/failure.png
             data/failure/page.html
             data/failure/console.log
+            data/failure/network.log
             data/failure/feed.html
           if-no-files-found: ignore
           retention-days: 14

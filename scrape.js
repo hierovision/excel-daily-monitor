@@ -31,6 +31,15 @@ async function main() {
     p.on("pageerror", (e) => consoleLines.push("pageerror: " + String(e)));
   };
   context.on("page", attach);
+  context.on("response", (r) => {
+    try {
+      const u = r.url();
+      if (!/learnstage\.com/.test(u)) return;
+      if (r.status() >= 400 || /login\/school\/auth/.test(u)) {
+        consoleLines.push(`net ${r.status()} ${u}`);
+      }
+    } catch { /* ignore */ }
+  });
   const page = await context.newPage();
   attach(page);
   page.setDefaultTimeout(30000);
@@ -50,7 +59,9 @@ async function main() {
       await pg.screenshot({ path: path.join(FAIL_DIR, "failure.png"), fullPage: true }).catch(() => {});
       fs.writeFileSync(path.join(FAIL_DIR, "page.html"), redact(await pg.content().catch(() => "")));
     }
-    fs.writeFileSync(path.join(FAIL_DIR, "console.log"), redact(consoleLines.join("\n")) || "(none)");
+    const logText = redact(consoleLines.join("\n")) || "(none)";
+    fs.writeFileSync(path.join(FAIL_DIR, "console.log"), logText);
+    fs.writeFileSync(path.join(FAIL_DIR, "network.log"), logText);
     await context.tracing.stop({ path: path.join(FAIL_DIR, "trace.zip") }).catch(() => {});
     console.error("scrape failed:", info.error, "\nevidence:", FAIL_DIR);
   };
@@ -83,7 +94,19 @@ async function main() {
       await page.goto(`https://live.learnstage.com/login/auth?access_token=${encodeURIComponent(token)}`, {
         waitUntil: "domcontentloaded",
       });
-      await loginAsBtn.waitFor({ state: "visible", timeout: 30000 });
+
+      // The exchange route either ends on the dashboard or bounces to /notfound.
+      const outcome = await Promise.race([
+        loginAsBtn.waitFor({ state: "visible", timeout: 30000 }).then(() => "dashboard").catch(() => null),
+        page.waitForURL(/\/notfound/, { timeout: 30000 }).then(() => "notfound").catch(() => null),
+      ]);
+      if (outcome === "notfound") {
+        // Exchange may still have established a session; revisit the dashboard.
+        await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
+        await loginAsBtn.waitFor({ state: "visible", timeout: 30000 });
+      } else if (outcome !== "dashboard") {
+        throw new Error("token exchange neither reached the dashboard nor /notfound");
+      }
     }
 
     await loginAsBtn.click();
