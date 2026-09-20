@@ -1,13 +1,13 @@
 {
   "date": "2026-09-16",
-  "first_activity_at": "15:48:44",
-  "last_activity_at": "17:37:22",
+  "first_activity_at": "19:48:44",
+  "last_activity_at": "21:37:22",
   "span_minutes": 109,
   "estimated_active_minutes": 79,
   "sessions": [
     {
-      "start": "15:48",
-      "end": "17:37",
+      "start": "19:48",
+      "end": "21:37",
       "minutes": 109
     }
   ],
@@ -19,11 +19,11 @@
       "quiz_submissions": [
         {
           "item": "Module 2 Quiz",
-          "at": "15:48:44"
+          "at": "19:48:44"
         },
         {
           "item": "Module 3 Quiz",
-          "at": "17:37:22"
+          "at": "21:37:22"
         }
       ]
     }
@@ -34,13 +34,13 @@
       "kind": "quiz_submitted",
       "item": "Module 3 Quiz",
       "course": "World History EHS",
-      "at": "17:37:22"
+      "at": "21:37:22"
     },
     {
       "kind": "quiz_submitted",
       "item": "Module 2 Quiz",
       "course": "World History EHS",
-      "at": "15:48:44"
+      "at": "19:48:44"
     }
   ]
 }
