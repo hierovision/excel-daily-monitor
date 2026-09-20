@@ -1,48 +1,58 @@
 name: daily-summary
 on:
   schedule:
-    - cron: "0 13 * * *" # 06:00 America/Chicago
+    - cron: "0 13 * * *" # ~6-7am America/Chicago
   workflow_dispatch: {}
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: daily-summary
   cancel-in-progress: false
 
 jobs:
-  scrape-and-serve:
+  scrape-and-commit:
     runs-on: ubuntu-latest
-    environment: production
+    permissions:
+      contents: write # commit data/*.json back to main
     steps:
-      - uses: actions/checkout@v4 # SHA-pinned list in repo README/SECURITY note
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
+          cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - name: Scrape
+      - name: Scrape (credentials are secrets; never echoed)
         env:
           EXCEL_USERNAME: ${{ secrets.EXCEL_USERNAME }}
           EXCEL_PASSWORD: ${{ secrets.EXCEL_PASSWORD }}
         run: node scrape.js
       - name: Summarize
         run: node summarize.js data/raw-events.json
-      - name: Commit data (no-op if unchanged)
+      - name: Commit data (no-op when unchanged)
         run: |
-          git config user.name "excel-daily-bot"
-          git config user.email "actions@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/*.json
           git diff --cached --quiet && echo "no changes" || git commit -m "daily summary $(date -u +%F)"
           git push
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    needs: scrape-and-commit
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: .
-      - name: Deploy Pages
-        uses: actions/deploy-pages@v4
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
