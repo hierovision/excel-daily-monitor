@@ -12,14 +12,17 @@ const assert = (cond, msg) => {
 (async () => {
   const root = path.resolve(__dirname, "..");
   const site = path.join(root, "tests", "fixtures", "site");
+  const overrides = new Map();
   const server = http.createServer((req, res) => {
     const url = req.url.split("?")[0];
     const file = url.startsWith("/data/")
       ? path.join(site, url)
       : path.join(root, url === "/" ? "index.html" : url);
-    if (fs.existsSync(file)) {
+    const body = overrides.has(url) ? overrides.get(url) : (fs.existsSync(file) ? fs.readFileSync(file) : null);
+    if (body !== null) {
       res.setHeader("Content-Type", file.endsWith(".json") ? "application/json" : "text/html");
-      res.end(fs.readFileSync(file));
+      if (url.endsWith(".json")) res.setHeader("Cache-Control", "max-age=600");
+      res.end(body);
     } else { res.statusCode = 404; res.end("nf"); }
   });
   await new Promise((r) => server.listen(8931, r));
@@ -76,6 +79,19 @@ const assert = (cond, msg) => {
   assert(/^\s*\d+\s*min active/.test(v1) && !/[–-]/.test(v1), `v1 day falls back to a single number (got "${v1}")`);
   const v2 = (await cardFor("2026-09-08").locator("[data-testid=active-minutes]").textContent()) || "";
   assert(/[–-]/.test(v2), `v2 day still renders a range (got "${v2}")`);
+
+  // data must bypass the HTTP cache: Pages serves max-age=600, so a stale day
+  // file would otherwise be reused after a redeploy (observed 2026-09-20).
+  const fresh = JSON.parse(fs.readFileSync(path.join(site, "data", "2026-09-17.json"), "utf8"));
+  fresh.active_minutes_low = 99;
+  fresh.active_minutes_high = 99;
+  overrides.set("/data/2026-09-17.json", Buffer.from(JSON.stringify(fresh)));
+  await page.reload({ waitUntil: "load" });
+  await page.waitForFunction(() => document.querySelector("[data-testid=active-minutes]").textContent.includes("1h 39m"),
+    null, { timeout: 5000 }).catch(() => {});
+  const reloaded = (await page.locator("[data-testid=active-minutes]").first().textContent()) || "";
+  assert(reloaded.includes("1h 39m"), `reload picks up the redeployed day file, not the cached one (got "${reloaded}")`);
+  overrides.delete("/data/2026-09-17.json");
 
   assert(pageerrors.length === 0, `no pageerrors, got ${JSON.stringify(pageerrors)}`);
 

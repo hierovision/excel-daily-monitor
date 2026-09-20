@@ -46,7 +46,7 @@ async function loadDay(date) {
   if (!state.dates.includes(date)) return null;
   if (state.cache.has(date)) return state.cache.get(date);
   try {
-    const day = await (await fetch(`data/${date}.json`)).json();
+    const day = await (await fetch(`data/${date}.json`, { cache: "no-store" })).json();
     state.cache.set(date, day);
     return day;
   } catch { return null; }
@@ -126,7 +126,7 @@ async function main() {
   const root = document.getElementById("days");
   let manifest;
   try {
-    manifest = await (await fetch("data/index.json")).json();
+    manifest = await (await fetch("data/index.json", { cache: "no-store" })).json();
   } catch { root.textContent = "No summary data yet."; return; }
   const dates = manifest
     .map((ref) => String(ref).replace(/^data\//, "").replace(/\.json$/, ""))
