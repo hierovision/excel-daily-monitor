@@ -8,6 +8,7 @@ const { chromium } = require("playwright");
 const { parse } = require("./parse.js");
 
 const BOARD_ROOT = "https://live.learnstage.com/exceled/excelhighschool/sis/dashboard";
+const LMS_DASHBOARD = "https://live.lms.learnstage.com/exceled/excelhighschool/sis/lms/dashboard";
 const FAIL_DIR = path.join(__dirname, "data", "failure");
 const IDLE_MS = 30000; // longest single element/navigation wait
 
@@ -60,6 +61,9 @@ async function main() {
     if (r.status() >= 400 || /login\/school\/auth|loginAsCustomer/.test(u)) {
       netLines.push(`net ${r.status()} ${u}`);
     }
+    if (/loginAsCustomer/.test(u)) {
+      r.text().then((b) => netLines.push(`body ${u} :: ${b.slice(0, 400)}`)).catch(() => {});
+    }
   });
   context.on("requestfailed", (r) => {
     const u = r.url();
@@ -81,6 +85,15 @@ async function main() {
     for (let i = 0; i < pages.length; i++) {
       const p = pages[i];
       info.pages[i].title = await p.title().catch(() => "");
+      try {
+        const state = await p.evaluate(() => ({
+          localKeys: Object.keys(localStorage),
+          sessionKeys: Object.keys(sessionStorage),
+          cookieNames: document.cookie.split(";").map((c) => c.split("=")[0].trim()),
+          hasAuthData: !!localStorage.getItem("auth_data"),
+        }));
+        netLines.push(`storage page-${i} ${JSON.stringify(state)}`);
+      } catch { /* page may be closed */ }
       await p.screenshot({ path: path.join(FAIL_DIR, `page-${i}.png`), fullPage: true }).catch(() => {});
       fs.writeFileSync(path.join(FAIL_DIR, `page-${i}.html`), redact(await p.content().catch(() => "")));
     }
@@ -120,47 +133,42 @@ async function main() {
       await loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS });
     }
 
-    // Login-as may finish in the current tab or open the student context in a
-    // new tab; watch for either before waiting on the sidebar link.
+    // Login-as calls the API and then reloads the dashboard in the student
+    // context. Watch for either that reload or a new tab, then head straight
+    // to the LMS dashboard — that is where the Recent Activity feed lives
+    // (the sidebar link is "My Courses" for the parent, "Go To Courses"/LMS
+    // for the student; navigating directly skips the sidebar shape-shifting).
     const popupPromise = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
     await loginAsBtn.click();
-    const myCourses = page.getByRole("link", { name: "My Courses" }).first();
-    const outcome = await Promise.race([
-      popupPromise.then((p) => (p ? "popup" : "none")),
-      myCourses.waitFor({ state: "visible", timeout: IDLE_MS }).then(() => "same-tab").catch(() => "none"),
+    await Promise.race([
+      page.waitForEvent("load", { timeout: IDLE_MS }).catch(() => null),
+      popupPromise,
     ]);
-    if (outcome === "none") throw new Error("neither a student tab nor the My Courses sidebar appeared after Login as");
+    const target = (await popupPromise) || page;
 
-    let target = page;
-    if (outcome === "popup") {
-      const popup = (await popupPromise) || page;
-      target = popup;
-      await target.waitForLoadState("domcontentloaded").catch(() => {});
-      await target.locator("#scrollableDiv").waitFor({ state: "visible", timeout: IDLE_MS }).catch(async () => {
-        // The student tab may instead show the same sidebar; click through there.
-        const link = target.getByRole("link", { name: "My Courses" }).first();
-        await link.waitFor({ state: "visible", timeout: IDLE_MS });
-        const next = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
-        await link.click();
-        target = (await next) || target;
-      });
-    } else {
+    await target.goto(LMS_DASHBOARD, { waitUntil: "domcontentloaded" }).catch(() => {});
+    let feedPage = target;
+    const hasFeed = await feedPage.locator("#scrollableDiv")
+      .waitFor({ state: "visible", timeout: IDLE_MS }).then(() => true).catch(() => false);
+    if (!hasFeed) {
+      // Direct navigation may need the sidebar click instead (or SSO bounced).
+      const link = feedPage.getByRole("link", { name: /My Courses|Go To Courses/i }).first();
+      await link.waitFor({ state: "visible", timeout: IDLE_MS });
       const next = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
-      await myCourses.click();
-      target = (await next) || page;
+      await link.click();
+      feedPage = (await next) || feedPage;
     }
-
-    const container = target.locator("#scrollableDiv");
-    await container.waitFor({ state: "visible", timeout: IDLE_MS });
+    const feedContainer = feedPage.locator("#scrollableDiv");
+    await feedContainer.waitFor({ state: "visible", timeout: IDLE_MS });
 
     // Infinite scroll: keep triggering the container's own scroll handler and
     // wait, per iteration, until the card count actually grows. Stop when the
     // count stops changing (bounded burst count, no fixed sleeps).
-    const countCards = () => target.locator("#scrollableDiv .card_theme-icon").count();
+    const countCards = () => feedPage.locator("#scrollableDiv .card_theme-icon").count();
     let seen = await countCards();
     for (let burst = 0; burst < 15; burst++) {
       const before = seen;
-      await container.evaluate((el) => {
+      await feedContainer.evaluate((el) => {
         // Scroll every actually-scrollable element inside the feed container;
         // the infinite-scroll handler may live on an inner div, not on #scrollableDiv.
         const nodes = [el, ...el.querySelectorAll("*")];
@@ -170,7 +178,7 @@ async function main() {
           if (scrollable) n.scrollTop = n.scrollHeight;
         }
       });
-      const grew = await target.waitForFunction(
+      const grew = await feedPage.waitForFunction(
         (n) => document.querySelectorAll("#scrollableDiv .card_theme-icon").length > n,
         before,
         { timeout: 4000 }
@@ -179,7 +187,7 @@ async function main() {
       if (!grew) break;
     }
 
-    const containerHtml = await container.innerHTML();
+    const containerHtml = await feedContainer.innerHTML();
     const events = parse(containerHtml);
     if (events.length === 0) {
       fs.mkdirSync(FAIL_DIR, { recursive: true });
