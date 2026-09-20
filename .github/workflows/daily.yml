@@ -24,6 +24,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Test
+        run: npm test
       - name: Scrape (credentials are secrets; never echoed)
         env:
           EXCEL_USERNAME: ${{ secrets.EXCEL_USERNAME }}
