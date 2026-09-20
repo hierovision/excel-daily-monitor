@@ -27,3 +27,10 @@ EXCEL_USERNAME=... EXCEL_PASSWORD=... node scrape.js
 node summarize.js data/raw-events.json
 npm test
 ```
+
+## When a nightly run fails
+
+The run page carries a downloadable **scrape-failure** artifact
+(`failure.png`, `page.html`, `console.log`, `trace.zip`, `failure.json`)
+capturing the page state at the failure point. The page keeps showing the
+last successful day with its "data as of" line.

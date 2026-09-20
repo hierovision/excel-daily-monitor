@@ -33,6 +33,14 @@ jobs:
         run: node scrape.js
       - name: Summarize
         run: node summarize.js data/raw-events.json
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scrape-failure
+          path: data/failure/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Commit data (no-op when unchanged)
         run: |
           git config user.name "github-actions[bot]"
