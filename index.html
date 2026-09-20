@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Excel Daily Summary</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 12px; max-width: 640px; margin-inline: auto; }
+  .card { border: 1px solid #ccc3; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .card [data-testid=day-title] { margin: 0 0 6px; font-size: 1.05rem; }
+  .muted { color: #888; font-size: .8rem; }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .bar-row .label { flex: 0 0 42%; font-size: .85rem; }
+  .bar-row .bar { flex: 1; height: 10px; border-radius: 5px; background: #9ac9ec; min-width: 4px; }
+  .bar-row .mins { flex: 0 0 auto; font-size: .8rem; color: #556; }
+  ul { margin: 4px 0 0; padding-left: 18px; font-size: .85rem; }
+  .stale { color: #b05900; font-size: .8rem; margin-top: 2px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Excel High School — Daily Activity</h1>
+<div id="days"><p class="muted">Loading…</p></div>
+</main>
+<script>
+"use strict";
+async function main() {
+  const root = document.getElementById("days");
+  let manifest;
+  try {
+    manifest = await (await fetch("data/index.json")).json();
+  } catch { root.textContent = "No summary data yet."; return; }
+  if (!manifest.length) { root.textContent = "No summary data yet."; return; }
+
+  const days = [];
+  for (const f of manifest) {
+    try { days.push(await (await fetch(f)).json()); } catch { /* skip missing day file */ }
+  }
+  if (!days.length) { root.textContent = "Summary files are missing."; return; }
+  days.sort((a, b) => b.date.localeCompare(a.date));
+
+  root.innerHTML = "";
+  for (const d of days) root.insertAdjacentHTML("beforeend", renderDay(d, d === days[0]));
+}
+function fmtMin(m) { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${m % 60}m` : `${m}m`; }
+function renderDay(d, isTop) {
+  const max = Math.max(1, ...d.by_course.map(c => c.estimated_minutes));
+  const bars = d.by_course.map(c => `
+    <div class="bar-row">
+      <span class="label">${c.course}</span>
+      <span class="bar" style="flex:${c.estimated_minutes / max * 10}"></span>
+      <span class="mins">${c.estimated_minutes} min</span>
+    </div>`).join("");
+  const subs = d.submissions_and_grades.length
+    ? `<ul>${d.submissions_and_grades.map(s => `<li>Submitted: ${s.item} — ${s.course}</li>`).join("")}</ul>` : "";
+  const sessions = d.sessions.map(s => `${s.start}–${s.end}`).join(", ");
+  return `<section class="card${isTop ? "" : " history"}" data-testid="day-card">
+    <h2 data-testid="day-title">${d.date}</h2>
+    <p data-testid="active-minutes">${d.estimated_active_minutes} min active (span ${d.span_minutes} min)</p>
+    <p class="muted">Sessions: ${sessions || "none"}</p>
+    ${bars}${subs}
+    <p class="stale" data-testid="data-as-of">data as of ${d.date} (${d.last_activity_at || "no activity"})</p>
+  </section>`;
+}
+main();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "excel-daily-monitor",
+  "private": true,
+  "scripts": {
+    "scrape": "node scrape.js",
+    "summarize": "node summarize.js data/raw-events.json",
+    "test": "node tests/parse.test.js && node tests/summarize.test.js && node tests/page.spec.js"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0"
+  }
+}

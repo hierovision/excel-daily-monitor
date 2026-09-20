@@ -1,0 +1,46 @@
+{
+  "date": "2026-09-16",
+  "first_activity_at": "15:48:44",
+  "last_activity_at": "17:37:22",
+  "span_minutes": 109,
+  "estimated_active_minutes": 79,
+  "sessions": [
+    {
+      "start": "15:48",
+      "end": "17:37",
+      "minutes": 109
+    }
+  ],
+  "by_course": [
+    {
+      "course": "World History EHS",
+      "estimated_minutes": 79,
+      "pages_viewed": 6,
+      "quiz_submissions": [
+        {
+          "item": "Module 2 Quiz",
+          "at": "15:48:44"
+        },
+        {
+          "item": "Module 3 Quiz",
+          "at": "17:37:22"
+        }
+      ]
+    }
+  ],
+  "event_counts": {},
+  "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 3 Quiz",
+      "course": "World History EHS",
+      "at": "17:37:22"
+    },
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 2 Quiz",
+      "course": "World History EHS",
+      "at": "15:48:44"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+name: daily-summary
+on:
+  schedule:
+    - cron: "0 13 * * *" # 06:00 America/Chicago
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily-summary
+  cancel-in-progress: false
+
+jobs:
+  scrape-and-serve:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4 # SHA-pinned list in repo README/SECURITY note
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Scrape
+        env:
+          EXCEL_USERNAME: ${{ secrets.EXCEL_USERNAME }}
+          EXCEL_PASSWORD: ${{ secrets.EXCEL_PASSWORD }}
+        run: node scrape.js
+      - name: Summarize
+        run: node summarize.js data/raw-events.json
+      - name: Commit data (no-op if unchanged)
+        run: |
+          git config user.name "excel-daily-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/*.json
+          git diff --cached --quiet && echo "no changes" || git commit -m "daily summary $(date -u +%F)"
+          git push
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy Pages
+        uses: actions/deploy-pages@v4
