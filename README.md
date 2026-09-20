@@ -31,6 +31,8 @@ npm test
 ## When a nightly run fails
 
 The run page carries a downloadable **scrape-failure** artifact
-(`failure.png`, `page.html`, `console.log`, `trace.zip`, `failure.json`)
-capturing the page state at the failure point. The page keeps showing the
+(`failure.png`, `page.html`, `console.log`, `failure.json`) capturing the
+page state at the failure point. Auth tokens are redacted before writing;
+the full Playwright trace stays on the runner because traces embed URLs
+and network bodies. The page keeps showing the
 last successful day with its "data as of" line.

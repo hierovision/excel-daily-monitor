@@ -36,21 +36,25 @@ async function main() {
   page.setDefaultTimeout(30000);
   page.setDefaultNavigationTimeout(60000);
 
+  // Never persist auth tokens/user identifiers: redact before writing artifacts.
+  const redact = (t) => String(t)
+    .replace(/(access_token=)[^&\s"'<]+/gi, "$1REDACTED")
+    .replace(/(token=)[^&\s"'<]+/gi, "$1REDACTED");
   const fail = async (error) => {
     fs.mkdirSync(FAIL_DIR, { recursive: true });
     const pages = context.pages();
     const pg = pages[pages.length - 1];
     const info = {
-      url: pg ? pg.url() : null,
+      url: pg ? redact(pg.url()) : null,
       title: pg ? await pg.title().catch(() => "") : null,
-      error: String((error && error.stack) || error),
+      error: redact(String((error && error.stack) || error)),
     };
     fs.writeFileSync(path.join(FAIL_DIR, "failure.json"), JSON.stringify(info, null, 2));
     if (pg) {
       await pg.screenshot({ path: path.join(FAIL_DIR, "failure.png"), fullPage: true }).catch(() => {});
-      fs.writeFileSync(path.join(FAIL_DIR, "page.html"), await pg.content().catch(() => ""));
+      fs.writeFileSync(path.join(FAIL_DIR, "page.html"), redact(await pg.content().catch(() => "")));
     }
-    fs.writeFileSync(path.join(FAIL_DIR, "console.log"), consoleLines.join("\n") || "(none)");
+    fs.writeFileSync(path.join(FAIL_DIR, "console.log"), redact(consoleLines.join("\n")) || "(none)");
     await context.tracing.stop({ path: path.join(FAIL_DIR, "trace.zip") }).catch(() => {});
     console.error("scrape failed:", info.error, "\nevidence:", FAIL_DIR);
   };
@@ -73,7 +77,16 @@ async function main() {
       await page.locator('input[name="username"]').fill(user);
       await page.locator('input[name="password"]').fill(pass);
       await page.getByRole("button", { name: "Login" }).click();
-      // Post-login: wait for the student button instead of any fixed delay.
+
+      // The identity service 302s to `live.learnstage.com//login/auth?access_token=...`
+      // (doubled slash), which the SPA router does not match -> it renders 404 and
+      // the token is never consumed. Re-enter the single-slash route with the token.
+      await page.waitForURL(/login\/auth\?access_token=/, { timeout: 60000 });
+      const token = (/access_token=([^&]+)/.exec(page.url()) || [])[1];
+      if (!token) throw new Error("no access_token on post-login URL: " + redact(page.url()));
+      await page.goto(`https://live.learnstage.com/login/auth?access_token=${encodeURIComponent(token)}`, {
+        waitUntil: "domcontentloaded",
+      });
       await loginAsBtn.waitFor({ state: "visible", timeout: 60000 });
     }
 
