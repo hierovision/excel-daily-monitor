@@ -52,8 +52,10 @@ function parse(html) {
     const ts = parseTimestamp(body);
     if (!title || !ts) continue; // rows without a parseable timestamp are skipped loudly rather than guessed
 
-    // Action text: first text node of the body's leading action line.
-    const actionMatch = /(?:css-jsdm9k[^>]*>|^)(?:\s*)?([A-Za-z][A-Za-z ]*?Viewed|[A-Za-z][A-Za-z ]*?Submitted|Page Viewed|Quiz\s+Viewed|Quiz\s+Submitted)/.exec(
+    // Action text: the leading text node of the action line (live DOM keeps it
+    // directly inside css-jsdm9k; older/fixture DOM needs the tag-stripped fallback).
+    const rawAction = /css-jsdm9k[^>]*>\s*([A-Za-z][A-Za-z ]*?(?:Viewed|Submitted))/.exec(body);
+    const actionMatch = rawAction || /(?:css-jsdm9k[^>]*>|^)(?:\s*)?([A-Za-z][A-Za-z ]*?Viewed|[A-Za-z][A-Za-z ]*?Submitted|Page Viewed|Quiz\s+Viewed|Quiz\s+Submitted)/.exec(
       body.replace(/<div[^>]*>(?:<\/div>)?/g, " ").replace(/<[^>]+>/g, "|"));
     const actionText = actionMatch ? actionMatch[1].trim() : "";
     const iconId = /<svg[^>]*id="([^"]+)"/.exec(body);

@@ -12,6 +12,21 @@ const LMS_DASHBOARD = "https://live.lms.learnstage.com/exceled/excelhighschool/s
 const FAIL_DIR = path.join(__dirname, "data", "failure");
 const IDLE_MS = 30000; // longest single element/navigation wait
 
+// The dashboard 401s to identity with a redirect_url built from school data
+// that may not have loaded yet on a cold visit, yielding "//login/auth" (empty
+// district/school slugs). The SPA 404s that path and the token is never
+// exchanged, so the later login-as call does not switch the session. Re-enter
+// identity with the slugs from BOARD_ROOT so the exchange runs on
+// /<district>/<school>/login/auth exactly as in a warm real-browser session.
+async function ensureLoginRedirect(page) {
+  const board = new URL(BOARD_ROOT);
+  const want = `${board.origin}/${board.pathname.split("/").filter(Boolean).slice(0, 2).join("/")}/login/auth`;
+  const u = new URL(page.url());
+  if (u.searchParams.get("redirect_url") === want) return;
+  u.searchParams.set("redirect_url", want);
+  await page.goto(u.toString(), { waitUntil: "domcontentloaded" });
+}
+
 // Never persist auth material: strip JWT-shaped strings, then named token
 // params in query (`?access_token=`), JSON (`"access_token": "..."`), and HTML.
 const redact = (t) => String(t)
@@ -119,25 +134,27 @@ async function main() {
     if (!state) throw new Error("neither login form nor Login-as button rendered");
 
     if (state === "login") {
+      await ensureLoginRedirect(page);
       await page.locator('input[name="username"]').fill(user);
       await page.locator('input[name="password"]').fill(pass);
       await page.getByRole("button", { name: "Login" }).click();
 
-      // After submit the identity service 302s back to live.learnstage.com.
-      // Its own /login/auth exchange route is broken in this deployment (the
-      // redirect arrives as a doubled slash and the SPA token exchange 404s),
-      // but the identity session cookies already authenticate the SPA — so go
-      // straight to the dashboard instead of replaying the token route.
-      await page.waitForURL(/live\.learnstage\.com/, { timeout: IDLE_MS });
-      await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
-      await loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS });
+      // Wait for the navigation itself (host predicate — a URL regex would
+      // also match this identity page's redirect_url query). The SPA then
+      // exchanges the token and lands on the dashboard.
+      await page.waitForURL((u) => u.hostname === "live.learnstage.com", { timeout: IDLE_MS });
+      const ready = await loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS })
+        .then(() => true).catch(() => false);
+      if (!ready) {
+        await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
+        await loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS });
+      }
     }
 
-    // Login-as calls the API and then reloads the dashboard in the student
-    // context. Watch for either that reload or a new tab, then head straight
-    // to the LMS dashboard — that is where the Recent Activity feed lives
-    // (the sidebar link is "My Courses" for the parent, "Go To Courses"/LMS
-    // for the student; navigating directly skips the sidebar shape-shifting).
+    // Login-as calls the API and reloads the dashboard in the student context.
+    // Wait for the reload and for the parent's Login-as button to disappear
+    // (session switch) before hopping to the LMS — the LMS reads that same
+    // server-side session, so going early loads the parent's enrollments.
     const popupPromise = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
     await loginAsBtn.click();
     await Promise.race([
@@ -145,26 +162,17 @@ async function main() {
       popupPromise,
     ]);
     const target = (await popupPromise) || page;
+    await target.locator(`button[data-id="${config.student_data_id}"]`)
+      .waitFor({ state: "detached", timeout: IDLE_MS }).catch(() => {});
 
-    await target.goto(LMS_DASHBOARD, { waitUntil: "domcontentloaded" }).catch(() => {});
-    let feedPage = target;
-    const hasFeed = await feedPage.locator("#scrollableDiv")
-      .waitFor({ state: "visible", timeout: IDLE_MS }).then(() => true).catch(() => false);
-    if (!hasFeed) {
-      // Direct navigation may need the sidebar click instead (or SSO bounced).
-      const link = feedPage.getByRole("link", { name: /My Courses|Go To Courses/i }).first();
-      await link.waitFor({ state: "visible", timeout: IDLE_MS });
-      const next = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
-      await link.click();
-      feedPage = (await next) || feedPage;
-    }
-    const feedContainer = feedPage.locator("#scrollableDiv");
+    await target.goto(LMS_DASHBOARD, { waitUntil: "domcontentloaded" });
+    const feedContainer = target.locator("#scrollableDiv");
     await feedContainer.waitFor({ state: "visible", timeout: IDLE_MS });
 
     // Infinite scroll: keep triggering the container's own scroll handler and
     // wait, per iteration, until the card count actually grows. Stop when the
     // count stops changing (bounded burst count, no fixed sleeps).
-    const countCards = () => feedPage.locator("#scrollableDiv .card_theme-icon").count();
+    const countCards = () => target.locator("#scrollableDiv .card_theme-icon").count();
     let seen = await countCards();
     for (let burst = 0; burst < 15; burst++) {
       const before = seen;
@@ -178,7 +186,7 @@ async function main() {
           if (scrollable) n.scrollTop = n.scrollHeight;
         }
       });
-      const grew = await feedPage.waitForFunction(
+      const grew = await target.waitForFunction(
         (n) => document.querySelectorAll("#scrollableDiv .card_theme-icon").length > n,
         before,
         { timeout: 4000 }
