@@ -5,6 +5,9 @@ on:
     # UTC-only, so the local hour shifts by an hour across DST; both precede a
     # ~4:45am wake-up).
     - cron: "0 7 * * *"
+    # Intraday refresh every 30 minutes: 12:00–23:30 UTC = 08:00–19:30 EDT /
+    # 07:00–18:30 EST (cron is UTC-only; DST shifts the local edges by an hour).
+    - cron: "*/30 12-23 * * *"
   workflow_dispatch: {}
 
 permissions:

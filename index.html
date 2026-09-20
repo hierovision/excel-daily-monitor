@@ -11,23 +11,37 @@
   .nav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
   .nav button, .nav input { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; }
   .nav button:disabled { opacity: .4; }
+  .today { border: 1px solid #9ac9ec; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .today h2 { margin: 0; font-size: 1.05rem; }
+  .today-date { margin: 0; font-size: .9rem; }
+  .today-status { margin: 2px 0 8px; }
+  .today button { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; }
   .week-band { border: 1px solid #ccc3; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
   .week-band h2 { margin: 0 0 6px; font-size: 1rem; }
   .week-band p { margin: 2px 0; font-size: .9rem; }
+  .legend { color: #6b6b6b; font-size: .8rem; margin: 0 2px 10px; }
   .day { border: 1px solid #ccc3; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; }
   .day summary { cursor: pointer; }
   .day summary h3 { display: inline; margin: 0; font-size: 1rem; }
   .day-meta { font-size: .9rem; }
   .badge { display: inline-block; font-size: .75rem; border: 1px solid #9ac9ec; border-radius: 999px; padding: 1px 8px; color: #225566; }
   .day-detail { margin-top: 6px; font-size: .88rem; }
+  .metrics { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: baseline; margin: 6px 0; }
+  .metrics dt { min-width: 0; }
+  .metrics dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .metrics dd.hero { font-size: 1.05rem; font-weight: 600; }
+  .courses-label { margin: 8px 0 2px; }
+  .course-line { display: flex; justify-content: space-between; gap: 10px; margin: 2px 0; min-width: 0; }
+  .course-line span:first-child { min-width: 0; overflow-wrap: anywhere; }
+  .course-line .course-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .v1-note { margin: 2px 0 0; }
   .day.empty h3 { display: inline; margin: 0; font-size: 1rem; }
-  .range { margin: 6px 0 2px; }
   .muted { color: #6b6b6b; font-size: .8rem; }
   .day.empty .muted { margin-left: 6px; }
   ul { margin: 4px 0 0; padding-left: 18px; font-size: .85rem; }
   .stale { color: #8a4b00; font-size: .8rem; margin-top: 2px; }
   @media (prefers-color-scheme: dark) {
-    .muted { color: #b0b0b0; }
+    .muted, .legend { color: #b0b0b0; }
     .stale { color: #e0a060; }
     .badge { color: #bcdcf5; border-color: #4a6b86; }
   }
@@ -46,12 +60,38 @@
 <script>
 "use strict";
 const WINDOW_DAYS = 7;
-const state = { dates: [], anchor: null, minAnchor: null, maxAnchor: null, cache: new Map() };
+const POLL_MS = 120000;
+const state = {
+  dates: [], anchor: null, minAnchor: null, maxAnchor: null, cache: new Map(),
+  todayDay: null, todayDate: null, todaySnapshot: null,
+  todayStatus: "Loading today's activity…", refreshing: false,
+};
+let pollTimer = null;
 const addDays = (date, n) => new Date(Date.parse(date + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtMin = (m) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
 const mid = (low, high) => Math.round((low + high) / 2);
 const hhmm = (t) => (t ? String(t).slice(0, 5) : "—");
+const rangeValue = (low, high) => (low === high ? fmtMin(low) : `${fmtMin(low)}–${fmtMin(high)}`);
+const pollMs = () => (typeof window.__pollMs === "number" && window.__pollMs > 0 ? window.__pollMs : POLL_MS);
+
+function nowMs() {
+  return typeof window.__now === "string" ? Date.parse(window.__now) : Date.now();
+}
+function etParts(ms) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date(ms));
+}
+function todayEt() {
+  const part = (type) => { const p = etParts(nowMs()).find((x) => x.type === type); return p ? p.value : ""; };
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+function fmtEtTime(ms) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York", hour: "numeric", minute: "2-digit", hour12: true,
+  }).format(new Date(ms));
+}
 
 function dayStats(d) {
   if (typeof d.active_minutes_low === "number") {
@@ -59,41 +99,42 @@ function dayStats(d) {
   }
   return { v2: false, low: d.estimated_active_minutes, high: d.estimated_active_minutes };
 }
-function rangeText(label, low, high, primary) {
-  return low === high
-    ? `${label}: about ${fmtMin(low)}`
-    : `${label}: about ${fmtMin(primary)} · range ${fmtMin(low)}–${fmtMin(high)}`;
-}
-function rangeLabel(label, low, high) {
-  return low === high
-    ? `${label}: ${fmtMin(low)} (estimated)`
-    : `${label}: between ${fmtMin(low)} and ${fmtMin(high)} (estimated)`;
-}
-function rangeLine(testid, label, low, high) {
-  return `<p class="range" role="group" data-testid="${testid}" aria-label="${esc(rangeLabel(label, low, high))}">${rangeText(`${label} (estimated)`, low, high, low)}</p>`;
-}
-function quizLine(d) {
-  const m = d.measured_quiz_minutes || 0;
-  const n = (d.submissions_and_grades || []).length;
-  return `<p class="range" role="group" data-testid="quiz-line" aria-label="${esc(`Quizzes (measured): ${fmtMin(m)}, ${n} submitted`)}">Quizzes (measured): ${fmtMin(m)} · ${n} submitted</p>`;
-}
 function coursesBlock(d, v2) {
   const courses = d.by_course || [];
   if (!courses.length) return "";
-  return `<div data-testid="courses">${courses.map((c) => `
-    <p class="course-line" data-testid="course-line">${esc(c.course)} — ${fmtMin(v2 ? c.active_minutes_low : c.estimated_minutes)} active</p>`).join("")}</div>`;
+  const rows = courses.map((c) => `
+    <p class="course-line" data-testid="course-line"><span>${esc(c.course)}</span> <span class="course-time">${fmtMin(v2 ? c.active_minutes_low : c.estimated_minutes)}</span></p>`).join("");
+  return `<p class="courses-label muted">Courses</p><div data-testid="courses">${rows}</div>`;
 }
 function sessionsBlock(d) {
   const sessions = d.sessions || [];
-  const items = sessions.length
-    ? sessions.map((s) => `<li>${esc(s.start)}–${esc(s.end)}</li>`).join("")
-    : "<li>none</li>";
-  return `<details data-testid="sessions"><summary>Session times</summary><ul>${items}</ul></details>`;
+  if (!sessions.length) return "";
+  const first = d.first_activity_at ? String(d.first_activity_at).slice(0, 5) : "";
+  const last = d.last_activity_at ? String(d.last_activity_at).slice(0, 5) : "";
+  const span = first && last ? ` · ${first}–${last}` : "";
+  const items = sessions.map((s) => `<li>${esc(s.start)}–${esc(s.end)}</li>`).join("");
+  return `<details data-testid="sessions"><summary>Sessions (${sessions.length})${span}</summary><ul>${items}</ul></details>`;
 }
 function subsBlock(d) {
   const subs = d.submissions_and_grades || [];
   if (!subs.length) return "";
-  return `<ul data-testid="submissions">${subs.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul>`;
+  const items = subs.map((s) => `<li>${esc(s.course)} — ${esc(s.item)} · ${esc(hhmm(s.at))}</li>`).join("");
+  if (subs.length <= 3) return `<ul data-testid="submissions">${items}</ul>`;
+  return `<details data-testid="submissions"><summary>Submissions (${subs.length})</summary><ul>${items}</ul></details>`;
+}
+function dayDetail(d) {
+  const s = dayStats(d);
+  const metrics = s.v2
+    ? `<dl class="metrics">
+    <dt>Active</dt><dd class="hero" data-testid="active-minutes">${rangeValue(s.low, s.high)}</dd>
+    <dt>Quizzes (measured)</dt><dd data-testid="quiz-line">${fmtMin(d.measured_quiz_minutes || 0)}</dd>
+    <dt>Reading</dt><dd data-testid="reading-line">${rangeValue(d.reading_minutes_low || 0, d.reading_minutes_high || 0)}</dd>
+  </dl>`
+    : `<dl class="metrics">
+    <dt>Active</dt><dd class="hero" data-testid="active-minutes">${fmtMin(d.estimated_active_minutes)}</dd>
+  </dl>
+  <p class="v1-note muted" data-testid="v1-note">estimated from session span</p>`;
+  return `<div class="day-detail" data-testid="day-detail">${metrics}${coursesBlock(d, s.v2)}${sessionsBlock(d)}${subsBlock(d)}</div>`;
 }
 
 async function loadDay(date) {
@@ -104,6 +145,32 @@ async function loadDay(date) {
     state.cache.set(date, day);
     return day;
   } catch { return null; }
+}
+
+async function loadToday() {
+  const date = todayEt();
+  const res = await fetch(`data/${date}.json`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const day = await res.json();
+  state.cache.set(date, day);
+  return day;
+}
+
+function renderToday() {
+  const date = todayEt();
+  const listed = state.dates.includes(date);
+  const day = state.todayDay;
+  const hasActivity = day && (typeof day.active_minutes_low === "number" || typeof day.estimated_active_minutes === "number");
+  const body = hasActivity
+    ? dayDetail(day)
+    : (listed ? "" : `<p class="muted" data-testid="today-empty">No activity recorded for today yet.</p>`);
+  return `<section class="today" data-testid="today" aria-labelledby="today-heading">
+    <h2 id="today-heading">Today</h2>
+    <p class="today-date" data-testid="today-date">${esc(date)}</p>
+    <p class="today-status muted" data-testid="today-status" aria-live="polite">${esc(state.todayStatus)}</p>
+    <button type="button" data-testid="today-refresh">Refresh</button>
+    ${body}
+  </section>`;
 }
 
 function renderBand(days) {
@@ -119,10 +186,11 @@ function renderBand(days) {
   const submissions = items.length
     ? `<details><summary>Show submissions</summary><ul data-testid="week-submissions">${items.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul></details>`
     : "";
+  const active = rangeValue(low, high);
   return `<section class="week-band" data-testid="week-band" aria-live="polite">
     <h2>This week</h2>
     <p data-testid="week-worked">Worked ${present.length} of ${WINDOW_DAYS} days</p>
-    <p role="group" data-testid="week-active" aria-label="${esc(rangeLabel("Active", low, high))}">${rangeText("Active (estimated)", low, high, mid(low, high))}</p>
+    <p role="group" data-testid="week-active" aria-label="${esc(`Active: ${active}`)}">Active ${active}</p>
     <p data-testid="week-quizzes">Quizzes submitted: ${quizzes}</p>
     ${submissions}
   </section>`;
@@ -135,24 +203,13 @@ function renderActiveDay(d) {
   const meta = s.v2
     ? `about ${fmtMin(mid(s.low, s.high))} active`
     : `about ${d.estimated_active_minutes}m active`;
-  const active = s.v2
-    ? rangeLine("active-minutes", "Active", s.low, s.high)
-    : `<p class="range" data-testid="active-minutes">${d.estimated_active_minutes} min active (span ${d.span_minutes} min)</p>`;
-  const detail = (s.v2
-    ? active + quizLine(d) + rangeLine("reading-line", "Reading", d.reading_minutes_low, d.reading_minutes_high)
-    : active) +
-    coursesBlock(d, s.v2) + sessionsBlock(d) +
-    `<p class="range" data-testid="first-last">First to last activity: ${esc(hhmm(d.first_activity_at))}–${esc(hhmm(d.last_activity_at))}</p>` +
-    subsBlock(d);
   return `<details class="day" data-testid="day-card">
     <summary data-testid="day-summary">
       <h3 data-testid="day-title">${esc(d.date)}</h3>
       <span class="day-meta">${meta}</span>
       ${badge}
     </summary>
-    <div class="day-detail">
-      ${detail}
-    </div>
+    ${dayDetail(d)}
   </details>`;
 }
 
@@ -163,28 +220,184 @@ function renderEmpty(date) {
   </div>`;
 }
 
+function captureDisclosure(root) {
+  const openDays = [];
+  const openSessions = [];
+  for (const el of root.querySelectorAll("details.day[open]")) {
+    const title = el.querySelector("[data-testid=day-title]");
+    if (title) openDays.push(title.textContent.trim());
+  }
+  for (const el of root.querySelectorAll("details[data-testid=sessions][open]")) {
+    const card = el.closest("details.day");
+    const title = card && card.querySelector("[data-testid=day-title]");
+    if (title) openSessions.push(title.textContent.trim());
+  }
+  return { openDays, openSessions };
+}
+function restoreDisclosure(root, snapshot) {
+  for (const el of root.querySelectorAll("details.day")) {
+    const title = el.querySelector("[data-testid=day-title]");
+    if (!title) continue;
+    const date = title.textContent.trim();
+    if (snapshot.openDays.includes(date)) el.open = true;
+    if (snapshot.openSessions.includes(date)) {
+      const nested = el.querySelector("details[data-testid=sessions]");
+      if (nested) nested.open = true;
+    }
+  }
+}
+
 async function render() {
   const root = document.getElementById("days");
   root.setAttribute("aria-busy", "true");
-  const dates = [];
-  for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, -i));
-  const days = await Promise.all(dates.map(loadDay));
-  const latest = days.find((d) => d && d.last_activity_at);
-  const footer = latest
-    ? `<p class="stale" data-testid="week-footer">Data as of ${esc(latest.date)} ${esc(hhmm(latest.last_activity_at))}</p>`
-    : `<p class="stale" data-testid="week-footer">Data as of —</p>`;
-  root.innerHTML = renderBand(days) + days.map((d, i) => d ? renderActiveDay(d) : renderEmpty(dates[i])).join("") + footer;
-  root.removeAttribute("aria-busy");
-  document.querySelector("[data-testid=prev-week]").disabled = state.anchor <= state.minAnchor;
-  document.querySelector("[data-testid=next-week]").disabled = state.anchor >= state.maxAnchor;
-  document.querySelector("[data-testid=picker]").value = state.anchor;
+  try {
+    const dates = [];
+    for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, -i));
+    const days = await Promise.all(dates.map(loadDay));
+    const latest = days.find((d) => d && d.last_activity_at);
+    const footer = latest
+      ? `<p class="stale" data-testid="week-footer">Data as of ${esc(latest.date)} ${esc(hhmm(latest.last_activity_at))}</p>`
+      : `<p class="stale" data-testid="week-footer">Data as of —</p>`;
+    const html =
+      renderToday() +
+      renderBand(days) +
+      `<p class="legend" data-testid="legend">Unmarked durations are estimated from page-open gaps; quizzes are measured.</p>` +
+      days.map((d, i) => (d ? renderActiveDay(d) : renderEmpty(dates[i]))).join("") +
+      footer;
+    const snapshot = captureDisclosure(root);
+    root.innerHTML = html;
+    restoreDisclosure(root, snapshot);
+  } finally {
+    root.removeAttribute("aria-busy");
+    const prev = document.querySelector("[data-testid=prev-week]");
+    const next = document.querySelector("[data-testid=next-week]");
+    const picker = document.querySelector("[data-testid=picker]");
+    if (prev) prev.disabled = state.anchor <= state.minAnchor;
+    if (next) next.disabled = state.anchor >= state.maxAnchor;
+    if (picker) picker.value = state.anchor;
+  }
 }
 
+function setStatus(text) {
+  state.todayStatus = text;
+  const el = document.querySelector("[data-testid=today-status]");
+  if (el) el.textContent = text;
+}
+
+function applyManifest(manifest) {
+  const dates = normalizeDates(manifest);
+  if (!dates.length || dates.join(",") === state.dates.join(",")) return false;
+  state.dates = dates;
+  applyBounds();
+  return true;
+}
+
+async function refresh({ manual = false, manifest = null } = {}) {
+  if (state.refreshing) return;
+  state.refreshing = true;
+  if (manual) setStatus("Checking…");
+  try {
+    let changed = manifest ? applyManifest(manifest) : false;
+    if (!manifest) {
+      try {
+        changed = applyManifest(await (await fetch("data/index.json", { cache: "no-store" })).json());
+      } catch { /* keep the previous manifest view */ }
+    }
+
+    const date = todayEt();
+    if (state.todayDate !== date) {
+      state.todayDate = date;
+      state.todayDay = null;
+      state.todaySnapshot = null;
+      changed = true;
+    }
+
+    if (!state.dates.includes(date)) {
+      // No capture yet for today: render the empty state without probing a
+      // file that does not exist (the 404 would be a console error).
+      const wasEmpty = state.todayDay === null && state.todaySnapshot === null;
+      state.todayDay = null;
+      state.todaySnapshot = null;
+      state.todayStatus = `Updated ${fmtEtTime(nowMs())} ET`;
+      if (changed || !wasEmpty) await render();
+      else setStatus(state.todayStatus);
+      return;
+    }
+
+    const prior = state.todayDay;
+    try {
+      const day = await loadToday();
+      const snapshot = JSON.stringify(day);
+      if (!prior || snapshot !== state.todaySnapshot || changed) {
+        state.todayDay = day;
+        state.todaySnapshot = snapshot;
+        state.todayStatus = `Updated ${fmtEtTime(nowMs())} ET`;
+        await render();
+      } else {
+        // Identical content: update the aria-live status in place and leave
+        // the DOM (and any focused node) untouched.
+        setStatus(`Updated ${fmtEtTime(nowMs())} ET`);
+      }
+    } catch {
+      if (prior) {
+        setStatus("Showing last loaded data");
+      } else {
+        state.todayDay = null;
+        state.todaySnapshot = null;
+        state.todayStatus = "Showing last loaded data";
+        await render();
+      }
+    }
+  } finally {
+    state.refreshing = false;
+  }
+}
+
+function stopPolling() {
+  if (pollTimer !== null) { clearInterval(pollTimer); pollTimer = null; }
+}
+function startPolling() {
+  stopPolling();
+  if (document.visibilityState !== "visible") return;
+  pollTimer = setInterval(() => refresh(), pollMs());
+}
+function onVisibilityChange() {
+  if (document.visibilityState === "visible") {
+    refresh();
+    startPolling();
+  } else {
+    stopPolling();
+  }
+}
+
+function normalizeDates(manifest) {
+  return manifest
+    .map((ref) => String(ref).replace(/^data\//, "").replace(/\.json$/, ""))
+    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
+    .sort();
+}
+function applyBounds() {
+  state.maxAnchor = state.dates[state.dates.length - 1];
+  state.minAnchor = addDays(state.dates[0], WINDOW_DAYS - 1);
+  if (state.minAnchor > state.maxAnchor) state.minAnchor = state.maxAnchor;
+  const picker = document.querySelector("[data-testid=picker]");
+  if (picker) { picker.min = state.minAnchor; picker.max = state.maxAnchor; }
+}
 function setAnchor(date) {
   const clamped = date < state.minAnchor ? state.minAnchor : date > state.maxAnchor ? state.maxAnchor : date;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(clamped)) return;
   state.anchor = clamped;
   render();
+}
+function bindControls() {
+  document.querySelector("[data-testid=prev-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, -WINDOW_DAYS)));
+  document.querySelector("[data-testid=next-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, WINDOW_DAYS)));
+  const picker = document.querySelector("[data-testid=picker]");
+  picker.addEventListener("change", () => setAnchor(picker.value));
+  document.getElementById("days").addEventListener("click", (e) => {
+    if (e.target.closest("[data-testid=today-refresh]")) refresh({ manual: true });
+  });
+  document.addEventListener("visibilitychange", onVisibilityChange);
 }
 
 async function main() {
@@ -193,25 +406,15 @@ async function main() {
   try {
     manifest = await (await fetch("data/index.json", { cache: "no-store" })).json();
   } catch { root.textContent = "No summary data yet."; return; }
-  const dates = manifest
-    .map((ref) => String(ref).replace(/^data\//, "").replace(/\.json$/, ""))
-    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
-    .sort();
+  const dates = normalizeDates(manifest);
   if (!dates.length) { root.textContent = "No summary data yet."; return; }
 
   state.dates = dates;
-  state.maxAnchor = dates[dates.length - 1];
-  state.minAnchor = addDays(dates[0], WINDOW_DAYS - 1);
-  if (state.minAnchor > state.maxAnchor) state.minAnchor = state.maxAnchor;
+  applyBounds();
   state.anchor = state.maxAnchor;
-
-  const picker = document.querySelector("[data-testid=picker]");
-  picker.min = state.minAnchor;
-  picker.max = state.maxAnchor;
-  document.querySelector("[data-testid=prev-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, -WINDOW_DAYS)));
-  document.querySelector("[data-testid=next-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, WINDOW_DAYS)));
-  picker.addEventListener("change", () => setAnchor(picker.value));
-  await render();
+  bindControls();
+  await refresh({ manifest });
+  startPolling();
 }
 main();
 </script>
