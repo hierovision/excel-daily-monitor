@@ -1,0 +1,428 @@
+{
+  "date": "2026-09-02",
+  "events": [
+    {
+      "id": "24428358",
+      "at_utc": "2026-09-02T19:53:50.464Z",
+      "at": "2026-09-02T15:53:50",
+      "kind": "page_viewed",
+      "item": "Welcome to your School Journey!",
+      "course": "EHS Orientation 2026",
+      "context_id": "158364"
+    },
+    {
+      "id": "24428365",
+      "at_utc": "2026-09-02T19:53:57.335Z",
+      "at": "2026-09-02T15:53:57",
+      "kind": "page_viewed",
+      "item": "Navigating Your Account Dashboard",
+      "course": "EHS Orientation 2026",
+      "context_id": "157880"
+    },
+    {
+      "id": "24428439",
+      "at_utc": "2026-09-02T19:55:21.654Z",
+      "at": "2026-09-02T15:55:21",
+      "kind": "page_viewed",
+      "item": "Understanding Billing",
+      "course": "EHS Orientation 2026",
+      "context_id": "157830"
+    },
+    {
+      "id": "24428444",
+      "at_utc": "2026-09-02T19:55:29.455Z",
+      "at": "2026-09-02T15:55:29",
+      "kind": "page_viewed",
+      "item": "How to Find Your Classes",
+      "course": "EHS Orientation 2026",
+      "context_id": "157831"
+    },
+    {
+      "id": "24428452",
+      "at_utc": "2026-09-02T19:55:42.165Z",
+      "at": "2026-09-02T15:55:42",
+      "kind": "other",
+      "item": "Module 1: Check your understanding",
+      "course": "EHS Orientation 2026",
+      "context_id": "702"
+    },
+    {
+      "id": "24428456",
+      "at_utc": "2026-09-02T19:55:44.443Z",
+      "at": "2026-09-02T15:55:44",
+      "kind": "other",
+      "item": "Module 1: Check your understanding",
+      "course": "EHS Orientation 2026",
+      "context_id": "702"
+    },
+    {
+      "id": "24428543",
+      "at_utc": "2026-09-02T19:56:49.233Z",
+      "at": "2026-09-02T15:56:49",
+      "kind": "other",
+      "item": "Module 1: Check your understanding",
+      "course": "EHS Orientation 2026",
+      "context_id": "702"
+    },
+    {
+      "id": "24428559",
+      "at_utc": "2026-09-02T19:57:04.570Z",
+      "at": "2026-09-02T15:57:04",
+      "kind": "other",
+      "item": "Module 1: Check your understanding",
+      "course": "EHS Orientation 2026",
+      "context_id": "702"
+    },
+    {
+      "id": "24428605",
+      "at_utc": "2026-09-02T19:58:08.815Z",
+      "at": "2026-09-02T15:58:08",
+      "kind": "other",
+      "item": "Module 1: Check your understanding",
+      "course": "EHS Orientation 2026",
+      "context_id": "702"
+    },
+    {
+      "id": "24428609",
+      "at_utc": "2026-09-02T19:58:13.148Z",
+      "at": "2026-09-02T15:58:13",
+      "kind": "page_viewed",
+      "item": "Navigating Your Courses",
+      "course": "EHS Orientation 2026",
+      "context_id": "158123"
+    },
+    {
+      "id": "24428634",
+      "at_utc": "2026-09-02T19:58:50.043Z",
+      "at": "2026-09-02T15:58:50",
+      "kind": "page_viewed",
+      "item": "Pacing",
+      "course": "EHS Orientation 2026",
+      "context_id": "157832"
+    },
+    {
+      "id": "24428648",
+      "at_utc": "2026-09-02T19:59:08.748Z",
+      "at": "2026-09-02T15:59:08",
+      "kind": "other",
+      "item": "Check your understanding: Pacing",
+      "course": "EHS Orientation 2026",
+      "context_id": "705"
+    },
+    {
+      "id": "24428649",
+      "at_utc": "2026-09-02T19:59:10.376Z",
+      "at": "2026-09-02T15:59:10",
+      "kind": "other",
+      "item": "Check your understanding: Pacing",
+      "course": "EHS Orientation 2026",
+      "context_id": "705"
+    },
+    {
+      "id": "24428660",
+      "at_utc": "2026-09-02T19:59:21.638Z",
+      "at": "2026-09-02T15:59:21",
+      "kind": "other",
+      "item": "Check your understanding: Pacing",
+      "course": "EHS Orientation 2026",
+      "context_id": "705"
+    },
+    {
+      "id": "24428662",
+      "at_utc": "2026-09-02T19:59:24.233Z",
+      "at": "2026-09-02T15:59:24",
+      "kind": "page_viewed",
+      "item": "Assignments Overview",
+      "course": "EHS Orientation 2026",
+      "context_id": "157835"
+    },
+    {
+      "id": "24428681",
+      "at_utc": "2026-09-02T19:59:56.226Z",
+      "at": "2026-09-02T15:59:56",
+      "kind": "page_viewed",
+      "item": "How To Submit a Project",
+      "course": "EHS Orientation 2026",
+      "context_id": "157876"
+    },
+    {
+      "id": "24428745",
+      "at_utc": "2026-09-02T20:01:20.719Z",
+      "at": "2026-09-02T16:01:20",
+      "kind": "page_viewed",
+      "item": "Writing Resources",
+      "course": "EHS Orientation 2026",
+      "context_id": "157834"
+    },
+    {
+      "id": "24428854",
+      "at_utc": "2026-09-02T20:03:19.321Z",
+      "at": "2026-09-02T16:03:19",
+      "kind": "page_viewed",
+      "item": "How to Pass Your Courses",
+      "course": "EHS Orientation 2026",
+      "context_id": "157833"
+    },
+    {
+      "id": "24428857",
+      "at_utc": "2026-09-02T20:03:24.508Z",
+      "at": "2026-09-02T16:03:24",
+      "kind": "other",
+      "item": "Check Your Understanding: Passing a Course",
+      "course": "EHS Orientation 2026",
+      "context_id": "708"
+    },
+    {
+      "id": "24428859",
+      "at_utc": "2026-09-02T20:03:25.915Z",
+      "at": "2026-09-02T16:03:25",
+      "kind": "other",
+      "item": "Check Your Understanding: Passing a Course",
+      "course": "EHS Orientation 2026",
+      "context_id": "708"
+    },
+    {
+      "id": "24428872",
+      "at_utc": "2026-09-02T20:03:35.757Z",
+      "at": "2026-09-02T16:03:35",
+      "kind": "other",
+      "item": "Check Your Understanding: Passing a Course",
+      "course": "EHS Orientation 2026",
+      "context_id": "708"
+    },
+    {
+      "id": "24428880",
+      "at_utc": "2026-09-02T20:03:45.126Z",
+      "at": "2026-09-02T16:03:45",
+      "kind": "page_viewed",
+      "item": "Using the Helpdesk",
+      "course": "EHS Orientation 2026",
+      "context_id": "157847"
+    },
+    {
+      "id": "24428898",
+      "at_utc": "2026-09-02T20:04:07.798Z",
+      "at": "2026-09-02T16:04:07",
+      "kind": "page_viewed",
+      "item": "Being Respectful Online",
+      "course": "EHS Orientation 2026",
+      "context_id": "157877"
+    },
+    {
+      "id": "24428899",
+      "at_utc": "2026-09-02T20:04:10.971Z",
+      "at": "2026-09-02T16:04:10",
+      "kind": "page_viewed",
+      "item": "Your ticket is submitted. Now what?",
+      "course": "EHS Orientation 2026",
+      "context_id": "157849"
+    },
+    {
+      "id": "24428900",
+      "at_utc": "2026-09-02T20:04:13.799Z",
+      "at": "2026-09-02T16:04:13",
+      "kind": "page_viewed",
+      "item": "Helpdesk Demo",
+      "course": "EHS Orientation 2026",
+      "context_id": "157848"
+    },
+    {
+      "id": "24428911",
+      "at_utc": "2026-09-02T20:04:23.452Z",
+      "at": "2026-09-02T16:04:23",
+      "kind": "other",
+      "item": "Helpdesk Matching Game",
+      "course": "EHS Orientation 2026",
+      "context_id": "692"
+    },
+    {
+      "id": "24428914",
+      "at_utc": "2026-09-02T20:04:25.133Z",
+      "at": "2026-09-02T16:04:25",
+      "kind": "other",
+      "item": "Helpdesk Matching Game",
+      "course": "EHS Orientation 2026",
+      "context_id": "692"
+    },
+    {
+      "id": "24428943",
+      "at_utc": "2026-09-02T20:05:06.776Z",
+      "at": "2026-09-02T16:05:06",
+      "kind": "other",
+      "item": "Helpdesk Matching Game",
+      "course": "EHS Orientation 2026",
+      "context_id": "692"
+    },
+    {
+      "id": "24428947",
+      "at_utc": "2026-09-02T20:05:09.764Z",
+      "at": "2026-09-02T16:05:09",
+      "kind": "other",
+      "item": "My ticket is resolved. Now what?",
+      "course": "EHS Orientation 2026",
+      "context_id": "696"
+    },
+    {
+      "id": "24428949",
+      "at_utc": "2026-09-02T20:05:14.308Z",
+      "at": "2026-09-02T16:05:14",
+      "kind": "other",
+      "item": "My ticket is resolved. Now what?",
+      "course": "EHS Orientation 2026",
+      "context_id": "696"
+    },
+    {
+      "id": "24428955",
+      "at_utc": "2026-09-02T20:05:23.885Z",
+      "at": "2026-09-02T16:05:23",
+      "kind": "other",
+      "item": "My ticket is resolved. Now what?",
+      "course": "EHS Orientation 2026",
+      "context_id": "696"
+    },
+    {
+      "id": "24428960",
+      "at_utc": "2026-09-02T20:05:31.084Z",
+      "at": "2026-09-02T16:05:31",
+      "kind": "page_viewed",
+      "item": "Academic Coaches",
+      "course": "EHS Orientation 2026",
+      "context_id": "184522"
+    },
+    {
+      "id": "24428969",
+      "at_utc": "2026-09-02T20:05:45.576Z",
+      "at": "2026-09-02T16:05:45",
+      "kind": "page_viewed",
+      "item": "Success Coaches",
+      "course": "EHS Orientation 2026",
+      "context_id": "158691"
+    },
+    {
+      "id": "24428998",
+      "at_utc": "2026-09-02T20:06:30.881Z",
+      "at": "2026-09-02T16:06:30",
+      "kind": "page_viewed",
+      "item": "Registrars",
+      "course": "EHS Orientation 2026",
+      "context_id": "157875"
+    },
+    {
+      "id": "24429011",
+      "at_utc": "2026-09-02T20:06:47.082Z",
+      "at": "2026-09-02T16:06:47",
+      "kind": "page_viewed",
+      "item": "Enrichment Opportunities",
+      "course": "EHS Orientation 2026",
+      "context_id": "158692"
+    },
+    {
+      "id": "24429033",
+      "at_utc": "2026-09-02T20:07:06.932Z",
+      "at": "2026-09-02T16:07:06",
+      "kind": "other",
+      "item": "Check your understanding #1",
+      "course": "EHS Orientation 2026",
+      "context_id": "699"
+    },
+    {
+      "id": "24429045",
+      "at_utc": "2026-09-02T20:07:11.142Z",
+      "at": "2026-09-02T16:07:11",
+      "kind": "other",
+      "item": "Check your understanding #1",
+      "course": "EHS Orientation 2026",
+      "context_id": "699"
+    },
+    {
+      "id": "24429074",
+      "at_utc": "2026-09-02T20:07:29.037Z",
+      "at": "2026-09-02T16:07:29",
+      "kind": "other",
+      "item": "Check your understanding #1",
+      "course": "EHS Orientation 2026",
+      "context_id": "699"
+    },
+    {
+      "id": "24429081",
+      "at_utc": "2026-09-02T20:07:31.128Z",
+      "at": "2026-09-02T16:07:31",
+      "kind": "other",
+      "item": "Check Your Understanding #2",
+      "course": "EHS Orientation 2026",
+      "context_id": "700"
+    },
+    {
+      "id": "24429087",
+      "at_utc": "2026-09-02T20:07:32.849Z",
+      "at": "2026-09-02T16:07:32",
+      "kind": "other",
+      "item": "Check Your Understanding #2",
+      "course": "EHS Orientation 2026",
+      "context_id": "700"
+    },
+    {
+      "id": "24429107",
+      "at_utc": "2026-09-02T20:07:45.321Z",
+      "at": "2026-09-02T16:07:45",
+      "kind": "other",
+      "item": "Check Your Understanding #2",
+      "course": "EHS Orientation 2026",
+      "context_id": "700"
+    },
+    {
+      "id": "24429113",
+      "at_utc": "2026-09-02T20:07:52.752Z",
+      "at": "2026-09-02T16:07:52",
+      "kind": "other",
+      "item": "Check your Understanding #3",
+      "course": "EHS Orientation 2026",
+      "context_id": "701"
+    },
+    {
+      "id": "24429114",
+      "at_utc": "2026-09-02T20:07:54.200Z",
+      "at": "2026-09-02T16:07:54",
+      "kind": "other",
+      "item": "Check your Understanding #3",
+      "course": "EHS Orientation 2026",
+      "context_id": "701"
+    },
+    {
+      "id": "24429175",
+      "at_utc": "2026-09-02T20:08:50.013Z",
+      "at": "2026-09-02T16:08:50",
+      "kind": "other",
+      "item": "Check your Understanding #3",
+      "course": "EHS Orientation 2026",
+      "context_id": "701"
+    },
+    {
+      "id": "24429179",
+      "at_utc": "2026-09-02T20:08:53.932Z",
+      "at": "2026-09-02T16:08:53",
+      "kind": "page_viewed",
+      "item": "Welcome to Your School Community!",
+      "course": "EHS Orientation 2026",
+      "context_id": "157874"
+    },
+    {
+      "id": "24429185",
+      "at_utc": "2026-09-02T20:09:03.072Z",
+      "at": "2026-09-02T16:09:03",
+      "kind": "quiz_viewed",
+      "item": "Orientation Final Quiz",
+      "course": "EHS Orientation 2026",
+      "context_id": "47665"
+    },
+    {
+      "id": "24429193",
+      "at_utc": "2026-09-02T20:09:17.465Z",
+      "at": "2026-09-02T16:09:17",
+      "kind": "quiz_submitted",
+      "item": "Orientation Final Quiz",
+      "course": "EHS Orientation 2026",
+      "context_id": "47665"
+    }
+  ]
+}

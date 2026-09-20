@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-10",
+  "events": [
+    {
+      "id": "24816475",
+      "at_utc": "2026-09-10T17:47:25.659Z",
+      "at": "2026-09-10T13:47:25",
+      "kind": "page_viewed",
+      "item": "Module 1 Overview",
+      "course": "Biology EHS",
+      "context_id": "192571"
+    },
+    {
+      "id": "24816480",
+      "at_utc": "2026-09-10T17:47:29.910Z",
+      "at": "2026-09-10T13:47:29",
+      "kind": "page_viewed",
+      "item": "1.1.1 - Carbon and Building Blocks",
+      "course": "Biology EHS",
+      "context_id": "192572"
+    },
+    {
+      "id": "24816785",
+      "at_utc": "2026-09-10T17:50:03.303Z",
+      "at": "2026-09-10T13:50:03",
+      "kind": "page_viewed",
+      "item": "1.1.2 - The Four Macromolecules",
+      "course": "Biology EHS",
+      "context_id": "192573"
+    },
+    {
+      "id": "24818022",
+      "at_utc": "2026-09-10T18:03:00.445Z",
+      "at": "2026-09-10T14:03:00",
+      "kind": "page_viewed",
+      "item": "1.2.1 - Enzymes and Denaturation",
+      "course": "Biology EHS",
+      "context_id": "192574"
+    },
+    {
+      "id": "24818607",
+      "at_utc": "2026-09-10T18:11:25.449Z",
+      "at": "2026-09-10T14:11:25",
+      "kind": "page_viewed",
+      "item": "1.2.2 - Understanding Denaturation",
+      "course": "Biology EHS",
+      "context_id": "192575"
+    },
+    {
+      "id": "24818864",
+      "at_utc": "2026-09-10T18:13:35.203Z",
+      "at": "2026-09-10T14:13:35",
+      "kind": "page_viewed",
+      "item": "1.3.1 - Water's Properties",
+      "course": "Biology EHS",
+      "context_id": "192576"
+    },
+    {
+      "id": "24819363",
+      "at_utc": "2026-09-10T18:19:51.862Z",
+      "at": "2026-09-10T14:19:51",
+      "kind": "page_viewed",
+      "item": "1.3.2 - Water and Life",
+      "course": "Biology EHS",
+      "context_id": "192577"
+    },
+    {
+      "id": "24819367",
+      "at_utc": "2026-09-10T18:19:55.323Z",
+      "at": "2026-09-10T14:19:55",
+      "kind": "page_viewed",
+      "item": "Module 1 Wrap Up",
+      "course": "Biology EHS",
+      "context_id": "192578"
+    },
+    {
+      "id": "24819446",
+      "at_utc": "2026-09-10T18:21:01.058Z",
+      "at": "2026-09-10T14:21:01",
+      "kind": "quiz_viewed",
+      "item": "Module 1 Quiz",
+      "course": "Biology EHS",
+      "context_id": "53647"
+    },
+    {
+      "id": "24820076",
+      "at_utc": "2026-09-10T18:29:19.063Z",
+      "at": "2026-09-10T14:29:19",
+      "kind": "quiz_submitted",
+      "item": "Module 1 Quiz",
+      "course": "Biology EHS",
+      "context_id": "53647"
+    }
+  ]
+}

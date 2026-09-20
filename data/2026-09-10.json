@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-10",
+  "first_activity_at": "13:47:25",
+  "last_activity_at": "14:29:19",
+  "span_minutes": 42,
+  "measured_quiz_minutes": 8,
+  "reading_minutes_low": 34,
+  "reading_minutes_high": 34,
+  "active_minutes_low": 42,
+  "active_minutes_high": 42,
+  "sessions": [
+    {
+      "start": "13:47",
+      "end": "14:29",
+      "minutes": 42
+    }
+  ],
+  "by_course": [
+    {
+      "course": "Biology EHS",
+      "measured_quiz_minutes": 8,
+      "reading_minutes_low": 34,
+      "reading_minutes_high": 34,
+      "active_minutes_low": 42,
+      "active_minutes_high": 42,
+      "pages_viewed": 8,
+      "quiz_submissions": [
+        {
+          "item": "Module 1 Quiz",
+          "at": "14:29"
+        }
+      ]
+    }
+  ],
+  "event_counts": {
+    "page_viewed": 8,
+    "quiz_viewed": 1,
+    "quiz_submitted": 1,
+    "other": 0
+  },
+  "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 1 Quiz",
+      "course": "Biology EHS",
+      "at": "14:29"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-08",
+  "first_activity_at": "12:28:30",
+  "last_activity_at": "12:34:06",
+  "span_minutes": 6,
+  "measured_quiz_minutes": 0,
+  "reading_minutes_low": 6,
+  "reading_minutes_high": 6,
+  "active_minutes_low": 6,
+  "active_minutes_high": 6,
+  "sessions": [
+    {
+      "start": "12:28",
+      "end": "12:34",
+      "minutes": 6
+    }
+  ],
+  "by_course": [
+    {
+      "course": "American History EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 3,
+      "reading_minutes_high": 3,
+      "active_minutes_low": 3,
+      "active_minutes_high": 3,
+      "pages_viewed": 7,
+      "quiz_submissions": []
+    },
+    {
+      "course": "Geometry EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 1,
+      "reading_minutes_high": 1,
+      "active_minutes_low": 1,
+      "active_minutes_high": 1,
+      "pages_viewed": 7,
+      "quiz_submissions": []
+    },
+    {
+      "course": "Biology EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 1,
+      "reading_minutes_high": 1,
+      "active_minutes_low": 1,
+      "active_minutes_high": 1,
+      "pages_viewed": 8,
+      "quiz_submissions": []
+    },
+    {
+      "course": "World History EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 1,
+      "reading_minutes_high": 1,
+      "active_minutes_low": 1,
+      "active_minutes_high": 1,
+      "pages_viewed": 7,
+      "quiz_submissions": []
+    },
+    {
+      "course": "Media Arts EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 0,
+      "reading_minutes_high": 0,
+      "active_minutes_low": 0,
+      "active_minutes_high": 0,
+      "pages_viewed": 2,
+      "quiz_submissions": []
+    }
+  ],
+  "event_counts": {
+    "page_viewed": 31,
+    "quiz_viewed": 0,
+    "quiz_submitted": 0,
+    "other": 0
+  },
+  "submissions_and_grades": []
+}

@@ -1,0 +1,104 @@
+{
+  "date": "2026-09-17",
+  "events": [
+    {
+      "id": "25181555",
+      "at_utc": "2026-09-17T18:01:13.109Z",
+      "at": "2026-09-17T14:01:13",
+      "kind": "page_viewed",
+      "item": "Section 1.1 - What are Media Arts?",
+      "course": "Media Arts EHS",
+      "context_id": "679"
+    },
+    {
+      "id": "25182322",
+      "at_utc": "2026-09-17T18:13:17.233Z",
+      "at": "2026-09-17T14:13:17",
+      "kind": "page_viewed",
+      "item": "Section 1.2 - History of Print and Design",
+      "course": "Media Arts EHS",
+      "context_id": "692"
+    },
+    {
+      "id": "25183002",
+      "at_utc": "2026-09-17T18:22:18.885Z",
+      "at": "2026-09-17T14:22:18",
+      "kind": "page_viewed",
+      "item": "Section 1.3 - Before Radio",
+      "course": "Media Arts EHS",
+      "context_id": "968"
+    },
+    {
+      "id": "25183309",
+      "at_utc": "2026-09-17T18:26:47.564Z",
+      "at": "2026-09-17T14:26:47",
+      "kind": "page_viewed",
+      "item": "Section 1.4 - Media as History",
+      "course": "Media Arts EHS",
+      "context_id": "705"
+    },
+    {
+      "id": "25187954",
+      "at_utc": "2026-09-17T19:31:51.006Z",
+      "at": "2026-09-17T15:31:51",
+      "kind": "page_viewed",
+      "item": "Section 1.5 - Research in Media",
+      "course": "Media Arts EHS",
+      "context_id": "885"
+    },
+    {
+      "id": "25203781",
+      "at_utc": "2026-09-18T00:13:43.047Z",
+      "at": "2026-09-17T20:13:43",
+      "kind": "page_viewed",
+      "item": "Section 1.6 - Exploring Legal and Ethical Responsibility",
+      "course": "Media Arts EHS",
+      "context_id": "980"
+    },
+    {
+      "id": "25204650",
+      "at_utc": "2026-09-18T00:34:18.901Z",
+      "at": "2026-09-17T20:34:18",
+      "kind": "page_viewed",
+      "item": "Section 1.7 - Safe Practices for Quality Information Gathering and Sharing",
+      "course": "Media Arts EHS",
+      "context_id": "717"
+    },
+    {
+      "id": "25205334",
+      "at_utc": "2026-09-18T00:49:15.252Z",
+      "at": "2026-09-17T20:49:15",
+      "kind": "page_viewed",
+      "item": "Section 1.8 - Being a Good Digital Citizen",
+      "course": "Media Arts EHS",
+      "context_id": "989"
+    },
+    {
+      "id": "25205968",
+      "at_utc": "2026-09-18T01:01:52.884Z",
+      "at": "2026-09-17T21:01:52",
+      "kind": "page_viewed",
+      "item": "Section 1.9 - Using Public Domain Imagery for Creative Works",
+      "course": "Media Arts EHS",
+      "context_id": "1001"
+    },
+    {
+      "id": "25206539",
+      "at_utc": "2026-09-18T01:16:40.773Z",
+      "at": "2026-09-17T21:16:40",
+      "kind": "quiz_viewed",
+      "item": "Module 1 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16094"
+    },
+    {
+      "id": "25206737",
+      "at_utc": "2026-09-18T01:21:19.632Z",
+      "at": "2026-09-17T21:21:19",
+      "kind": "quiz_submitted",
+      "item": "Module 1 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16094"
+    }
+  ]
+}

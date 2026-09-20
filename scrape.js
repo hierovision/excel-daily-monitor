@@ -1,20 +1,26 @@
-// Nightly scraper: dashboard -> login (identity.learnstage.com if redirected)
-// -> "Login as" student -> My Courses (popup) -> Recent Activity feed.
-// Writes data/raw-events.json; on failure writes data/failure/* evidence.
+// Nightly scraper: login via identity, login-as the student, then read the
+// server-side activity log with a human-like paced request profile and write
+// data/raw-events.json. Writes data/failure/* evidence on failure.
 "use strict";
 const fs = require("fs");
 const path = require("path");
 const { chromium } = require("playwright");
-const { parse } = require("./parse.js");
+const { mapActivity } = require("./map.js");
+const { loadStore } = require("./store.js");
+const { createPacer } = require("./pacing.js");
 
 const BOARD_ROOT = "https://live.learnstage.com/exceled/excelhighschool/sis/dashboard";
-const LMS_DASHBOARD = "https://live.lms.learnstage.com/exceled/excelhighschool/sis/lms/dashboard";
+const API = "https://api.learnstage.com";
 const FAIL_DIR = path.join(__dirname, "data", "failure");
 const IDLE_MS = 30000; // longest single element/navigation wait
-// The LMS feed renders timestamps in the browser's local timezone. Without a
-// pinned zone a UTC CI runner shifts evening events into the next day (+4h vs
-// America/New_York), corrupting day assignment and session times.
 const TIMEZONE = "America/New_York";
+const PER_PAGE = 500;
+const MAX_PAGES = 3;
+const API_HEADERS = {
+  Accept: "application/json",
+  "realm-name": "sch-23-000a",
+  "X-CW-Tenant-Id": "exceled",
+};
 
 // The dashboard 401s to identity with a redirect_url built from school data
 // that may not have loaded yet on a cold visit, yielding "//login/auth" (empty
@@ -77,11 +83,8 @@ async function main() {
     const u = r.url();
     if (!/learnstage\.com/.test(u)) return;
     inflight.delete(u);
-    if (r.status() >= 400 || /login\/school\/auth|loginAsCustomer/.test(u)) {
+    if (r.status() >= 400 || /student-activity|canvas\/page_view|loginAsCustomer/.test(u)) {
       netLines.push(`net ${r.status()} ${u}`);
-    }
-    if (/loginAsCustomer/.test(u)) {
-      r.text().then((b) => netLines.push(`body ${u} :: ${b.slice(0, 400)}`)).catch(() => {});
     }
   });
   context.on("requestfailed", (r) => {
@@ -91,7 +94,7 @@ async function main() {
     netLines.push(`net FAILED ${u} :: ${(r.failure() && r.failure().errorText) || "unknown"}`);
   });
 
-  const page = await context.newPage(); // the context "page" event attaches listeners
+  const page = await context.newPage();
 
   const fail = async (error) => {
     fs.mkdirSync(FAIL_DIR, { recursive: true });
@@ -124,11 +127,27 @@ async function main() {
   };
 
   try {
+    const pacer = createPacer();
+    const fetchJson = async (url) => {
+      const r = await page.evaluate(async ({ url, headers }) => {
+        const started = Date.now();
+        try {
+          const res = await fetch(url, { headers, credentials: "include" });
+          return { status: res.status, ms: Date.now() - started, body: await res.text() };
+        } catch (e) {
+          return { status: 0, ms: Date.now() - started, error: String(e), body: "" };
+        }
+      }, { url, headers: API_HEADERS });
+      netLines.push(`api ${r.status} ${Math.round((r.ms || 0) / 100) / 10}s ${url}`);
+      if (r.status < 200 || r.status >= 300) {
+        throw new Error(`GET ${url} -> ${r.status}${r.error ? ` ${r.error}` : ""} ${String(r.body).slice(0, 300)}`);
+      }
+      await pacer.pace();
+      return JSON.parse(r.body);
+    };
+
     await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
 
-    // The dashboard URL redirects to identity.learnstage.com when not
-    // authenticated. Wait for whichever state actually renders: login form
-    // (needs credentials) or the student "Login as" button.
     const loginForm = page.locator('input[name="password"]');
     const loginAsBtn = page.locator(`button[data-id="${config.student_data_id}"]`);
     const state = await Promise.race([
@@ -142,10 +161,6 @@ async function main() {
       await page.locator('input[name="username"]').fill(user);
       await page.locator('input[name="password"]').fill(pass);
       await page.getByRole("button", { name: "Login" }).click();
-
-      // Wait for the navigation itself (host predicate — a URL regex would
-      // also match this identity page's redirect_url query). The SPA then
-      // exchanges the token and lands on the dashboard.
       await page.waitForURL((u) => u.hostname === "live.learnstage.com", { timeout: IDLE_MS });
       const ready = await loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS })
         .then(() => true).catch(() => false);
@@ -155,10 +170,6 @@ async function main() {
       }
     }
 
-    // Login-as calls the API and reloads the dashboard in the student context.
-    // Wait for the reload and for the parent's Login-as button to disappear
-    // (session switch) before hopping to the LMS — the LMS reads that same
-    // server-side session, so going early loads the parent's enrollments.
     const popupPromise = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
     await loginAsBtn.click();
     await Promise.race([
@@ -169,51 +180,53 @@ async function main() {
     await target.locator(`button[data-id="${config.student_data_id}"]`)
       .waitFor({ state: "detached", timeout: IDLE_MS }).catch(() => {});
 
-    await target.goto(LMS_DASHBOARD, { waitUntil: "domcontentloaded" });
-    const feedContainer = target.locator("#scrollableDiv");
-    await feedContainer.waitFor({ state: "visible", timeout: IDLE_MS });
+    await target.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
+    await target.waitForLoadState("networkidle", { timeout: IDLE_MS }).catch(() => {});
 
-    // Infinite scroll: keep triggering the container's own scroll handler and
-    // wait, per iteration, until the card count actually grows. Stop when the
-    // count stops changing (bounded burst count, no fixed sleeps).
-    const countCards = () => target.locator("#scrollableDiv .card_theme-icon").count();
-    let seen = await countCards();
-    for (let burst = 0; burst < 15; burst++) {
-      const before = seen;
-      await feedContainer.evaluate((el) => {
-        // Scroll every actually-scrollable element inside the feed container;
-        // the infinite-scroll handler may live on an inner div, not on #scrollableDiv.
-        const nodes = [el, ...el.querySelectorAll("*")];
-        for (const n of nodes) {
-          const style = getComputedStyle(n);
-          const scrollable = /auto|scroll/.test(style.overflowY) && n.scrollHeight > n.clientHeight + 20;
-          if (scrollable) n.scrollTop = n.scrollHeight;
-        }
-      });
-      const grew = await target.waitForFunction(
-        (n) => document.querySelectorAll("#scrollableDiv .card_theme-icon").length > n,
-        before,
-        { timeout: 4000 }
-      ).then(() => true).catch(() => false);
-      seen = await countCards();
-      if (!grew) break;
+    const studentUrn = config.student_data_id;
+    const enrollments = await fetchJson(`${API}/lms-core/api/enrollment/list?student_urn=${encodeURIComponent(studentUrn)}&q=&status=completed,active&perPage=1000&page=1&sortBy=created_at&sortOrder=desc`);
+    const list = Array.isArray(enrollments) ? enrollments : enrollments.content || [];
+    if (list.length === 0) throw new Error("no enrollments for configured student");
+    const email = list[0].email || "";
+    const schoolId = list[0].school_id || 10;
+    const enrId = list[0].lms_enr_id;
+
+    const stored = loadStore(path.join(__dirname, "data", "events"));
+    const cutoff = stored.length ? stored[stored.length - 1].at_utc : null;
+
+    const serverEvents = [];
+    let pageNo = 1;
+    let truncated = false;
+    for (;;) {
+      const data = await fetchJson(`${API}/activity-tracking-service/api/student-activity?enr_id=${encodeURIComponent(enrId)}&perPage=${PER_PAGE}&sortOrder=desc&page=${pageNo}`);
+      const content = data.content || [];
+      serverEvents.push(...content);
+      const lastPage = data.last_page || 1;
+      const oldest = content.length ? content[content.length - 1].created_at : null;
+      if (pageNo >= lastPage) break;
+      if (cutoff && oldest && oldest < cutoff) break;
+      if (pageNo >= MAX_PAGES) { truncated = true; break; }
+      pageNo++;
     }
 
-    const containerHtml = await feedContainer.innerHTML();
-    const events = parse(containerHtml);
-    if (events.length === 0) {
-      fs.mkdirSync(FAIL_DIR, { recursive: true });
-      fs.writeFileSync(path.join(FAIL_DIR, "feed.html"), containerHtml);
-      throw new Error(`parsed 0 events from ${seen} cards — feed markup may have changed`);
-    }
+    const attendance = await fetchJson(`${API}/sis-core/api/canvas/page_view?email=${encodeURIComponent(email)}&schoolId=${encodeURIComponent(schoolId)}`);
+    const events = mapActivity(serverEvents, { timezone: TIMEZONE });
+    if (events.length === 0) throw new Error("activity log returned no events");
+
+    const raw = {
+      fetched_at: new Date().toISOString(),
+      source: "student-activity",
+      timezone: TIMEZONE,
+      last_attendance: attendance && attendance.lda ? attendance.lda : null,
+      events,
+    };
+    if (truncated) raw.truncated = true;
+
     fs.mkdirSync(path.join(__dirname, "data"), { recursive: true });
-    fs.writeFileSync(
-      path.join(__dirname, "data", "raw-events.json"),
-      JSON.stringify({ fetched_at: new Date().toISOString(), events }, null, 2)
-    );
+    fs.writeFileSync(path.join(__dirname, "data", "raw-events.json"), JSON.stringify(raw, null, 2));
     await context.tracing.stop().catch(() => {});
     fs.rmSync(FAIL_DIR, { recursive: true, force: true });
-    console.log(`scrape ok: ${events.length} events (${seen} cards)`);
+    console.log(`scrape ok: ${events.length} events (${pageNo} page(s), last_attendance ${raw.last_attendance || "none"})`);
   } catch (e) {
     await fail(e);
     process.exitCode = 1;
@@ -225,4 +238,4 @@ async function main() {
 if (require.main === module) {
   main().catch((e) => { console.error("scrape failed:", e); process.exit(1); });
 }
-module.exports = { redact };
+module.exports = { redact, ensureLoginRedirect };

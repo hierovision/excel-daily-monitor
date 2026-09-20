@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-15",
+  "events": [
+    {
+      "id": "25061452",
+      "at_utc": "2026-09-15T18:45:09.703Z",
+      "at": "2026-09-15T14:45:09",
+      "kind": "page_viewed",
+      "item": "Module 1 Wrap-Up",
+      "course": "World History EHS",
+      "context_id": "189246"
+    },
+    {
+      "id": "25061463",
+      "at_utc": "2026-09-15T18:45:22.036Z",
+      "at": "2026-09-15T14:45:22",
+      "kind": "page_viewed",
+      "item": "Module 2 Overview",
+      "course": "World History EHS",
+      "context_id": "189158"
+    },
+    {
+      "id": "25061854",
+      "at_utc": "2026-09-15T18:49:52.041Z",
+      "at": "2026-09-15T14:49:52",
+      "kind": "page_viewed",
+      "item": "Lesson 2.1 - Rivers, Geography, and the Rise of Cities",
+      "course": "World History EHS",
+      "context_id": "189159"
+    },
+    {
+      "id": "25067897",
+      "at_utc": "2026-09-15T20:05:39.097Z",
+      "at": "2026-09-15T16:05:39",
+      "kind": "page_viewed",
+      "item": "Lesson 2.2 - Mesopotamia: Government, Writing, and Social Hierarchy",
+      "course": "World History EHS",
+      "context_id": "189160"
+    },
+    {
+      "id": "25073181",
+      "at_utc": "2026-09-15T21:31:13.885Z",
+      "at": "2026-09-15T17:31:13",
+      "kind": "page_viewed",
+      "item": "Lesson 2.3 - Egypt: Order, Belief, and Lasting Contributions",
+      "course": "World History EHS",
+      "context_id": "189161"
+    },
+    {
+      "id": "25074489",
+      "at_utc": "2026-09-15T21:52:22.308Z",
+      "at": "2026-09-15T17:52:22",
+      "kind": "quiz_viewed",
+      "item": "Module 2 Quiz",
+      "course": "World History EHS",
+      "context_id": "52837"
+    }
+  ]
+}

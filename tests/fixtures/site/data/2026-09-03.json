@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-03",
+  "first_activity_at": "16:00:00",
+  "last_activity_at": "17:30:00",
+  "span_minutes": 90,
+  "estimated_active_minutes": 42,
+  "sessions": [
+    {
+      "start": "16:00",
+      "end": "17:30",
+      "minutes": 42
+    }
+  ],
+  "by_course": [
+    {
+      "course": "Media Arts EHS",
+      "estimated_minutes": 42,
+      "pages_viewed": 4,
+      "quiz_submissions": []
+    }
+  ],
+  "event_counts": {},
+  "submissions_and_grades": []
+}

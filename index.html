@@ -7,9 +7,14 @@
 <style>
   :root { color-scheme: light dark; }
   body { font-family: system-ui, sans-serif; margin: 0; padding: 12px; max-width: 640px; margin-inline: auto; }
+  h1 { font-size: 1.15rem; }
+  .nav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .nav button, .nav input { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; }
+  .nav button:disabled { opacity: .4; }
   .card { border: 1px solid #ccc3; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
   .card [data-testid=day-title] { margin: 0 0 6px; font-size: 1.05rem; }
   .muted { color: #888; font-size: .8rem; }
+  .range { margin: 0 0 2px; font-size: .9rem; }
   .bar-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
   .bar-row .label { flex: 0 0 42%; font-size: .85rem; }
   .bar-row .bar { flex: 1; height: 10px; border-radius: 5px; background: #9ac9ec; min-width: 4px; }
@@ -21,47 +26,127 @@
 <body>
 <main>
 <h1>Excel High School — Daily Activity</h1>
+<div class="nav">
+  <button type="button" data-testid="prev-week">← Prev week</button>
+  <input type="date" data-testid="picker" aria-label="Show the 7 days ending on">
+  <button type="button" data-testid="next-week">Next week →</button>
+</div>
 <div id="days"><p class="muted">Loading…</p></div>
 </main>
 <script>
 "use strict";
+const WINDOW_DAYS = 7;
+const state = { dates: [], anchor: null, minAnchor: null, maxAnchor: null, cache: new Map() };
+const addDays = (date, n) => new Date(Date.parse(date + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtMin = (m) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
+const range = (low, high) => low === high ? fmtMin(low) : `${fmtMin(low)}–${fmtMin(high)}`;
+
+async function loadDay(date) {
+  if (!state.dates.includes(date)) return null;
+  if (state.cache.has(date)) return state.cache.get(date);
+  try {
+    const day = await (await fetch(`data/${date}.json`)).json();
+    state.cache.set(date, day);
+    return day;
+  } catch { return null; }
+}
+
+function sessionsLine(d) {
+  const sessions = (d.sessions || []).map((s) => `${s.start}–${s.end}`).join(", ");
+  return `<p class="muted">Sessions: ${esc(sessions || "none")}</p>`;
+}
+function subs(d) {
+  if (!(d.submissions_and_grades || []).length) return "";
+  return `<ul>${d.submissions_and_grades.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul>`;
+}
+function bars(d, value) {
+  const max = Math.max(1, ...d.by_course.map(value));
+  return d.by_course.map((c) => `
+    <div class="bar-row">
+      <span class="label">${esc(c.course)}</span>
+      <span class="bar" style="flex:${Math.max(1, value(c)) / max * 10}"></span>
+      <span class="mins">${fmtMin(value(c))}</span>
+    </div>`).join("");
+}
+
+function renderDay(d) {
+  const title = `<h2 data-testid="day-title">${esc(d.date)}</h2>`;
+  const asOf = `<p class="stale" data-testid="data-as-of">data as of ${esc(d.date)} (${esc(d.last_activity_at || "no activity")})</p>`;
+  if (typeof d.active_minutes_low !== "number") {
+    return `<section class="card history" data-testid="day-card">
+      ${title}
+      <p class="range" data-testid="active-minutes">${d.estimated_active_minutes} min active (span ${d.span_minutes} min)</p>
+      ${sessionsLine(d)}
+      ${bars(d, (c) => c.estimated_minutes)}
+      ${subs(d)}
+      ${asOf}
+    </section>`;
+  }
+  const quizzes = (d.submissions_and_grades || []).length;
+  return `<section class="card history" data-testid="day-card">
+    ${title}
+    <p class="range" data-testid="active-minutes">Active (est.): ${range(d.active_minutes_low, d.active_minutes_high)} · span ${fmtMin(d.span_minutes)}</p>
+    <p class="range" data-testid="reading-quizzes">Reading (est.): ${range(d.reading_minutes_low, d.reading_minutes_high)} · Quizzes (measured): ${fmtMin(d.measured_quiz_minutes)} (${quizzes})</p>
+    ${sessionsLine(d)}
+    ${bars(d, (c) => c.active_minutes_low)}
+    ${subs(d)}
+    ${asOf}
+  </section>`;
+}
+
+function renderEmpty(date) {
+  return `<section class="card history" data-testid="day-card">
+    <h2 data-testid="day-title">${date}</h2>
+    <p class="muted">no activity recorded</p>
+  </section>`;
+}
+
+async function render() {
+  const root = document.getElementById("days");
+  root.setAttribute("aria-busy", "true");
+  const dates = [];
+  for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, -i));
+  const days = await Promise.all(dates.map(loadDay));
+  root.innerHTML = days.map((d, i) => d ? renderDay(d) : renderEmpty(dates[i])).join("");
+  root.removeAttribute("aria-busy");
+  document.querySelector("[data-testid=prev-week]").disabled = state.anchor <= state.minAnchor;
+  document.querySelector("[data-testid=next-week]").disabled = state.anchor >= state.maxAnchor;
+  document.querySelector("[data-testid=picker]").value = state.anchor;
+}
+
+function setAnchor(date) {
+  const clamped = date < state.minAnchor ? state.minAnchor : date > state.maxAnchor ? state.maxAnchor : date;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(clamped)) return;
+  state.anchor = clamped;
+  render();
+}
+
 async function main() {
   const root = document.getElementById("days");
   let manifest;
   try {
     manifest = await (await fetch("data/index.json")).json();
   } catch { root.textContent = "No summary data yet."; return; }
-  if (!manifest.length) { root.textContent = "No summary data yet."; return; }
+  const dates = manifest
+    .map((ref) => String(ref).replace(/^data\//, "").replace(/\.json$/, ""))
+    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
+    .sort();
+  if (!dates.length) { root.textContent = "No summary data yet."; return; }
 
-  const days = [];
-  for (const f of manifest) {
-    try { days.push(await (await fetch(f)).json()); } catch { /* skip missing day file */ }
-  }
-  if (!days.length) { root.textContent = "Summary files are missing."; return; }
-  days.sort((a, b) => b.date.localeCompare(a.date));
+  state.dates = dates;
+  state.maxAnchor = dates[dates.length - 1];
+  state.minAnchor = addDays(dates[0], WINDOW_DAYS - 1);
+  if (state.minAnchor > state.maxAnchor) state.minAnchor = state.maxAnchor;
+  state.anchor = state.maxAnchor;
 
-  root.innerHTML = "";
-  for (const d of days) root.insertAdjacentHTML("beforeend", renderDay(d, d === days[0]));
-}
-function fmtMin(m) { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${m % 60}m` : `${m}m`; }
-function renderDay(d, isTop) {
-  const max = Math.max(1, ...d.by_course.map(c => c.estimated_minutes));
-  const bars = d.by_course.map(c => `
-    <div class="bar-row">
-      <span class="label">${c.course}</span>
-      <span class="bar" style="flex:${c.estimated_minutes / max * 10}"></span>
-      <span class="mins">${c.estimated_minutes} min</span>
-    </div>`).join("");
-  const subs = d.submissions_and_grades.length
-    ? `<ul>${d.submissions_and_grades.map(s => `<li>Submitted: ${s.item} — ${s.course}</li>`).join("")}</ul>` : "";
-  const sessions = d.sessions.map(s => `${s.start}–${s.end}`).join(", ");
-  return `<section class="card${isTop ? "" : " history"}" data-testid="day-card">
-    <h2 data-testid="day-title">${d.date}</h2>
-    <p data-testid="active-minutes">${d.estimated_active_minutes} min active (span ${d.span_minutes} min)</p>
-    <p class="muted">Sessions: ${sessions || "none"}</p>
-    ${bars}${subs}
-    <p class="stale" data-testid="data-as-of">data as of ${d.date} (${d.last_activity_at || "no activity"})</p>
-  </section>`;
+  const picker = document.querySelector("[data-testid=picker]");
+  picker.min = dates[0];
+  picker.max = dates[dates.length - 1];
+  document.querySelector("[data-testid=prev-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, -WINDOW_DAYS)));
+  document.querySelector("[data-testid=next-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, WINDOW_DAYS)));
+  picker.addEventListener("change", () => setAnchor(picker.value));
+  await render();
 }
 main();
 </script>

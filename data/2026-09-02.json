@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-02",
+  "first_activity_at": "15:53:50",
+  "last_activity_at": "16:09:17",
+  "span_minutes": 15,
+  "measured_quiz_minutes": 0,
+  "reading_minutes_low": 15,
+  "reading_minutes_high": 15,
+  "active_minutes_low": 15,
+  "active_minutes_high": 15,
+  "sessions": [
+    {
+      "start": "15:53",
+      "end": "16:09",
+      "minutes": 15
+    }
+  ],
+  "by_course": [
+    {
+      "course": "EHS Orientation 2026",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 15,
+      "reading_minutes_high": 15,
+      "active_minutes_low": 15,
+      "active_minutes_high": 15,
+      "pages_viewed": 19,
+      "quiz_submissions": [
+        {
+          "item": "Orientation Final Quiz",
+          "at": "16:09"
+        }
+      ]
+    }
+  ],
+  "event_counts": {
+    "page_viewed": 19,
+    "quiz_viewed": 1,
+    "quiz_submitted": 1,
+    "other": 26
+  },
+  "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Orientation Final Quiz",
+      "course": "EHS Orientation 2026",
+      "at": "16:09"
+    }
+  ]
+}

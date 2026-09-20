@@ -1,0 +1,47 @@
+{
+  "date": "2026-09-04",
+  "first_activity_at": "16:00:00",
+  "last_activity_at": "17:30:00",
+  "span_minutes": 90,
+  "sessions": [
+    {
+      "start": "16:00",
+      "end": "17:30",
+      "minutes": 90
+    }
+  ],
+  "by_course": [
+    {
+      "course": "Media Arts EHS",
+      "measured_quiz_minutes": 12,
+      "reading_minutes_low": 22,
+      "reading_minutes_high": 36,
+      "active_minutes_low": 34,
+      "active_minutes_high": 48,
+      "pages_viewed": 4,
+      "quiz_submissions": []
+    },
+    {
+      "course": "World History EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 10,
+      "reading_minutes_high": 15,
+      "active_minutes_low": 10,
+      "active_minutes_high": 15,
+      "pages_viewed": 3,
+      "quiz_submissions": []
+    }
+  ],
+  "event_counts": {
+    "page_viewed": 7,
+    "quiz_viewed": 1,
+    "quiz_submitted": 1,
+    "other": 0
+  },
+  "submissions_and_grades": [],
+  "measured_quiz_minutes": 12,
+  "reading_minutes_low": 22,
+  "reading_minutes_high": 36,
+  "active_minutes_low": 34,
+  "active_minutes_high": 48
+}

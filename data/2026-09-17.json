@@ -3,12 +3,16 @@
   "first_activity_at": "14:01:13",
   "last_activity_at": "21:21:19",
   "span_minutes": 440,
-  "estimated_active_minutes": 94,
+  "measured_quiz_minutes": 5,
+  "reading_minutes_low": 83,
+  "reading_minutes_high": 89,
+  "active_minutes_low": 88,
+  "active_minutes_high": 93,
   "sessions": [
     {
       "start": "14:01",
       "end": "14:26",
-      "minutes": 25
+      "minutes": 26
     },
     {
       "start": "15:31",
@@ -18,29 +22,38 @@
     {
       "start": "20:13",
       "end": "21:21",
-      "minutes": 69
+      "minutes": 68
     }
   ],
   "by_course": [
     {
       "course": "Media Arts EHS",
-      "estimated_minutes": 94,
+      "measured_quiz_minutes": 5,
+      "reading_minutes_low": 83,
+      "reading_minutes_high": 89,
+      "active_minutes_low": 88,
+      "active_minutes_high": 93,
       "pages_viewed": 9,
       "quiz_submissions": [
         {
           "item": "Module 1 Quiz",
-          "at": "21:21:19"
+          "at": "21:21"
         }
       ]
     }
   ],
-  "event_counts": {},
+  "event_counts": {
+    "page_viewed": 9,
+    "quiz_viewed": 1,
+    "quiz_submitted": 1,
+    "other": 0
+  },
   "submissions_and_grades": [
     {
       "kind": "quiz_submitted",
       "item": "Module 1 Quiz",
       "course": "Media Arts EHS",
-      "at": "21:21:19"
+      "at": "21:21"
     }
   ]
 }

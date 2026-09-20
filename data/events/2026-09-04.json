@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-04",
+  "events": [
+    {
+      "id": "24525935",
+      "at_utc": "2026-09-04T16:11:04.145Z",
+      "at": "2026-09-04T12:11:04",
+      "kind": "page_viewed",
+      "item": "Start Here",
+      "course": "English 10 EHS",
+      "context_id": "189662"
+    },
+    {
+      "id": "24525993",
+      "at_utc": "2026-09-04T16:12:22.773Z",
+      "at": "2026-09-04T12:12:22",
+      "kind": "page_viewed",
+      "item": "Module 1 Overview",
+      "course": "English 10 EHS",
+      "context_id": "189927"
+    },
+    {
+      "id": "24526064",
+      "at_utc": "2026-09-04T16:13:53.504Z",
+      "at": "2026-09-04T12:13:53",
+      "kind": "page_viewed",
+      "item": "Advanced Close Reading & Textual Analysis 1.1",
+      "course": "English 10 EHS",
+      "context_id": "179875"
+    },
+    {
+      "id": "24528929",
+      "at_utc": "2026-09-04T17:08:15.723Z",
+      "at": "2026-09-04T13:08:15",
+      "kind": "page_viewed",
+      "item": "Advanced Close Reading & Textual Analysis 1.2",
+      "course": "English 10 EHS",
+      "context_id": "179874"
+    },
+    {
+      "id": "24528987",
+      "at_utc": "2026-09-04T17:09:01.746Z",
+      "at": "2026-09-04T13:09:01",
+      "kind": "page_viewed",
+      "item": "Advanced Close Reading & Textual Analysis 1.1",
+      "course": "English 10 EHS",
+      "context_id": "179875"
+    }
+  ]
+}

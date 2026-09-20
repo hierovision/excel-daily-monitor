@@ -1,0 +1,212 @@
+{
+  "date": "2026-09-14",
+  "events": [
+    {
+      "id": "24995704",
+      "at_utc": "2026-09-14T18:20:47.637Z",
+      "at": "2026-09-14T14:20:47",
+      "kind": "page_viewed",
+      "item": "1.1.1 - Where Does American History Begin?",
+      "course": "American History EHS",
+      "context_id": "203550"
+    },
+    {
+      "id": "24995898",
+      "at_utc": "2026-09-14T18:23:22.048Z",
+      "at": "2026-09-14T14:23:22",
+      "kind": "page_viewed",
+      "item": "1.1.2 - What Does It Mean to Think Historically?",
+      "course": "American History EHS",
+      "context_id": "183124"
+    },
+    {
+      "id": "24995947",
+      "at_utc": "2026-09-14T18:24:12.971Z",
+      "at": "2026-09-14T14:24:12",
+      "kind": "page_viewed",
+      "item": "1.1.3 - Types of Historical Sources",
+      "course": "American History EHS",
+      "context_id": "183125"
+    },
+    {
+      "id": "24996000",
+      "at_utc": "2026-09-14T18:24:53.954Z",
+      "at": "2026-09-14T14:24:53",
+      "kind": "page_viewed",
+      "item": "1.2.1 - A Continent of Diverse Societies",
+      "course": "American History EHS",
+      "context_id": "183126"
+    },
+    {
+      "id": "24996638",
+      "at_utc": "2026-09-14T18:32:16.849Z",
+      "at": "2026-09-14T14:32:16",
+      "kind": "page_viewed",
+      "item": "1.2.2 - Eastern Woodlands & Great Plains",
+      "course": "American History EHS",
+      "context_id": "183127"
+    },
+    {
+      "id": "24997461",
+      "at_utc": "2026-09-14T18:42:27.609Z",
+      "at": "2026-09-14T14:42:27",
+      "kind": "page_viewed",
+      "item": "1.2.3 - Southwest & Pacific Northwest",
+      "course": "American History EHS",
+      "context_id": "183128"
+    },
+    {
+      "id": "24997511",
+      "at_utc": "2026-09-14T18:43:09.692Z",
+      "at": "2026-09-14T14:43:09",
+      "kind": "page_viewed",
+      "item": "1.2.4 - Southeast, Minnesota & the Three Sisters",
+      "course": "American History EHS",
+      "context_id": "183129"
+    },
+    {
+      "id": "24997615",
+      "at_utc": "2026-09-14T18:44:54.687Z",
+      "at": "2026-09-14T14:44:54",
+      "kind": "page_viewed",
+      "item": "1.2.5_Governance Without Kingdoms",
+      "course": "American History EHS",
+      "context_id": "183130"
+    },
+    {
+      "id": "24997663",
+      "at_utc": "2026-09-14T18:45:58.736Z",
+      "at": "2026-09-14T14:45:58",
+      "kind": "page_viewed",
+      "item": "1.3.1 - The Haudenosaunee Great Law of Peace",
+      "course": "American History EHS",
+      "context_id": "183131"
+    },
+    {
+      "id": "24997731",
+      "at_utc": "2026-09-14T18:46:57.524Z",
+      "at": "2026-09-14T14:46:57",
+      "kind": "page_viewed",
+      "item": "1.3.2 - Kinship as Political Structure",
+      "course": "American History EHS",
+      "context_id": "183132"
+    },
+    {
+      "id": "25000700",
+      "at_utc": "2026-09-14T19:33:27.025Z",
+      "at": "2026-09-14T15:33:27",
+      "kind": "page_viewed",
+      "item": "1.3.3 - Trade Networks",
+      "course": "American History EHS",
+      "context_id": "183133"
+    },
+    {
+      "id": "25000732",
+      "at_utc": "2026-09-14T19:34:17.209Z",
+      "at": "2026-09-14T15:34:17",
+      "kind": "page_viewed",
+      "item": "1.4.1 - The Challenge of the Historical Record",
+      "course": "American History EHS",
+      "context_id": "183134"
+    },
+    {
+      "id": "25000744",
+      "at_utc": "2026-09-14T19:34:30.980Z",
+      "at": "2026-09-14T15:34:30",
+      "kind": "page_viewed",
+      "item": "1.4.2 - Oral Traditions & Artifacts",
+      "course": "American History EHS",
+      "context_id": "183135"
+    },
+    {
+      "id": "25000964",
+      "at_utc": "2026-09-14T19:38:12.673Z",
+      "at": "2026-09-14T15:38:12",
+      "kind": "page_viewed",
+      "item": "1.4.3 - Archaeological Evidence",
+      "course": "American History EHS",
+      "context_id": "183136"
+    },
+    {
+      "id": "25001139",
+      "at_utc": "2026-09-14T19:40:42.537Z",
+      "at": "2026-09-14T15:40:42",
+      "kind": "page_viewed",
+      "item": "1.4.4 - Wrap Up — Constructing Your Claim",
+      "course": "American History EHS",
+      "context_id": "183137"
+    },
+    {
+      "id": "25001185",
+      "at_utc": "2026-09-14T19:41:19.469Z",
+      "at": "2026-09-14T15:41:19",
+      "kind": "quiz_viewed",
+      "item": "Module 1 Quiz",
+      "course": "American History EHS",
+      "context_id": "52469"
+    },
+    {
+      "id": "25003621",
+      "at_utc": "2026-09-14T20:20:17.738Z",
+      "at": "2026-09-14T16:20:17",
+      "kind": "quiz_submitted",
+      "item": "Module 1 Quiz",
+      "course": "American History EHS",
+      "context_id": "52469"
+    },
+    {
+      "id": "25003652",
+      "at_utc": "2026-09-14T20:20:50.068Z",
+      "at": "2026-09-14T16:20:50",
+      "kind": "page_viewed",
+      "item": "Module 1 Overview",
+      "course": "World History EHS",
+      "context_id": "189154"
+    },
+    {
+      "id": "25003853",
+      "at_utc": "2026-09-14T20:23:42.772Z",
+      "at": "2026-09-14T16:23:42",
+      "kind": "page_viewed",
+      "item": "Lesson 1.1 - Thinking Like a Historian",
+      "course": "World History EHS",
+      "context_id": "189155"
+    },
+    {
+      "id": "25004024",
+      "at_utc": "2026-09-14T20:25:30.914Z",
+      "at": "2026-09-14T16:25:30",
+      "kind": "page_viewed",
+      "item": "Lesson 1.2 - Migration out of Africa and Environmental Adaptation",
+      "course": "World History EHS",
+      "context_id": "189157"
+    },
+    {
+      "id": "25004989",
+      "at_utc": "2026-09-14T20:37:01.038Z",
+      "at": "2026-09-14T16:37:01",
+      "kind": "page_viewed",
+      "item": "Lesson 1.3 - From Foraging to Farming",
+      "course": "World History EHS",
+      "context_id": "189156"
+    },
+    {
+      "id": "25007114",
+      "at_utc": "2026-09-14T21:10:59.419Z",
+      "at": "2026-09-14T17:10:59",
+      "kind": "quiz_viewed",
+      "item": "Module 1 Quiz",
+      "course": "World History EHS",
+      "context_id": "52834"
+    },
+    {
+      "id": "25008863",
+      "at_utc": "2026-09-14T21:37:11.571Z",
+      "at": "2026-09-14T17:37:11",
+      "kind": "quiz_submitted",
+      "item": "Module 1 Quiz",
+      "course": "World History EHS",
+      "context_id": "52834"
+    }
+  ]
+}

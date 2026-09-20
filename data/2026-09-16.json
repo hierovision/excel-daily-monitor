@@ -3,7 +3,11 @@
   "first_activity_at": "15:48:44",
   "last_activity_at": "17:37:22",
   "span_minutes": 109,
-  "estimated_active_minutes": 79,
+  "measured_quiz_minutes": 9,
+  "reading_minutes_low": 76,
+  "reading_minutes_high": 100,
+  "active_minutes_low": 85,
+  "active_minutes_high": 109,
   "sessions": [
     {
       "start": "15:48",
@@ -14,33 +18,42 @@
   "by_course": [
     {
       "course": "World History EHS",
-      "estimated_minutes": 79,
+      "measured_quiz_minutes": 9,
+      "reading_minutes_low": 76,
+      "reading_minutes_high": 100,
+      "active_minutes_low": 85,
+      "active_minutes_high": 109,
       "pages_viewed": 6,
       "quiz_submissions": [
         {
           "item": "Module 2 Quiz",
-          "at": "15:48:44"
+          "at": "15:48"
         },
         {
           "item": "Module 3 Quiz",
-          "at": "17:37:22"
+          "at": "17:37"
         }
       ]
     }
   ],
-  "event_counts": {},
+  "event_counts": {
+    "page_viewed": 6,
+    "quiz_viewed": 1,
+    "quiz_submitted": 2,
+    "other": 0
+  },
   "submissions_and_grades": [
     {
       "kind": "quiz_submitted",
       "item": "Module 3 Quiz",
       "course": "World History EHS",
-      "at": "17:37:22"
+      "at": "17:37"
     },
     {
       "kind": "quiz_submitted",
       "item": "Module 2 Quiz",
       "course": "World History EHS",
-      "at": "15:48:44"
+      "at": "15:48"
     }
   ]
 }
