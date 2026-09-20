@@ -3,3 +3,4 @@ data/raw-events.json
 data/raw-page.html
 .opencode/
 data/failure/
+diag.local.js
