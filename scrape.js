@@ -34,12 +34,8 @@ async function main() {
   const page = await context.newPage();
   attach(page);
   page.setDefaultTimeout(30000);
-  page.setDefaultNavigationTimeout(60000);
+  page.setDefaultNavigationTimeout(30000);
 
-  // Never persist auth tokens/user identifiers: redact before writing artifacts.
-  const redact = (t) => String(t)
-    .replace(/(access_token=)[^&\s"'<]+/gi, "$1REDACTED")
-    .replace(/(token=)[^&\s"'<]+/gi, "$1REDACTED");
   const fail = async (error) => {
     fs.mkdirSync(FAIL_DIR, { recursive: true });
     const pages = context.pages();
@@ -68,10 +64,10 @@ async function main() {
     const loginForm = page.locator('input[name="password"]');
     const loginAsBtn = page.locator(`button[data-id="${config.student_data_id}"]`);
     const state = await Promise.race([
-      loginForm.waitFor({ state: "visible", timeout: 45000 }).then(() => "login").catch(() => null),
-      loginAsBtn.waitFor({ state: "visible", timeout: 45000 }).then(() => "dashboard").catch(() => null),
+      loginForm.waitFor({ state: "visible", timeout: 30000 }).then(() => "login").catch(() => null),
+      loginAsBtn.waitFor({ state: "visible", timeout: 30000 }).then(() => "dashboard").catch(() => null),
     ]);
-    if (!state) throw new Error("neither login form nor Login-as button rendered within 45s");
+    if (!state) throw new Error("neither login form nor Login-as button rendered within 30s");
 
     if (state === "login") {
       await page.locator('input[name="username"]').fill(user);
@@ -81,18 +77,18 @@ async function main() {
       // The identity service 302s to `live.learnstage.com//login/auth?access_token=...`
       // (doubled slash), which the SPA router does not match -> it renders 404 and
       // the token is never consumed. Re-enter the single-slash route with the token.
-      await page.waitForURL(/login\/auth\?access_token=/, { timeout: 60000 });
+      await page.waitForURL(/login\/auth\?access_token=/, { timeout: 30000 });
       const token = (/access_token=([^&]+)/.exec(page.url()) || [])[1];
       if (!token) throw new Error("no access_token on post-login URL: " + redact(page.url()));
       await page.goto(`https://live.learnstage.com/login/auth?access_token=${encodeURIComponent(token)}`, {
         waitUntil: "domcontentloaded",
       });
-      await loginAsBtn.waitFor({ state: "visible", timeout: 60000 });
+      await loginAsBtn.waitFor({ state: "visible", timeout: 30000 });
     }
 
     await loginAsBtn.click();
     const myCourses = page.getByRole("link", { name: "My Courses" }).first();
-    await myCourses.waitFor({ state: "visible", timeout: 45000 });
+    await myCourses.waitFor({ state: "visible", timeout: 30000 });
     // Start listening before the click so the popup event cannot be missed.
     const popupPromise = context.waitForEvent("page", { timeout: 15000 }).catch(() => null);
     await myCourses.click();
@@ -101,7 +97,7 @@ async function main() {
     target.setDefaultTimeout(30000);
 
     const container = target.locator("#scrollableDiv");
-    await container.waitFor({ state: "visible", timeout: 45000 });
+    await container.waitFor({ state: "visible", timeout: 30000 });
 
     // Infinite scroll: keep triggering the container's own scroll handler and
     // wait, per iteration, until the card count actually grows. Stop when the
@@ -152,4 +148,16 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error("scrape failed:", e); process.exit(1); });
+// Never persist auth material: strip JWT-shaped strings, then named token
+// params in query (`?access_token=`), JSON (`"access_token": "..."`), and HTML.
+const redact = (t) => String(t)
+  .replace(/eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, "REDACTED")
+  .replace(
+    /((?:access[_-]?|refresh[_-]?|id[_-]?|session[_-]?)?token|session[_-]?id)(["']?\s*[:=]\s*["']?)[^&"'\s<]+/gi,
+    "$1$2REDACTED"
+  );
+
+if (require.main === module) {
+  main().catch((e) => { console.error("scrape failed:", e); process.exit(1); });
+}
+module.exports = { redact };
