@@ -9,6 +9,16 @@ const { parse } = require("./parse.js");
 
 const BOARD_ROOT = "https://live.learnstage.com/exceled/excelhighschool/sis/dashboard";
 const FAIL_DIR = path.join(__dirname, "data", "failure");
+const IDLE_MS = 30000; // longest single element/navigation wait
+
+// Never persist auth material: strip JWT-shaped strings, then named token
+// params in query (`?access_token=`), JSON (`"access_token": "..."`), and HTML.
+const redact = (t) => String(t)
+  .replace(/eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, "REDACTED")
+  .replace(
+    /((?:access[_-]?|refresh[_-]?|id[_-]?|session[_-]?)?token|session[_-]?id)(["']?\s*[:=]\s*["']?)[^&"'\s<]+/gi,
+    "$1$2REDACTED"
+  );
 
 async function main() {
   const user = process.env.EXCEL_USERNAME;
@@ -24,44 +34,59 @@ async function main() {
   await context.tracing.start({ screenshots: true, snapshots: true });
 
   const consoleLines = [];
+  const netLines = [];
+  const inflight = new Map();
   const attach = (p) => {
     p.on("console", (m) => {
       if (m.type() === "error" || m.type() === "warning") consoleLines.push(`${m.type()}: ${m.text()}`);
     });
     p.on("pageerror", (e) => consoleLines.push("pageerror: " + String(e)));
+    p.on("framenavigated", (f) => {
+      if (f === p.mainFrame()) netLines.push(`nav ${p.url()}`);
+    });
   };
   context.on("page", attach);
-  context.on("response", (r) => {
-    try {
-      const u = r.url();
-      if (!/learnstage\.com/.test(u)) return;
-      if (r.status() >= 400 || /login\/school\/auth/.test(u)) {
-        consoleLines.push(`net ${r.status()} ${u}`);
-      }
-    } catch { /* ignore */ }
+  context.on("request", (r) => {
+    const u = r.url();
+    if (/learnstage\.com/.test(u)) {
+      inflight.set(u, r.method());
+      netLines.push(`req ${r.method()} ${u}`);
+    }
   });
-  const page = await context.newPage();
-  attach(page);
-  page.setDefaultTimeout(30000);
-  page.setDefaultNavigationTimeout(30000);
+  context.on("response", (r) => {
+    const u = r.url();
+    if (!/learnstage\.com/.test(u)) return;
+    inflight.delete(u);
+    if (r.status() >= 400 || /login\/school\/auth|loginAsCustomer/.test(u)) {
+      netLines.push(`net ${r.status()} ${u}`);
+    }
+  });
+  context.on("requestfailed", (r) => {
+    const u = r.url();
+    if (!/learnstage\.com/.test(u)) return;
+    inflight.delete(u);
+    netLines.push(`net FAILED ${u} :: ${(r.failure() && r.failure().errorText) || "unknown"}`);
+  });
+
+  const page = await context.newPage(); // the context "page" event attaches listeners
 
   const fail = async (error) => {
     fs.mkdirSync(FAIL_DIR, { recursive: true });
+    for (const [u, m] of inflight) netLines.push(`net PENDING ${m} ${u}`);
     const pages = context.pages();
-    const pg = pages[pages.length - 1];
     const info = {
-      url: pg ? redact(pg.url()) : null,
-      title: pg ? await pg.title().catch(() => "") : null,
       error: redact(String((error && error.stack) || error)),
+      pages: pages.map((p) => ({ url: redact(p.url()), title: "" })),
     };
-    fs.writeFileSync(path.join(FAIL_DIR, "failure.json"), JSON.stringify(info, null, 2));
-    if (pg) {
-      await pg.screenshot({ path: path.join(FAIL_DIR, "failure.png"), fullPage: true }).catch(() => {});
-      fs.writeFileSync(path.join(FAIL_DIR, "page.html"), redact(await pg.content().catch(() => "")));
+    for (let i = 0; i < pages.length; i++) {
+      const p = pages[i];
+      info.pages[i].title = await p.title().catch(() => "");
+      await p.screenshot({ path: path.join(FAIL_DIR, `page-${i}.png`), fullPage: true }).catch(() => {});
+      fs.writeFileSync(path.join(FAIL_DIR, `page-${i}.html`), redact(await p.content().catch(() => "")));
     }
-    const logText = redact(consoleLines.join("\n")) || "(none)";
-    fs.writeFileSync(path.join(FAIL_DIR, "console.log"), logText);
-    fs.writeFileSync(path.join(FAIL_DIR, "network.log"), logText);
+    fs.writeFileSync(path.join(FAIL_DIR, "failure.json"), JSON.stringify(info, null, 2));
+    fs.writeFileSync(path.join(FAIL_DIR, "console.log"), redact(consoleLines.join("\n")) || "(none)");
+    fs.writeFileSync(path.join(FAIL_DIR, "network.log"), redact(netLines.join("\n")) || "(none)");
     await context.tracing.stop({ path: path.join(FAIL_DIR, "trace.zip") }).catch(() => {});
     console.error("scrape failed:", info.error, "\nevidence:", FAIL_DIR);
   };
@@ -70,57 +95,63 @@ async function main() {
     await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
 
     // The dashboard URL redirects to identity.learnstage.com when not
-    // authenticated. Wait for whichever state actually renders:
-    // login form (needs credentials) or the student "Login as" button.
+    // authenticated. Wait for whichever state actually renders: login form
+    // (needs credentials) or the student "Login as" button.
     const loginForm = page.locator('input[name="password"]');
     const loginAsBtn = page.locator(`button[data-id="${config.student_data_id}"]`);
     const state = await Promise.race([
-      loginForm.waitFor({ state: "visible", timeout: 30000 }).then(() => "login").catch(() => null),
-      loginAsBtn.waitFor({ state: "visible", timeout: 30000 }).then(() => "dashboard").catch(() => null),
+      loginForm.waitFor({ state: "visible", timeout: IDLE_MS }).then(() => "login").catch(() => null),
+      loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS }).then(() => "dashboard").catch(() => null),
     ]);
-    if (!state) throw new Error("neither login form nor Login-as button rendered within 30s");
+    if (!state) throw new Error("neither login form nor Login-as button rendered");
 
     if (state === "login") {
       await page.locator('input[name="username"]').fill(user);
       await page.locator('input[name="password"]').fill(pass);
       await page.getByRole("button", { name: "Login" }).click();
 
-      // The identity service 302s to `live.learnstage.com//login/auth?access_token=...`
-      // (doubled slash), which the SPA router does not match -> it renders 404 and
-      // the token is never consumed. Re-enter the single-slash route with the token.
-      await page.waitForURL(/login\/auth\?access_token=/, { timeout: 30000 });
-      const token = (/access_token=([^&]+)/.exec(page.url()) || [])[1];
-      if (!token) throw new Error("no access_token on post-login URL: " + redact(page.url()));
-      await page.goto(`https://live.learnstage.com/login/auth?access_token=${encodeURIComponent(token)}`, {
-        waitUntil: "domcontentloaded",
-      });
-
-      // The exchange route either ends on the dashboard or bounces to /notfound.
-      const outcome = await Promise.race([
-        loginAsBtn.waitFor({ state: "visible", timeout: 30000 }).then(() => "dashboard").catch(() => null),
-        page.waitForURL(/\/notfound/, { timeout: 30000 }).then(() => "notfound").catch(() => null),
-      ]);
-      if (outcome === "notfound") {
-        // Exchange may still have established a session; revisit the dashboard.
-        await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
-        await loginAsBtn.waitFor({ state: "visible", timeout: 30000 });
-      } else if (outcome !== "dashboard") {
-        throw new Error("token exchange neither reached the dashboard nor /notfound");
-      }
+      // After submit the identity service 302s back to live.learnstage.com.
+      // Its own /login/auth exchange route is broken in this deployment (the
+      // redirect arrives as a doubled slash and the SPA token exchange 404s),
+      // but the identity session cookies already authenticate the SPA — so go
+      // straight to the dashboard instead of replaying the token route.
+      await page.waitForURL(/live\.learnstage\.com/, { timeout: IDLE_MS });
+      await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
+      await loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS });
     }
 
+    // Login-as may finish in the current tab or open the student context in a
+    // new tab; watch for either before waiting on the sidebar link.
+    const popupPromise = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
     await loginAsBtn.click();
     const myCourses = page.getByRole("link", { name: "My Courses" }).first();
-    await myCourses.waitFor({ state: "visible", timeout: 30000 });
-    // Start listening before the click so the popup event cannot be missed.
-    const popupPromise = context.waitForEvent("page", { timeout: 15000 }).catch(() => null);
-    await myCourses.click();
-    const popup = await popupPromise;
-    const target = popup || page;
-    target.setDefaultTimeout(30000);
+    const outcome = await Promise.race([
+      popupPromise.then((p) => (p ? "popup" : "none")),
+      myCourses.waitFor({ state: "visible", timeout: IDLE_MS }).then(() => "same-tab").catch(() => "none"),
+    ]);
+    if (outcome === "none") throw new Error("neither a student tab nor the My Courses sidebar appeared after Login as");
+
+    let target = page;
+    if (outcome === "popup") {
+      const popup = (await popupPromise) || page;
+      target = popup;
+      await target.waitForLoadState("domcontentloaded").catch(() => {});
+      await target.locator("#scrollableDiv").waitFor({ state: "visible", timeout: IDLE_MS }).catch(async () => {
+        // The student tab may instead show the same sidebar; click through there.
+        const link = target.getByRole("link", { name: "My Courses" }).first();
+        await link.waitFor({ state: "visible", timeout: IDLE_MS });
+        const next = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
+        await link.click();
+        target = (await next) || target;
+      });
+    } else {
+      const next = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
+      await myCourses.click();
+      target = (await next) || page;
+    }
 
     const container = target.locator("#scrollableDiv");
-    await container.waitFor({ state: "visible", timeout: 30000 });
+    await container.waitFor({ state: "visible", timeout: IDLE_MS });
 
     // Infinite scroll: keep triggering the container's own scroll handler and
     // wait, per iteration, until the card count actually grows. Stop when the
@@ -170,15 +201,6 @@ async function main() {
     await browser.close();
   }
 }
-
-// Never persist auth material: strip JWT-shaped strings, then named token
-// params in query (`?access_token=`), JSON (`"access_token": "..."`), and HTML.
-const redact = (t) => String(t)
-  .replace(/eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g, "REDACTED")
-  .replace(
-    /((?:access[_-]?|refresh[_-]?|id[_-]?|session[_-]?)?token|session[_-]?id)(["']?\s*[:=]\s*["']?)[^&"'\s<]+/gi,
-    "$1$2REDACTED"
-  );
 
 if (require.main === module) {
   main().catch((e) => { console.error("scrape failed:", e); process.exit(1); });
