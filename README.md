@@ -56,6 +56,10 @@ How the numbers are built:
   Every successful run rewrites `data/status.json` (the last API query time),
   so the workflow commits a small status file per intraday run even when no
   events changed.
+- If the activity log comes back empty (the platform intermittently returns
+  HTTP 200 with no activity payload), the scraper re-fetches the activity
+  pages on the **same session** after 15s, 30s, then 60s — three retries, no
+  extra logins — and only fails if the log is still empty.
 - While the page is open and visible it polls every 2 minutes: it re-fetches
   `data/index.json` (so a day file that appears mid-session is picked up),
   today's day file, and `data/status.json`, all with `cache: "no-store"`, then
@@ -119,4 +123,6 @@ The run page carries a downloadable **scrape-failure** artifact
 capturing the page state at the failure point. Auth tokens are redacted before
 writing; the full Playwright trace stays on the runner because traces embed
 URLs and network bodies. The page keeps showing the last successful data with
-its "data as of" line.
+its "data as of" line. A scrape failure no longer blocks a deploy: pushes to
+`main` (including the workflow's own data commits) are deployed by the
+separate `deploy-pages` workflow, which also supports manual dispatch.

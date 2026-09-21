@@ -61,25 +61,3 @@ jobs:
           git add -A -- data
           git diff --cached --quiet && echo "no changes" || git commit -m "daily summary $(date -u +%F)"
           git push
-
-  deploy:
-    needs: scrape-and-commit
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      # The scrape job commits data after this run is triggered; check out the
-      # branch tip (not the trigger SHA) so the deployed artifact includes it.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.ref_name }}
-      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
-      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
-        with:
-          path: .
-      - id: deployment
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

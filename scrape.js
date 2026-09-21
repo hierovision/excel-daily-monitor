@@ -46,6 +46,24 @@ const redact = (t) => String(t)
     "$1$2REDACTED"
   );
 
+// A bounded retry for the intermittent empty activity payload (HTTP 200 with no
+// events): re-fetch on the existing session after 15s, then 30s, then 60s. The
+// injectable fetch/sleep keep it unit-testable without a browser; it never
+// throws for emptiness, so the caller keeps its own error.
+async function withEmptyRetry(fetchOnce, {
+  delays = [15000, 30000, 60000],
+  sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
+  isEmpty = (v) => !Array.isArray(v) || v.length === 0,
+} = {}) {
+  let result = await fetchOnce();
+  for (let i = 0; i < delays.length && isEmpty(result); i++) {
+    console.log(`activity log empty; retry ${i + 1}/${delays.length} in ${Math.round(delays[i] / 1000)}s`);
+    await sleep(delays[i]);
+    result = await fetchOnce();
+  }
+  return result;
+}
+
 async function main() {
   const user = process.env.EXCEL_USERNAME;
   const pass = process.env.EXCEL_PASSWORD;
@@ -197,20 +215,26 @@ async function main() {
     const serverEvents = [];
     let pageNo = 1;
     let truncated = false;
-    for (;;) {
-      const data = await fetchJson(`${API}/activity-tracking-service/api/student-activity?enr_id=${encodeURIComponent(enrId)}&perPage=${PER_PAGE}&sortOrder=desc&page=${pageNo}`);
-      const content = data.content || [];
-      serverEvents.push(...content);
-      const lastPage = data.last_page || 1;
-      const oldest = content.length ? content[content.length - 1].created_at : null;
-      if (pageNo >= lastPage) break;
-      if (cutoff && oldest && oldest < cutoff) break;
-      if (pageNo >= MAX_PAGES) { truncated = true; break; }
-      pageNo++;
-    }
+    const fetchActivityPages = async () => {
+      serverEvents.length = 0;
+      pageNo = 1;
+      truncated = false;
+      for (;;) {
+        const data = await fetchJson(`${API}/activity-tracking-service/api/student-activity?enr_id=${encodeURIComponent(enrId)}&perPage=${PER_PAGE}&sortOrder=desc&page=${pageNo}`);
+        const content = data.content || [];
+        serverEvents.push(...content);
+        const lastPage = data.last_page || 1;
+        const oldest = content.length ? content[content.length - 1].created_at : null;
+        if (pageNo >= lastPage) break;
+        if (cutoff && oldest && oldest < cutoff) break;
+        if (pageNo >= MAX_PAGES) { truncated = true; break; }
+        pageNo++;
+      }
+      return mapActivity(serverEvents, { timezone: TIMEZONE });
+    };
 
+    const events = await withEmptyRetry(fetchActivityPages);
     const attendance = await fetchJson(`${API}/sis-core/api/canvas/page_view?email=${encodeURIComponent(email)}&schoolId=${encodeURIComponent(schoolId)}`);
-    const events = mapActivity(serverEvents, { timezone: TIMEZONE });
     if (events.length === 0) throw new Error("activity log returned no events");
 
     const raw = {
@@ -238,4 +262,4 @@ async function main() {
 if (require.main === module) {
   main().catch((e) => { console.error("scrape failed:", e); process.exit(1); });
 }
-module.exports = { redact, ensureLoginRedirect };
+module.exports = { redact, ensureLoginRedirect, withEmptyRetry };
