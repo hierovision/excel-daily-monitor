@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-21",
+  "first_activity_at": "11:08:10",
+  "last_activity_at": "11:08:10",
+  "span_minutes": 0,
+  "measured_quiz_minutes": 0,
+  "reading_minutes_low": 0,
+  "reading_minutes_high": 0,
+  "active_minutes_low": 0,
+  "active_minutes_high": 0,
+  "sessions": [
+    {
+      "start": "11:08",
+      "end": "11:08",
+      "minutes": 0
+    }
+  ],
+  "by_course": [
+    {
+      "course": "American History EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 0,
+      "reading_minutes_high": 0,
+      "active_minutes_low": 0,
+      "active_minutes_high": 0,
+      "pages_viewed": 1,
+      "quiz_submissions": []
+    }
+  ],
+  "event_counts": {
+    "page_viewed": 1,
+    "quiz_viewed": 0,
+    "quiz_submitted": 0,
+    "other": 0
+  },
+  "submissions_and_grades": []
+}
