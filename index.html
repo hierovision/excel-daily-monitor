@@ -36,8 +36,9 @@
   .course-line .course-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
   .v1-note { margin: 2px 0 0; }
   .day.empty h3 { display: inline; margin: 0; font-size: 1rem; }
+  .day.upcoming h3 { display: inline; margin: 0; font-size: 1rem; }
   .muted { color: #6b6b6b; font-size: .8rem; }
-  .day.empty .muted { margin-left: 6px; }
+  .day.empty .muted, .day.upcoming .muted { margin-left: 6px; }
   ul { margin: 4px 0 0; padding-left: 18px; font-size: .85rem; }
   .stale { color: #8a4b00; font-size: .8rem; margin-top: 2px; }
   @media (prefers-color-scheme: dark) {
@@ -68,6 +69,10 @@ const state = {
 };
 let pollTimer = null;
 const addDays = (date, n) => new Date(Date.parse(date + "T00:00:00Z") + n * 86400000).toISOString().slice(0, 10);
+const weekStart = (date) => {
+  const dow = new Date(Date.parse(date + "T00:00:00Z")).getUTCDay();
+  return addDays(date, -((dow + 6) % 7));
+};
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtMin = (m) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
 const mid = (low, high) => Math.round((low + high) / 2);
@@ -106,6 +111,10 @@ function retrievalText() {
   return state.retrievedAt === null
     ? "Retrieval time unavailable"
     : `Data retrieved ${fmtEtDateTime(state.retrievedAt)} ET`;
+}
+function fmtWeekOf(date) {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" })
+    .format(new Date(date + "T00:00:00Z"));
 }
 
 function dayStats(d) {
@@ -202,8 +211,9 @@ function renderBand(days) {
     ? `<details><summary>Show submissions</summary><ul data-testid="week-submissions">${items.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul></details>`
     : "";
   const active = rangeValue(low, high);
+  const heading = state.anchor === weekStart(todayEt()) ? "This week" : `Week of ${fmtWeekOf(state.anchor)}`;
   return `<section class="week-band" data-testid="week-band" aria-live="polite">
-    <h2>This week</h2>
+    <h2>${heading}</h2>
     <p data-testid="week-worked">Worked ${present.length} of ${WINDOW_DAYS} days</p>
     <p role="group" data-testid="week-active" aria-label="${esc(`Active: ${active}`)}">Active ${active}</p>
     <p data-testid="week-quizzes">Quizzes submitted: ${quizzes}</p>
@@ -228,7 +238,13 @@ function renderActiveDay(d) {
   </details>`;
 }
 
-function renderEmpty(date) {
+function renderEmpty(date, today) {
+  if (date > today) {
+    return `<div class="day upcoming" data-testid="day-card">
+    <h3 data-testid="day-title">${date}</h3>
+    <span class="muted" data-testid="day-upcoming">—</span>
+  </div>`;
+  }
   return `<div class="day empty" data-testid="day-card">
     <h3 data-testid="day-title">${date}</h3>
     <span class="muted">no activity</span>
@@ -266,10 +282,14 @@ async function render() {
   const root = document.getElementById("days");
   root.setAttribute("aria-busy", "true");
   try {
+    const today = todayEt();
     const dates = [];
-    for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, -i));
+    for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, i));
     const days = await Promise.all(dates.map(loadDay));
-    const latest = days.find((d) => d && d.last_activity_at);
+    let latest = null;
+    for (let i = days.length - 1; i >= 0; i--) {
+      if (days[i] && days[i].last_activity_at) { latest = days[i]; break; }
+    }
     const footer = latest
       ? `<p class="stale" data-testid="week-footer">Data as of ${esc(latest.date)} ${esc(hhmm(latest.last_activity_at))}</p>`
       : `<p class="stale" data-testid="week-footer">Data as of —</p>`;
@@ -277,7 +297,7 @@ async function render() {
       renderToday() +
       renderBand(days) +
       `<p class="legend" data-testid="legend">Unmarked durations are estimated from page-open gaps; quizzes are measured.</p>` +
-      days.map((d, i) => (d ? renderActiveDay(d) : renderEmpty(dates[i]))).join("") +
+      days.map((d, i) => (d ? renderActiveDay(d) : renderEmpty(dates[i], today))).join("") +
       footer;
     const snapshot = captureDisclosure(root);
     root.innerHTML = html;
@@ -324,6 +344,7 @@ async function refresh({ manual = false, manifest = null } = {}) {
       state.todayDate = date;
       state.todayDay = null;
       state.todaySnapshot = null;
+      applyBounds();
       changed = true;
     }
 
@@ -396,15 +417,16 @@ function normalizeDates(manifest) {
     .sort();
 }
 function applyBounds() {
-  state.maxAnchor = state.dates[state.dates.length - 1];
-  state.minAnchor = addDays(state.dates[0], WINDOW_DAYS - 1);
+  state.minAnchor = weekStart(state.dates[0]);
+  state.maxAnchor = weekStart(todayEt());
   if (state.minAnchor > state.maxAnchor) state.minAnchor = state.maxAnchor;
   const picker = document.querySelector("[data-testid=picker]");
-  if (picker) { picker.min = state.minAnchor; picker.max = state.maxAnchor; }
+  if (picker) { picker.min = state.minAnchor; picker.max = todayEt(); }
 }
 function setAnchor(date) {
-  const clamped = date < state.minAnchor ? state.minAnchor : date > state.maxAnchor ? state.maxAnchor : date;
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(clamped)) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+  const week = weekStart(date);
+  const clamped = week < state.minAnchor ? state.minAnchor : week > state.maxAnchor ? state.maxAnchor : week;
   state.anchor = clamped;
   render();
 }

@@ -1,6 +1,6 @@
-// U1-U8 + AC1-AC17 — at-a-glance week band, collapsible day cards, the live
-// `Today` section, the compact day detail (plan revision 2026-09-20b), and the
-// pipeline retrieval time (plan revision 2026-09-20c).
+// U1-U8 + AC1-AC22 — at-a-glance calendar-week band, collapsible day cards, the
+// live `Today` section, the compact day detail (2026-09-20b), the pipeline
+// retrieval time (2026-09-20c), and the Monday-start calendar week (2026-09-21a).
 const { chromium } = require("playwright");
 const http = require("http");
 const fs = require("fs");
@@ -91,37 +91,37 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   }, date, 5000);
   const fixture = (date) => JSON.parse(fs.readFileSync(path.join(site, "data", `${date}.json`), "utf8"));
 
-  // ================= legacy U1-U8 page (Today pinned to an absent fixture date) =================
-  const A = await openPage({ now: "2026-09-20T12:00:00Z" });
+  // ================= legacy U1-U8 page (pinned to the fixture week) =================
+  const A = await openPage({ now: "2026-09-17T20:00:00Z" });
   const page = A.page;
   const pageerrors = A.pageerrors;
   await page.waitForSelector("[data-testid=day-card]");
 
-  // ---------- U2 (setup): 7 day rows, newest first, empty days are one-liners ----------
+  // ---------- U2/AC20 (setup): 7 day rows, calendar week ascending ----------
   let t = await titles(page);
   assert(t.length === 7, `default window shows 7 day rows (got ${t.length})`);
-  assert(t[0] === "2026-09-17", `newest day first (got ${t[0]})`);
-  assert(t.join(",") === ["2026-09-17", "2026-09-16", "2026-09-15", "2026-09-14", "2026-09-13", "2026-09-12", "2026-09-11"].join(","),
-    `default window is the newest 7 days (got ${t.join(",")})`);
+  assert(t.join(",") === ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20"].join(","),
+    `AC20 default window is the current calendar week ascending (got ${t.join(",")})`);
 
-  // ---------- U1: week band (default window, compact range format) ----------
+  // ---------- U1/AC20: week band (current calendar week, compact range format) ----------
   assert(await page.locator("[data-testid=week-band]").count() === 1, "exactly one week band");
   assert((await page.locator("[data-testid=week-band]").getAttribute("aria-live")) === "polite", "week band is aria-live=polite");
-  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "This week", "band heading is This week");
-  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 5 of 7 days",
-    `default band worked line (got "${await textIfPresent(page, "[data-testid=week-worked]")}")`);
-  assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 4h 36m–5h 46m",
-    `default band active line is the compact range (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
+  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "This week",
+    `AC20 current-week heading is This week (got "${norm(await page.locator("[data-testid=week-band] h2").first().textContent())}")`);
+  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 4 of 7 days",
+    `AC20 default band worked line (got "${await textIfPresent(page, "[data-testid=week-worked]")}")`);
+  assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 3h 48m–4h 44m",
+    `AC20 default band active line is the calendar-week total (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
   assert(await textIfPresent(page, "[data-testid=week-quizzes]") === "Quizzes submitted: 1",
-    `default band quizzes line (got "${await textIfPresent(page, "[data-testid=week-quizzes]")}")`);
+    `AC20 default band quizzes line (got "${await textIfPresent(page, "[data-testid=week-quizzes]")}")`);
   const weekSubs = page.locator("[data-testid=week-band] details");
   assert(norm(await weekSubs.locator("summary").textContent()) === "Show submissions", "band submissions behind a disclosure");
   await weekSubs.locator("summary").click();
   assert(await weekSubs.getByText("Submitted: Module 1 Quiz — Media Arts EHS").isVisible(), "band submission item visible when opened");
   await weekSubs.locator("summary").click();
 
-  // ---------- U2: collapsed day lines ----------
-  assert(await page.locator("[data-testid=day-summary]").count() === 5, `only active days are expandable (got ${await page.locator("[data-testid=day-summary]").count()} summaries)`);
+  // ---------- U2: collapsed day lines + AC20 future markers ----------
+  assert(await page.locator("[data-testid=day-summary]").count() === 4, `only active days are expandable (got ${await page.locator("[data-testid=day-summary]").count()} summaries)`);
   const top = cardFor(page, "2026-09-17");
   assert(norm(await top.locator("[data-testid=day-summary]").textContent()) === "2026-09-17 about 1h 07m active Quiz submitted",
     `collapsed top line (got "${norm(await top.locator("[data-testid=day-summary]").textContent())}")`);
@@ -131,12 +131,14 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     assert(await top.locator(`[data-testid=${sel}]`).isHidden(), `detail ${sel} hidden before expansion`);
   }
   assert(await page.locator("[data-testid=first-last]").count() === 0, "first-last testid is gone");
-  const empty = cardFor(page, "2026-09-13");
-  assert(norm(await empty.textContent()) === "2026-09-13 no activity",
-    `empty day is a muted one-liner (got "${norm(await empty.textContent())}")`);
-  assert(await empty.locator("[data-testid=day-summary]").count() === 0, "empty day is not expandable");
-  assert((await empty.evaluate((e) => e.tagName)) !== "DETAILS", "empty day is not a details element");
-  assert(!/quiz/i.test(await empty.textContent()), "empty day has no quiz badge");
+  for (const date of ["2026-09-18", "2026-09-19", "2026-09-20"]) {
+    const card = cardFor(page, date);
+    assert(await readText(card) === `${date} —`,
+      `AC20 future day ${date} renders the muted marker (got "${await readText(card)}")`);
+    assert(await card.locator("[data-testid=day-upcoming]").count() === 1, `AC20 future day ${date} carries day-upcoming`);
+    assert(await card.locator("[data-testid=day-summary]").count() === 0, `future day ${date} is not expandable`);
+    assert(!/no activity/.test(await readText(card)), `future day ${date} is not no-activity`);
+  }
 
   // ---------- U3: progressive disclosure on the top day (compact strings) ----------
   await top.locator("[data-testid=day-summary]").click();
@@ -188,8 +190,9 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await page.locator("h1").count() === 1, "page has one h1");
   assert((await page.locator("[data-testid=day-title]").first().evaluate((e) => e.tagName)) === "H3", "day dates are h3");
   const picker = page.locator("[data-testid=picker]");
-  assert((await picker.getAttribute("min")) === "2026-09-08", `picker min is the earliest full-window anchor (got ${await picker.getAttribute("min")})`);
-  assert((await picker.getAttribute("max")) === "2026-09-17", `picker max is the newest day (got ${await picker.getAttribute("max")})`);
+  assert((await picker.getAttribute("min")) === "2026-08-31", `AC22 picker min is the earliest data week's Monday (got ${await picker.getAttribute("min")})`);
+  assert((await picker.getAttribute("max")) === "2026-09-17", `AC22 picker max is today, not a future week (got ${await picker.getAttribute("max")})`);
+  assert((await picker.inputValue()) === "2026-09-14", `picker value is the week anchor (got ${await picker.inputValue()})`);
   await top.locator("[data-testid=day-summary]").click();
   assert(await top.locator("[data-testid=day-detail]").count() === 1, "AC15 setup: detail present to inspect");
   // AC15 — the visible dt is the accessible label for its dd; no aria-label restatement.
@@ -208,39 +211,59 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
 
   // ---------- U8 (default window): collapsed summaries fit 390px ----------
   const widths = await page.$$eval("[data-testid=day-summary]", (els) => els.map((e) => ({ sw: e.scrollWidth, cw: e.clientWidth })));
-  assert(widths.length === 5 && widths.every((w) => w.sw <= w.cw),
+  assert(widths.length === 4 && widths.every((w) => w.sw <= w.cw),
     `collapsed summaries do not overflow at 390px (got ${JSON.stringify(widths)})`);
 
-  // ---------- week navigation bounds + band updates ----------
-  assert(await page.locator("[data-testid=next-week]").isDisabled(), "next is disabled at the newest bound");
+  // ---------- AC21: prev/next browse calendar weeks; the heading follows ----------
+  assert(await page.locator("[data-testid=next-week]").isDisabled(), "AC21 next is disabled at the current week");
   await page.click("[data-testid=prev-week]");
-  await waitAnchor(page, "2026-09-10");
+  await waitAnchor(page, "2026-09-07");
   t = await titles(page);
-  assert(t.length === 7 && t[6] === "2026-09-04", `prev shifts the window by 7 days (got ${t.join(",")})`);
-  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 7 of 7 days", "band updates on prev");
-  assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 4h 40m–6h 18m",
-    `band active updates on prev (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
-  assert(await textIfPresent(page, "[data-testid=week-quizzes]") === "Quizzes submitted: 0", "band quizzes update on prev");
-  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data as of 2026-09-10 17:30", "footer follows the window");
-  assert(!(await page.locator("[data-testid=next-week]").isDisabled()), "next re-enables after moving back");
+  assert(t.length === 7 && t[6] === "2026-09-13", `AC21 prev yields the previous calendar week (got ${t.join(",")})`);
+  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "Week of Sep 7",
+    `AC21 heading follows the browsed week (got "${norm(await page.locator("[data-testid=week-band] h2").first().textContent())}")`);
+  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 5 of 7 days", "AC21 prev band worked");
+  assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 3h 40m–4h 50m",
+    `AC21 prev band active (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
+  assert(await textIfPresent(page, "[data-testid=week-quizzes]") === "Quizzes submitted: 0", "AC21 prev band quizzes");
+  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data as of 2026-09-11 17:30", "AC21 prev footer");
+  assert(!(await page.locator("[data-testid=next-week]").isDisabled()), "AC21 next re-enables after moving back");
   await page.click("[data-testid=prev-week]");
-  await waitAnchor(page, "2026-09-08");
-  assert(await page.locator("[data-testid=prev-week]").isDisabled(), "prev is disabled at the oldest full-window anchor");
+  await waitAnchor(page, "2026-08-31");
+  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "Week of Aug 31",
+    `AC21 second prev heading (got "${norm(await page.locator("[data-testid=week-band] h2").first().textContent())}")`);
+  assert(await page.locator("[data-testid=prev-week]").isDisabled(), "AC21 prev is disabled at the earliest data week");
+  const blank = cardFor(page, "2026-08-31");
+  assert(await readText(blank) === "2026-08-31 no activity",
+    `elapsed day with no file keeps the no-activity one-liner (got "${await readText(blank)}")`);
+  assert(await blank.locator("[data-testid=day-upcoming]").count() === 0, "elapsed empty day is not a future marker");
+  assert(!/quiz/i.test(await readText(blank)), "elapsed empty day has no quiz badge");
   await page.click("[data-testid=next-week]");
   await page.click("[data-testid=next-week]");
-  await waitAnchor(page, "2026-09-17");
+  await waitAnchor(page, "2026-09-14");
+  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "This week",
+    "AC21 returning to the current week restores This week");
 
-  // ---------- U7 + U1: picker re-anchors; v1 fallback in every layer ----------
+  // ---------- AC22 + U7: picker maps a date to its containing week ----------
   await page.fill("[data-testid=picker]", "2026-09-08");
   await page.dispatchEvent("[data-testid=picker]", "change");
-  await waitAnchor(page, "2026-09-08");
+  await waitAnchor(page, "2026-09-07");
   t = await titles(page);
-  assert(t[0] === "2026-09-08" && t[6] === "2026-09-02", `picker ends the window on the picked date (got ${t.join(",")})`);
-  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 7 of 7 days", "band updates on picker change");
-  assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 4h 22m–5h 46m",
-    `band normalizes the v1 day into both bounds (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
-  assert(await textIfPresent(page, "[data-testid=week-quizzes]") === "Quizzes submitted: 0", "band quizzes update on picker change");
-  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data as of 2026-09-08 17:30", "footer follows the picked window");
+  assert(t[0] === "2026-09-07" && t[6] === "2026-09-13",
+    `AC22 picker maps 2026-09-08 to the week of Sep 7 (got ${t.join(",")})`);
+  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data as of 2026-09-11 17:30", "AC22 footer follows the mapped week");
+
+  const v2 = cardFor(page, "2026-09-08");
+  await v2.locator("[data-testid=day-summary]").click();
+  assert(await readText(v2.locator("[data-testid=day-detail] [data-testid=active-minutes]")) === "42m–56m",
+    "v2 day still renders a range");
+  await v2.locator("[data-testid=day-summary]").click();
+
+  await page.fill("[data-testid=picker]", "2026-09-03");
+  await page.dispatchEvent("[data-testid=picker]", "change");
+  await waitAnchor(page, "2026-08-31");
+  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "Week of Aug 31",
+    "AC22 picker maps 2026-09-03 to the week of Aug 31");
 
   const v1 = cardFor(page, "2026-09-03");
   assert(norm(await v1.locator("[data-testid=day-summary]").textContent()) === "2026-09-03 about 42m active",
@@ -254,29 +277,34 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await v1.locator("[data-testid=quiz-line]").count() === 0, "v1 detail does not invent measured quiz time");
   await v1.locator("[data-testid=day-summary]").click();
 
-  const v2 = cardFor(page, "2026-09-08");
-  await v2.locator("[data-testid=day-summary]").click();
-  assert(await readText(v2.locator("[data-testid=day-detail] [data-testid=active-minutes]")) === "42m–56m",
-    "v2 day still renders a range");
-  await v2.locator("[data-testid=day-summary]").click();
-
-  // ---------- U8 (picker window): collapsed summaries fit 390px ----------
+  // ---------- U8 (browsed window): collapsed summaries fit 390px ----------
   const widths2 = await page.$$eval("[data-testid=day-summary]", (els) => els.map((e) => ({ sw: e.scrollWidth, cw: e.clientWidth })));
-  assert(widths2.length === 7 && widths2.every((w) => w.sw <= w.cw),
-    `picked-window summaries do not overflow at 390px (got ${JSON.stringify(widths2)})`);
+  assert(widths2.length === 5 && widths2.every((w) => w.sw <= w.cw),
+    `browsed-window summaries do not overflow at 390px (got ${JSON.stringify(widths2)})`);
+
+  await page.fill("[data-testid=picker]", "2026-09-16");
+  await page.dispatchEvent("[data-testid=picker]", "change");
+  await waitAnchor(page, "2026-09-14");
+  t = await titles(page);
+  assert(t[0] === "2026-09-14" && t[6] === "2026-09-20",
+    `AC22 picker maps 2026-09-16 to the current week (got ${t.join(",")})`);
 
   // ---------- HTTP cache regression (Pages serves max-age=600) ----------
-  const cardActiveSel = "#days [data-testid=day-card] [data-testid=active-minutes]";
   const fresh = fixture("2026-09-17");
   fresh.active_minutes_low = 99;
   fresh.active_minutes_high = 99;
   overrides.set("/data/2026-09-17.json", Buffer.from(JSON.stringify(fresh)));
   await page.reload({ waitUntil: "load" });
-  await page.waitForFunction((sel) => {
-    const el = document.querySelector(sel);
-    return el && el.textContent.includes("1h 39m");
-  }, cardActiveSel, { timeout: 5000 }).catch(() => {});
-  const reloaded = await textIfPresent(page, cardActiveSel);
+  await page.waitForFunction(() => {
+    const cards = [...document.querySelectorAll("[data-testid=day-card]")];
+    const card = cards.find((c) => {
+      const title = c.querySelector("[data-testid=day-title]");
+      return title && title.textContent.trim() === "2026-09-17";
+    });
+    const el = card && card.querySelector("[data-testid=active-minutes]");
+    return !!(el && el.textContent.includes("1h 39m"));
+  }, null, { timeout: 5000 }).catch(() => {});
+  const reloaded = await readText(cardFor(page, "2026-09-17").locator("[data-testid=active-minutes]"));
   assert(reloaded.includes("1h 39m"), `reload picks up the redeployed day file, not the cached one (got "${reloaded}")`);
   overrides.delete("/data/2026-09-17.json");
 
@@ -299,6 +327,34 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(pageerrors.length === 0, `no pageerrors, got ${JSON.stringify(pageerrors)}`);
   await page.close();
 
+  // ================= AC19 page — default view is the current ET calendar week =================
+  const N = await openPage({ now: "2026-09-21T13:00:00Z" });
+  const np = N.page;
+  const npe = N.pageerrors;
+  assert(await waitSel(np, "[data-testid=day-card]"), "AC19 setup: the calendar week renders");
+  const t19 = await titles(np);
+  assert(t19.join(",") === ["2026-09-21", "2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27"].join(","),
+    `AC19 Monday defaults to the current week ascending (got ${t19.join(",")})`);
+  assert(norm(await np.locator("[data-testid=week-band] h2").first().textContent()) === "This week",
+    `AC19 current-week heading (got "${norm(await np.locator("[data-testid=week-band] h2").first().textContent())}")`);
+  assert(await textIfPresent(np, "[data-testid=week-worked]") === "Worked 0 of 7 days", "AC19 no data in the new week yet");
+  assert(await textIfPresent(np, "[data-testid=week-active]") === "Active 0m", "AC19 zero active total");
+  assert(await textIfPresent(np, "[data-testid=week-quizzes]") === "Quizzes submitted: 0", "AC19 zero quizzes");
+  assert(await textIfPresent(np, "[data-testid=week-footer]") === "Data as of —", "AC19 empty footer");
+  const today19 = cardFor(np, "2026-09-21");
+  assert(await readText(today19) === "2026-09-21 no activity",
+    `AC19 today (elapsed, no file) stays no-activity (got "${await readText(today19)}")`);
+  assert(await today19.locator("[data-testid=day-upcoming]").count() === 0, "AC19 today is not a future marker");
+  for (const date of ["2026-09-22", "2026-09-23", "2026-09-24", "2026-09-25", "2026-09-26", "2026-09-27"]) {
+    const card = cardFor(np, date);
+    assert(await readText(card) === `${date} —`,
+      `AC19 future day ${date} shows the muted marker (got "${await readText(card)}")`);
+    assert(await card.locator("[data-testid=day-upcoming]").count() === 1, `AC19 future day ${date} carries day-upcoming`);
+    assert(await card.locator("[data-testid=day-summary]").count() === 0, `AC19 future day ${date} is not expandable`);
+  }
+  assert(npe.length === 0, `AC19 no pageerrors, got ${JSON.stringify(npe)}`);
+  await np.close();
+
   // ================= AC1/AC2/AC11/AC13/AC16/AC10/AC14 page =================
   const T = await openPage({ now: "2026-09-17T20:00:00Z" });
   const tp = T.page;
@@ -315,9 +371,10 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await textIfPresent(tp, "[data-testid=today-date]") === "2026-09-17",
     `AC1 today-date names the injected ET day (got "${await textIfPresent(tp, "[data-testid=today-date]")}")`);
 
-  // AC11 — existing contract and mobile layout unchanged (amended strings).
+  // AC11 — existing contract and mobile layout unchanged (amended 2026-09-21a).
   const t11 = await titles(tp);
-  assert(t11.length === 7 && t11[0] === "2026-09-17", `AC11 default window still shows 7 newest-first rows (got ${t11.join(",")})`);
+  assert(t11.length === 7 && t11[0] === "2026-09-14" && t11[6] === "2026-09-20",
+    `AC11 default window shows 7 calendar-week rows ascending (got ${t11.join(",")})`);
   assert(await tp.locator("[data-testid=week-band]").count() === 1, "AC11 exactly one week band");
   assert(await tp.locator("[data-testid=week-footer]").count() === 1, "AC11 exactly one week footer");
   const todayWidth = await ev(tp.locator("[data-testid=today]"), (e) => ({ sw: e.scrollWidth, cw: e.clientWidth }));
@@ -378,12 +435,12 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(fvn.length === 6 && fvn.every((v) => v === "tabular-nums"),
     `AC16 metric values compute tabular-nums (got ${JSON.stringify(fvn)})`);
 
-  // AC10 — pinned across navigation.
+  // AC10 — pinned across navigation (calendar-week windows).
   await tp.click("[data-testid=prev-week]");
-  await waitAnchor(tp, "2026-09-10");
-  await tp.fill("[data-testid=picker]", "2026-09-08");
+  assert(await waitAnchor(tp, "2026-09-07"), "AC10 prev moved to the previous calendar week");
+  await tp.fill("[data-testid=picker]", "2026-09-03");
   await tp.dispatchEvent("[data-testid=picker]", "change");
-  await waitAnchor(tp, "2026-09-08");
+  assert(await waitAnchor(tp, "2026-08-31"), "AC10 picker moved to the mapped week");
   assert(await textIfPresent(tp, "[data-testid=today-date]") === "2026-09-17", "AC10 Today stays pinned across week navigation");
   assert(await tp.locator("[data-testid=today] [data-testid=active-minutes]").isVisible(), "AC10 Today detail still visible after navigation");
 

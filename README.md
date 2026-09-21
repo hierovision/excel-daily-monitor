@@ -6,11 +6,19 @@ up to date on its own.
 
 **At a glance:** the page opens with a pinned **Today** section for the
 literal calendar date in `America/New_York`, expanded by default; below it a
-week band totals the rolling 7-day window, and each day is one collapsed line
-(`about 1h 07m active`, or `no activity`) that expands to the shared compact
+week band totals the **calendar week (Monday–Sunday)** containing the anchor
+date, and each day is one collapsed line (`about 1h 07m active`, `no activity`,
+or `—` for a day that has not happened yet) that expands to the shared compact
 detail. A single footer stamps the data's `Data as of` date and time.
-Prev/Next week buttons and a date picker move the history window; `Today`
-stays pinned.
+Prev/Next step one calendar week; the date picker maps the picked date to its
+containing week. `Today` stays pinned.
+
+**Calendar week:** the default view is the current ET week, Monday start,
+rendered ascending (Mon→Sun). The band heading reads `This week` only there;
+browsing back shows `Week of <Mon D>`. Elapsed days with no capture stay
+`no activity`; days after today render a muted `—` (they have not happened).
+`Next` is disabled at the current week (no future browsing) and `Prev` at the
+earliest week with a day file; the picker's `max` is today.
 
 **Compact detail** (the same markup in `Today` and every expanded day):
 
