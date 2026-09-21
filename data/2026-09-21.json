@@ -1,34 +1,34 @@
 {
   "date": "2026-09-21",
   "first_activity_at": "11:08:10",
-  "last_activity_at": "14:07:02",
-  "span_minutes": 179,
+  "last_activity_at": "14:45:22",
+  "span_minutes": 217,
   "measured_quiz_minutes": 0,
-  "reading_minutes_low": 142,
-  "reading_minutes_high": 165,
-  "active_minutes_low": 142,
-  "active_minutes_high": 165,
+  "reading_minutes_low": 157,
+  "reading_minutes_high": 195,
+  "active_minutes_low": 157,
+  "active_minutes_high": 195,
   "sessions": [
     {
       "start": "11:08",
-      "end": "14:07",
-      "minutes": 179
+      "end": "14:45",
+      "minutes": 217
     }
   ],
   "by_course": [
     {
       "course": "American History EHS",
       "measured_quiz_minutes": 0,
-      "reading_minutes_low": 142,
-      "reading_minutes_high": 165,
-      "active_minutes_low": 142,
-      "active_minutes_high": 165,
-      "pages_viewed": 12,
+      "reading_minutes_low": 157,
+      "reading_minutes_high": 195,
+      "active_minutes_low": 157,
+      "active_minutes_high": 195,
+      "pages_viewed": 13,
       "quiz_submissions": []
     }
   ],
   "event_counts": {
-    "page_viewed": 12,
+    "page_viewed": 13,
     "quiz_viewed": 0,
     "quiz_submitted": 0,
     "other": 0
