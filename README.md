@@ -123,6 +123,8 @@ The run page carries a downloadable **scrape-failure** artifact
 capturing the page state at the failure point. Auth tokens are redacted before
 writing; the full Playwright trace stays on the runner because traces embed
 URLs and network bodies. The page keeps showing the last successful data with
-its "data as of" line. A scrape failure no longer blocks a deploy: pushes to
-`main` (including the workflow's own data commits) are deployed by the
-separate `deploy-pages` workflow, which also supports manual dispatch.
+its "data as of" line. A scrape failure no longer blocks a deploy: the
+`deploy-pages` workflow deploys on pushes to `main`, on manual dispatch, and
+after every successful `daily-summary` run. (Data commits are pushed with the
+workflow's `GITHUB_TOKEN`, which does not trigger `push` workflows, so the
+scrape workflow's completion is what catches them.)

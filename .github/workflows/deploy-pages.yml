@@ -2,6 +2,12 @@ name: deploy-pages
 on:
   push:
     branches: [main]
+  workflow_run:
+    # Data commits are pushed with the workflow's GITHUB_TOKEN, and GitHub does
+    # not trigger `push` workflows from those. Catch them via the scrape
+    # workflow's completion (success-only guard on the job).
+    workflows: [daily-summary]
+    types: [completed]
   workflow_dispatch: {}
 
 permissions:
@@ -13,6 +19,10 @@ concurrency:
 
 jobs:
   deploy:
+    # Human pushes and manual dispatch deploy directly; daily-summary
+    # completions deploy only after a successful run (a failed scrape commits
+    # nothing, so there is nothing new to publish).
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       pages: write
