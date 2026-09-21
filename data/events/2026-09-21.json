@@ -90,6 +90,24 @@
       "item": "2.3.2 - Armed Resistance",
       "course": "American History EHS",
       "context_id": "183208"
+    },
+    {
+      "id": "25363403",
+      "at_utc": "2026-09-21T17:49:18.972Z",
+      "at": "2026-09-21T13:49:18",
+      "kind": "page_viewed",
+      "item": "2.3.3 - Long-Term Strategies",
+      "course": "American History EHS",
+      "context_id": "183213"
+    },
+    {
+      "id": "25364974",
+      "at_utc": "2026-09-21T18:07:02.151Z",
+      "at": "2026-09-21T14:07:02",
+      "kind": "page_viewed",
+      "item": "2.4.1 - Religion as Justification",
+      "course": "American History EHS",
+      "context_id": "183217"
     }
   ]
 }
