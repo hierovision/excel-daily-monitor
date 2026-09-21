@@ -54,6 +54,7 @@
 <nav class="nav" aria-label="Week navigation">
   <button type="button" data-testid="prev-week">← Prev week</button>
   <input type="date" data-testid="picker" aria-label="Show the 7 days ending on">
+  <button type="button" data-testid="today-jump">Today</button>
   <button type="button" data-testid="next-week">Next week →</button>
 </nav>
 <div id="days"><p class="muted">Loading…</p></div>
@@ -307,9 +308,11 @@ async function render() {
     const prev = document.querySelector("[data-testid=prev-week]");
     const next = document.querySelector("[data-testid=next-week]");
     const picker = document.querySelector("[data-testid=picker]");
+    const jump = document.querySelector("[data-testid=today-jump]");
     if (prev) prev.disabled = state.anchor <= state.minAnchor;
     if (next) next.disabled = state.anchor >= state.maxAnchor;
     if (picker) picker.value = state.anchor;
+    if (jump) jump.disabled = state.anchor === weekStart(todayEt());
   }
 }
 
@@ -435,6 +438,7 @@ function bindControls() {
   document.querySelector("[data-testid=next-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, WINDOW_DAYS)));
   const picker = document.querySelector("[data-testid=picker]");
   picker.addEventListener("change", () => setAnchor(picker.value));
+  document.querySelector("[data-testid=today-jump]").addEventListener("click", () => setAnchor(todayEt()));
   document.getElementById("days").addEventListener("click", (e) => {
     if (e.target.closest("[data-testid=today-refresh]")) refresh({ manual: true });
   });

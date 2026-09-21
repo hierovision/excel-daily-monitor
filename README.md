@@ -11,7 +11,8 @@ date, and each day is one collapsed line (`about 1h 07m active`, `no activity`,
 or `—` for a day that has not happened yet) that expands to the shared compact
 detail. A single footer stamps the data's `Data as of` date and time.
 Prev/Next step one calendar week; the date picker maps the picked date to its
-containing week. `Today` stays pinned.
+containing week, and the `Today` nav button jumps back to the current week
+(disabled while it is already shown). The pinned `Today` section stays put.
 
 **Calendar week:** the default view is the current ET week, Monday start,
 rendered ascending (Mon→Sun). The band heading reads `This week` only there;

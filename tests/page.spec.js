@@ -69,6 +69,9 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   const clickIf = async (locator) => {
     try { await locator.click({ timeout: 1000 }); return true; } catch { return false; }
   };
+  const disabledIfPresent = async (locator) => {
+    try { if (await locator.count() === 0) return null; return await locator.isDisabled(); } catch { return null; }
+  };
   const waitSel = async (page, sel, timeout = 3000) => {
     try { await page.waitForSelector(sel, { timeout }); return true; } catch { return false; }
   };
@@ -288,6 +291,32 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   t = await titles(page);
   assert(t[0] === "2026-09-14" && t[6] === "2026-09-20",
     `AC22 picker maps 2026-09-16 to the current week (got ${t.join(",")})`);
+
+  // ---------- AC23: Today jump button returns to the current week ----------
+  const nav23 = page.locator('nav[aria-label="Week navigation"]');
+  const jump = page.locator("[data-testid=today-jump]");
+  assert(await jump.count() === 1, `AC23 exactly one Today jump (got ${await jump.count()})`);
+  assert(await readText(jump) === "Today", `AC23 jump text (got "${await readText(jump)}")`);
+  assert(await disabledIfPresent(jump) === true, "AC23 jump is disabled while the current week is shown");
+  const navWidth = await ev(nav23, (e) => ({ sw: e.scrollWidth, cw: e.clientWidth }));
+  assert(navWidth && navWidth.sw <= navWidth.cw, `AC23 nav fits 390px (got ${JSON.stringify(navWidth)})`);
+  await page.click("[data-testid=prev-week]");
+  assert(await waitAnchor(page, "2026-09-07"), "AC23 prev moved off the current week");
+  assert(await disabledIfPresent(jump) === false, "AC23 jump is enabled when browsing another week");
+  assert(await clickIf(jump), "AC23 jump is clickable");
+  assert(await waitAnchor(page, "2026-09-14"), "AC23 jump returns to the current week");
+  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "This week",
+    "AC23 heading is This week after the jump");
+  assert(await disabledIfPresent(jump) === true, "AC23 jump disables itself again");
+  await page.fill("[data-testid=picker]", "2026-09-03");
+  await page.dispatchEvent("[data-testid=picker]", "change");
+  assert(await waitAnchor(page, "2026-08-31"), "AC23 picker moved to the week of Aug 31");
+  assert(await disabledIfPresent(jump) === false, "AC23 jump re-enables after a picker jump");
+  assert(await clickIf(jump), "AC23 jump is clickable from a picker window");
+  assert(await waitAnchor(page, "2026-09-14"), "AC23 jump returns from the picker window");
+  assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "This week",
+    "AC23 heading restored after the picker jump");
+  assert(await disabledIfPresent(jump) === true, "AC23 jump disabled at the current week again");
 
   // ---------- HTTP cache regression (Pages serves max-age=600) ----------
   const fresh = fixture("2026-09-17");
