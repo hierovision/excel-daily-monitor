@@ -1,5 +1,9 @@
 // R3-R5 — measured quiz time, reading range, store merge, v2 schema.
-const { toDayJson, summarize, SESSION_BREAK_MINUTES } = require("../summarize.js");
+// AC18 — writeStatus writes data/status.json from the scrape's fetched_at.
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+const { toDayJson, summarize, SESSION_BREAK_MINUTES, writeStatus } = require("../summarize.js");
 
 let failures = 0;
 const assert = (cond, msg) => {
@@ -122,6 +126,27 @@ const ma = cross.by_course.find((c) => c.course === "Media Arts EHS");
 const wh = cross.by_course.find((c) => c.course === "World History EHS");
 assert(ma.reading_minutes_low === 5 && wh.reading_minutes_low === 5,
   `cross-course 10-min gap splits 5/5 (got ${ma.reading_minutes_low}/${wh.reading_minutes_low})`);
+
+// AC18: writeStatus records the pipeline retrieval timestamp for every run.
+assert(typeof writeStatus === "function", "summarize exports writeStatus");
+if (typeof writeStatus === "function") {
+  const explicitDir = fs.mkdtempSync(path.join(os.tmpdir(), "excel-status-"));
+  const returned = writeStatus(explicitDir, { fetched_at: "2026-09-20T21:08:00Z" });
+  const explicitRaw = fs.readFileSync(path.join(explicitDir, "status.json"), "utf8");
+  const explicit = JSON.parse(explicitRaw);
+  assert(explicit.fetched_at === "2026-09-20T21:08:00Z",
+    `explicit fetched_at is written verbatim (got ${explicit.fetched_at})`);
+  assert(returned && returned.fetched_at === "2026-09-20T21:08:00Z", "writeStatus returns the written object");
+  assert(explicitRaw.endsWith("\n"), "status.json ends with a trailing newline");
+  fs.rmSync(explicitDir, { recursive: true, force: true });
+
+  const fallbackDir = fs.mkdtempSync(path.join(os.tmpdir(), "excel-status-"));
+  writeStatus(fallbackDir, {});
+  const fallback = JSON.parse(fs.readFileSync(path.join(fallbackDir, "status.json"), "utf8"));
+  assert(typeof fallback.fetched_at === "string" && !Number.isNaN(Date.parse(fallback.fetched_at)),
+    `missing fetched_at falls back to a valid ISO timestamp (got ${fallback.fetched_at})`);
+  fs.rmSync(fallbackDir, { recursive: true, force: true });
+}
 
 console.log(failures ? "summarize.test.js FAILED" : "summarize.test.js ok");
 process.exit(failures ? 1 : 0);

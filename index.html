@@ -63,7 +63,7 @@ const WINDOW_DAYS = 7;
 const POLL_MS = 120000;
 const state = {
   dates: [], anchor: null, minAnchor: null, maxAnchor: null, cache: new Map(),
-  todayDay: null, todayDate: null, todaySnapshot: null,
+  todayDay: null, todayDate: null, todaySnapshot: null, retrievedAt: null,
   todayStatus: "Loading today's activity…", refreshing: false,
 };
 let pollTimer = null;
@@ -87,10 +87,25 @@ function todayEt() {
   const part = (type) => { const p = etParts(nowMs()).find((x) => x.type === type); return p ? p.value : ""; };
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
-function fmtEtTime(ms) {
+function fmtEtDateTime(ms) {
   return new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York", hour: "numeric", minute: "2-digit", hour12: true,
+    timeZone: "America/New_York", month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit", hour12: true,
   }).format(new Date(ms));
+}
+async function fetchStatus() {
+  try {
+    const res = await fetch("data/status.json", { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const parsed = await res.json();
+    const ms = Date.parse(parsed && parsed.fetched_at);
+    return Number.isFinite(ms) ? ms : null;
+  } catch { return null; }
+}
+function retrievalText() {
+  return state.retrievedAt === null
+    ? "Retrieval time unavailable"
+    : `Data retrieved ${fmtEtDateTime(state.retrievedAt)} ET`;
 }
 
 function dayStats(d) {
@@ -312,13 +327,17 @@ async function refresh({ manual = false, manifest = null } = {}) {
       changed = true;
     }
 
+    // The retrieval timestamp comes from the pipeline's last API query,
+    // never from the page clock.
+    state.retrievedAt = await fetchStatus();
+
     if (!state.dates.includes(date)) {
       // No capture yet for today: render the empty state without probing a
       // file that does not exist (the 404 would be a console error).
       const wasEmpty = state.todayDay === null && state.todaySnapshot === null;
       state.todayDay = null;
       state.todaySnapshot = null;
-      state.todayStatus = `Updated ${fmtEtTime(nowMs())} ET`;
+      state.todayStatus = retrievalText();
       if (changed || !wasEmpty) await render();
       else setStatus(state.todayStatus);
       return;
@@ -328,15 +347,15 @@ async function refresh({ manual = false, manifest = null } = {}) {
     try {
       const day = await loadToday();
       const snapshot = JSON.stringify(day);
+      state.todayStatus = retrievalText();
       if (!prior || snapshot !== state.todaySnapshot || changed) {
         state.todayDay = day;
         state.todaySnapshot = snapshot;
-        state.todayStatus = `Updated ${fmtEtTime(nowMs())} ET`;
         await render();
       } else {
         // Identical content: update the aria-live status in place and leave
         // the DOM (and any focused node) untouched.
-        setStatus(`Updated ${fmtEtTime(nowMs())} ET`);
+        setStatus(state.todayStatus);
       }
     } catch {
       if (prior) {

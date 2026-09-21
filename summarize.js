@@ -157,7 +157,14 @@ function summarize(fetched, { stored = [] } = {}) {
   return { wrote: changedDays.length > 0, changedDays, days, merged };
 }
 
-module.exports = { SESSION_BREAK_MINUTES, PAGE_CAP_LOW, PAGE_CAP_HIGH, toDayJson, summarize };
+function writeStatus(outDir, raw) {
+  const status = { fetched_at: (raw && raw.fetched_at) || new Date().toISOString() };
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, "status.json"), JSON.stringify(status) + "\n");
+  return status;
+}
+
+module.exports = { SESSION_BREAK_MINUTES, PAGE_CAP_LOW, PAGE_CAP_HIGH, toDayJson, summarize, writeStatus };
 
 if (require.main === module) {
   const [src] = process.argv.slice(2);
@@ -171,6 +178,7 @@ if (require.main === module) {
   const storeDir = path.join(process.cwd(), "data", "events");
   const outDir = path.join(process.cwd(), "data");
   const result = summarize(events, { stored: loadStore(storeDir) });
+  writeStatus(outDir, raw);
   if (!result.wrote) {
     console.log("no changes");
     process.exit(0);

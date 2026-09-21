@@ -43,15 +43,24 @@ How the numbers are built:
 - The workflow captures the account **every 30 minutes from 12:00–23:30 UTC,
   all seven days** (08:00–19:30 EDT / 07:00–18:30 EST; the cron is UTC-only,
   so DST shifts the local edges by an hour), alongside the nightly 07:00 UTC
-  run. GitHub's own schedule delay adds natural jitter.
+  run. GitHub's own schedule delay adds natural jitter. Every successful run
+  rewrites `data/status.json` (the last API query time), so the workflow
+  commits a small status file per intraday run even when no events changed.
 - While the page is open and visible it polls every 2 minutes: it re-fetches
-  `data/index.json` (so a day file that appears mid-session is picked up) and
-  today's day file with `cache: "no-store"`, then re-renders in place. Open
-  day cards and session disclosures survive the re-render.
-- The status line reads `Updated <h:mm AM/PM> ET` after a successful refresh,
-  or `Showing last loaded data` when a fetch fails — the last good detail
-  stays on screen and the page recovers on the next successful poll. The
-  `Refresh` button forces an immediate fetch.
+  `data/index.json` (so a day file that appears mid-session is picked up),
+  today's day file, and `data/status.json`, all with `cache: "no-store"`, then
+  re-renders in place. Open day cards and session disclosures survive the
+  re-render.
+- The status line shows the **last pipeline retrieval time**, when the
+  scheduled run last queried the LMS API — `Data retrieved <Mon D, h:mm AM/PM
+  ET>`, read from `data/status.json`'s `fetched_at`. It is never the page
+  refresh time (the page clock is not displayed). The `Refresh` button
+  re-fetches it immediately (`Checking…` while in flight); a failed day fetch
+  shows `Showing last loaded data` — the last good detail stays on screen and
+  the page recovers on the next successful poll — and a missing or invalid
+  status file shows `Retrieval time unavailable`. The footer's
+  `Data as of <date> <time>` remains an activity timestamp, not a retrieval
+  time.
 - Polling pauses while the tab is hidden and refreshes immediately when it
   becomes visible again.
 - **Freshness bound:** new data appears within one capture interval (~30 min)
@@ -69,9 +78,11 @@ How the numbers are built:
 
 Activity events live in the committed store under `data/events/YYYY-MM-DD.json`,
 deduped by the platform's event id; each run fetches only what is newer than
-the newest stored event, so repeat runs are cheap and commits only happen when
-something changed. Day summaries (`data/YYYY-MM-DD.json`) are derived from the
-store and rendered as the 7-day window plus history.
+the newest stored event, so repeat runs are cheap. Every successful run also
+rewrites `data/status.json` with its `fetched_at`, so the workflow commits a
+small status file each intraday run even when no events changed. Day summaries
+(`data/YYYY-MM-DD.json`) are derived from the store and rendered as the 7-day
+window plus history.
 
 Requests are paced like a person browsing (serial calls, 450–800 ms jitter,
 occasional reading pauses, backoff on 429/503, page fetches only until stored

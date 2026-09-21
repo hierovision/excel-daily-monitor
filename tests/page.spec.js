@@ -1,7 +1,6 @@
-// U1-U8 + AC1-AC16 — at-a-glance week band, collapsible day cards, the live
-// `Today` section, and the compact day detail (plan revision 2026-09-20b:
-// metric `dl`, low-only course rows, merged sessions summary, inline
-// submissions, legend, v1 session-span note).
+// U1-U8 + AC1-AC17 — at-a-glance week band, collapsible day cards, the live
+// `Today` section, the compact day detail (plan revision 2026-09-20b), and the
+// pipeline retrieval time (plan revision 2026-09-20c).
 const { chromium } = require("playwright");
 const http = require("http");
 const fs = require("fs");
@@ -470,8 +469,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     return el && el.textContent.includes("1h 39m");
   }, null, 5000), "AC6 poll updates the Today detail in place");
   assert(await readText(gp.locator("[data-testid=today] [data-testid=active-minutes]")) === "1h 39m", "AC6 new active value");
-  assert(await textIfPresent(gp, "[data-testid=today-status]") === "Updated 4:42 PM ET",
-    `AC6 status stamps the ET time (got "${await textIfPresent(gp, "[data-testid=today-status]")}")`);
+  assert(await textIfPresent(gp, "[data-testid=today-status]") === "Data retrieved Sep 17, 4:10 PM ET",
+    `AC6 status shows the pipeline retrieval time, never the page clock (got "${await textIfPresent(gp, "[data-testid=today-status]")}")`);
   assert(await gp.evaluate(() => window.__marker) === 1, "AC6 no reload happened");
   assert(await openCard.locator("[data-testid=active-minutes]").isVisible(), "AC6 open day disclosure survives the render");
   assert(gpe.length === 0, `AC6 no pageerrors, got ${JSON.stringify(gpe)}`);
@@ -496,8 +495,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   overrides.delete("/data/2026-09-17.json");
   assert(await waitFn(hp, () => {
     const el = document.querySelector("[data-testid=today-status]");
-    return el && el.textContent.trim().startsWith("Updated");
-  }, null, 5000), "AC7 recovers to Updated after the failure clears");
+    return el && el.textContent.replace(/\s+/g, " ").trim() === "Data retrieved Sep 17, 4:10 PM ET";
+  }, null, 5000), "AC7 recovers to the retrieval line after the failure clears");
   assert(await readText(hp.locator("[data-testid=today] [data-testid=active-minutes]")) === lastGood, "AC7 detail correct after recovery");
   await hp.close();
 
@@ -514,8 +513,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     const el = document.querySelector("[data-testid=today] [data-testid=active-minutes]");
     return el && el.textContent.includes("1h 39m");
   }, null, 5000), "AC8 Refresh forces an immediate fetch");
-  assert((await textIfPresent(ip, "[data-testid=today-status]")).startsWith("Updated"),
-    `AC8 status ends Updated (got "${await textIfPresent(ip, "[data-testid=today-status]")}")`);
+  assert(await textIfPresent(ip, "[data-testid=today-status]") === "Data retrieved Sep 17, 4:10 PM ET",
+    `AC8 status ends on the retrieval line (got "${await textIfPresent(ip, "[data-testid=today-status]")}")`);
   overrides.delete("/data/2026-09-17.json");
   await ip.close();
 
@@ -558,6 +557,46 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(bad.length === 0, `AC12 only same-origin GET / and /data/ requests (got ${JSON.stringify(bad)})`);
   assert(kpe.length === 0, `AC12 no pageerrors, got ${JSON.stringify(kpe)}`);
   await kp.close();
+
+  // ================= AC17 page — retrieval time comes from the pipeline, not the page clock =================
+  const U = await openPage({ now: "2026-09-17T20:00:00Z", pollMs: 100 });
+  const up = U.page;
+  const upe = U.pageerrors;
+  const RETRIEVED = "Data retrieved Sep 17, 4:10 PM ET";
+  assert(await waitSel(up, "[data-testid=today] [data-testid=active-minutes]"), "AC17 setup: Today's detail renders on load");
+  assert(await textIfPresent(up, "[data-testid=today-status]") === RETRIEVED,
+    `AC17 status reads the fixture retrieval line on load (got "${await textIfPresent(up, "[data-testid=today-status]")}")`);
+  const statusHits = hitCount("/data/status.json");
+  assert(await waitNode(() => hitCount("/data/status.json") > statusHits, 3000), "AC17 setup: a poll cycle re-fetched status.json");
+  assert(await textIfPresent(up, "[data-testid=today-status]") === RETRIEVED,
+    `AC17 retrieval line survives a poll (got "${await textIfPresent(up, "[data-testid=today-status]")}")`);
+  const retrDay = fixture("2026-09-17");
+  retrDay.active_minutes_low = 99;
+  retrDay.active_minutes_high = 99;
+  overrides.set("/data/2026-09-17.json", Buffer.from(JSON.stringify(retrDay)));
+  assert(await clickIf(up.locator("[data-testid=today-refresh]")), "AC17 Refresh present (day-only change)");
+  assert(await waitFn(up, () => {
+    const el = document.querySelector("[data-testid=today] [data-testid=active-minutes]");
+    return el && el.textContent.includes("1h 39m");
+  }, null, 5000), "AC17 setup: the day-file change landed");
+  assert(await textIfPresent(up, "[data-testid=today-status]") === RETRIEVED,
+    `AC17 a day-only change leaves the retrieval line unchanged (got "${await textIfPresent(up, "[data-testid=today-status]")}")`);
+  overrides.delete("/data/2026-09-17.json");
+  overrides.set("/data/status.json", Buffer.from(JSON.stringify({ fetched_at: "2026-09-17T21:45:00Z" })));
+  assert(await clickIf(up.locator("[data-testid=today-refresh]")), "AC17 Refresh present (status override)");
+  assert(await waitFn(up, () => {
+    const el = document.querySelector("[data-testid=today-status]");
+    return el && el.textContent.replace(/\s+/g, " ").trim() === "Data retrieved Sep 17, 5:45 PM ET";
+  }, null, 5000), "AC17 manual refresh surfaces the new pipeline retrieval time");
+  overrides.set("/data/status.json", Buffer.from("not json {"));
+  assert(await clickIf(up.locator("[data-testid=today-refresh]")), "AC17 Refresh present (invalid status)");
+  assert(await waitFn(up, () => {
+    const el = document.querySelector("[data-testid=today-status]");
+    return el && el.textContent.trim() === "Retrieval time unavailable";
+  }, null, 5000), "AC17 invalid status.json reads Retrieval time unavailable");
+  overrides.delete("/data/status.json");
+  assert(upe.length === 0, `AC17 no pageerrors, got ${JSON.stringify(upe)}`);
+  await up.close();
 
   // ================= coverage-gate expansion: ET-midnight rollover =================
   // Guards review fix 1 (never probe an unlisted day file) + fix 2 (today keyed to
