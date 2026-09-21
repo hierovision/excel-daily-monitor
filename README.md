@@ -49,12 +49,13 @@ How the numbers are built:
 
 ## Keeping the current day fresh
 
-- The workflow captures the account **every 30 minutes from 12:00–23:30 UTC,
-  all seven days** (08:00–19:30 EDT / 07:00–18:30 EST; the cron is UTC-only,
-  so DST shifts the local edges by an hour), alongside the nightly 07:00 UTC
-  run. GitHub's own schedule delay adds natural jitter. Every successful run
-  rewrites `data/status.json` (the last API query time), so the workflow
-  commits a small status file per intraday run even when no events changed.
+- The workflow captures the account **every 15 minutes from 09:00–21:00 ET,
+  all seven days** (the cron is UTC-only, so the window is the union of both
+  DST regimes: 13:00–02:45 UTC = 09:00–22:45 EDT / 08:00–21:45 EST), alongside
+  the nightly 07:00 UTC run. GitHub's own schedule delay adds natural jitter.
+  Every successful run rewrites `data/status.json` (the last API query time),
+  so the workflow commits a small status file per intraday run even when no
+  events changed.
 - While the page is open and visible it polls every 2 minutes: it re-fetches
   `data/index.json` (so a day file that appears mid-session is picked up),
   today's day file, and `data/status.json`, all with `cache: "no-store"`, then
@@ -72,7 +73,7 @@ How the numbers are built:
   time.
 - Polling pauses while the tab is hidden and refreshes immediately when it
   becomes visible again.
-- **Freshness bound:** new data appears within one capture interval (~30 min)
+- **Freshness bound:** new data appears within one capture interval (~15 min)
   plus the Pages deploy propagation time, and within one poll (~2 min) of the
   deployed file changing.
 
