@@ -57,9 +57,10 @@ How the numbers are built:
   so the workflow commits a small status file per intraday run even when no
   events changed.
 - If the activity log comes back empty (the platform intermittently returns
-  HTTP 200 with no activity payload), the scraper re-fetches the activity
-  pages on the **same session** after 15s, 30s, then 60s — three retries, no
-  extra logins — and only fails if the log is still empty.
+  HTTP 200 with no activity payload, or the login-as handshake silently did not
+  take), the scraper sleeps 15s, 30s, then 60s and **re-establishes the
+  login-as student session** before re-fetching — three retries, no credential
+  logins — and only fails if the log is still empty.
 - While the page is open and visible it polls every 2 minutes: it re-fetches
   `data/index.json` (so a day file that appears mid-session is picked up),
   today's day file, and `data/status.json`, all with `cache: "no-store"`, then

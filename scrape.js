@@ -54,11 +54,14 @@ async function withEmptyRetry(fetchOnce, {
   delays = [15000, 30000, 60000],
   sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
   isEmpty = (v) => !Array.isArray(v) || v.length === 0,
+  onRetry = null,
 } = {}) {
   let result = await fetchOnce();
   for (let i = 0; i < delays.length && isEmpty(result); i++) {
-    console.log(`activity log empty; retry ${i + 1}/${delays.length} in ${Math.round(delays[i] / 1000)}s`);
+    const attempt = i + 1;
+    console.log(`activity log empty; retry ${attempt}/${delays.length} in ${Math.round(delays[i] / 1000)}s`);
     await sleep(delays[i]);
+    if (onRetry) await onRetry(attempt);
     result = await fetchOnce();
   }
   return result;
@@ -188,18 +191,32 @@ async function main() {
       }
     }
 
-    const popupPromise = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
-    await loginAsBtn.click();
-    await Promise.race([
-      page.waitForEvent("load", { timeout: IDLE_MS }).catch(() => null),
-      popupPromise,
-    ]);
-    const target = (await popupPromise) || page;
-    await target.locator(`button[data-id="${config.student_data_id}"]`)
-      .waitFor({ state: "detached", timeout: IDLE_MS }).catch(() => {});
+    // Login-as bootstrap, reused by the empty-log retry: navigate to the board;
+    // if the Login-as button is visible, run the click/exchange and settle on
+    // the student board; if it is absent (already the student, or the login
+    // form is showing) this is a no-op. Never touches credentials.
+    const ensureStudentSession = async () => {
+      await page.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
+      const loginAsBtn = page.locator(`button[data-id="${config.student_data_id}"]`);
+      const visible = await loginAsBtn.waitFor({ state: "visible", timeout: IDLE_MS })
+        .then(() => true).catch(() => false);
+      if (!visible) return false;
+      const popupPromise = context.waitForEvent("page", { timeout: IDLE_MS }).catch(() => null);
+      await loginAsBtn.click();
+      await Promise.race([
+        page.waitForEvent("load", { timeout: IDLE_MS }).catch(() => null),
+        popupPromise,
+      ]);
+      const target = (await popupPromise) || page;
+      await target.locator(`button[data-id="${config.student_data_id}"]`)
+        .waitFor({ state: "detached", timeout: IDLE_MS }).catch(() => {});
 
-    await target.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
-    await target.waitForLoadState("networkidle", { timeout: IDLE_MS }).catch(() => {});
+      await target.goto(BOARD_ROOT, { waitUntil: "domcontentloaded" });
+      await target.waitForLoadState("networkidle", { timeout: IDLE_MS }).catch(() => {});
+      return true;
+    };
+
+    await ensureStudentSession();
 
     const studentUrn = config.student_data_id;
     const enrollments = await fetchJson(`${API}/lms-core/api/enrollment/list?student_urn=${encodeURIComponent(studentUrn)}&q=&status=completed,active&perPage=1000&page=1&sortBy=created_at&sortOrder=desc`);
@@ -233,7 +250,12 @@ async function main() {
       return mapActivity(serverEvents, { timezone: TIMEZONE });
     };
 
-    const events = await withEmptyRetry(fetchActivityPages);
+    const events = await withEmptyRetry(fetchActivityPages, {
+      onRetry: async (attempt) => {
+        console.log(`retry ${attempt}: re-establishing the student session`);
+        await ensureStudentSession();
+      },
+    });
     const attendance = await fetchJson(`${API}/sis-core/api/canvas/page_view?email=${encodeURIComponent(email)}&schoolId=${encodeURIComponent(schoolId)}`);
     if (events.length === 0) throw new Error("activity log returned no events");
 

@@ -48,6 +48,32 @@ const assert = (cond, msg) => {
     assert(resultC.length === 1 && resultC[0] === event, "non-empty first result is returned as-is");
     assert(callsC.length === 1, `non-empty first calls once (got ${callsC.length})`);
     assert(sleepsC.length === 0, `non-empty first never sleeps (got ${sleepsC.join(",")})`);
+
+    // AC26: onRetry runs once per retry (attempts 1..3) before each re-fetch,
+    // in sleep -> onRetry -> fetch order.
+    const order = [];
+    const attempts = [];
+    const callsD = [];
+    const resultD = await withEmptyRetry(
+      async () => { callsD.push(1); order.push(`fetch-${callsD.length}`); return []; },
+      {
+        sleep: async () => { order.push("sleep"); },
+        onRetry: async (attempt) => { attempts.push(attempt); order.push(`retry-${attempt}`); },
+      }
+    );
+    assert(attempts.join(",") === "1,2,3", `onRetry receives attempts 1..3 (got ${attempts.join(",")})`);
+    assert(order.join(",") === "fetch-1,sleep,retry-1,fetch-2,sleep,retry-2,fetch-3,sleep,retry-3,fetch-4",
+      `retry order is sleep -> onRetry -> fetch (got ${order.join(",")})`);
+    assert(Array.isArray(resultD) && resultD.length === 0, "always-empty with onRetry still returns the empty value");
+
+    // AC26: a non-empty first result never calls onRetry.
+    let retried = 0;
+    const resultE = await withEmptyRetry(
+      async () => [event],
+      { sleep: async () => {}, onRetry: async () => { retried++; } }
+    );
+    assert(retried === 0, `non-empty first never calls onRetry (got ${retried})`);
+    assert(resultE.length === 1 && resultE[0] === event, "non-empty first result survives an injected onRetry");
   }
 
   console.log(failures ? "scrape-retry.test.js FAILED" : "scrape-retry.test.js ok");
