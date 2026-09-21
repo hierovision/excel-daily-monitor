@@ -1,37 +1,49 @@
 {
   "date": "2026-09-21",
   "first_activity_at": "11:08:10",
-  "last_activity_at": "16:19:47",
-  "span_minutes": 312,
-  "measured_quiz_minutes": 0,
+  "last_activity_at": "16:29:34",
+  "span_minutes": 321,
+  "measured_quiz_minutes": 10,
   "reading_minutes_low": 225,
   "reading_minutes_high": 282,
-  "active_minutes_low": 225,
-  "active_minutes_high": 282,
+  "active_minutes_low": 235,
+  "active_minutes_high": 292,
   "sessions": [
     {
       "start": "11:08",
-      "end": "16:19",
-      "minutes": 312
+      "end": "16:29",
+      "minutes": 321
     }
   ],
   "by_course": [
     {
       "course": "American History EHS",
-      "measured_quiz_minutes": 0,
+      "measured_quiz_minutes": 10,
       "reading_minutes_low": 225,
       "reading_minutes_high": 282,
-      "active_minutes_low": 225,
-      "active_minutes_high": 282,
+      "active_minutes_low": 235,
+      "active_minutes_high": 292,
       "pages_viewed": 19,
-      "quiz_submissions": []
+      "quiz_submissions": [
+        {
+          "item": "Module 2 Quiz.",
+          "at": "16:29"
+        }
+      ]
     }
   ],
   "event_counts": {
     "page_viewed": 19,
     "quiz_viewed": 1,
-    "quiz_submitted": 0,
+    "quiz_submitted": 1,
     "other": 0
   },
-  "submissions_and_grades": []
+  "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 2 Quiz.",
+      "course": "American History EHS",
+      "at": "16:29"
+    }
+  ]
 }
