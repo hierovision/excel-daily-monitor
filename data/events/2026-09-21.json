@@ -135,6 +135,24 @@
       "item": "2.5.2 - Three Perspectives on the Same Event",
       "course": "American History EHS",
       "context_id": "183270"
+    },
+    {
+      "id": "25373354",
+      "at_utc": "2026-09-21T19:53:14.708Z",
+      "at": "2026-09-21T15:53:14",
+      "kind": "page_viewed",
+      "item": "2.5.3 - ISTE AI Digital Literacy Activity: AI vs. Primary Source",
+      "course": "American History EHS",
+      "context_id": "183264"
+    },
+    {
+      "id": "25373614",
+      "at_utc": "2026-09-21T19:57:17.614Z",
+      "at": "2026-09-21T15:57:17",
+      "kind": "page_viewed",
+      "item": "2.4.2 - Religion as Critique",
+      "course": "American History EHS",
+      "context_id": "183222"
     }
   ]
 }
