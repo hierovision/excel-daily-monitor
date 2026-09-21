@@ -127,4 +127,6 @@ its "data as of" line. A scrape failure no longer blocks a deploy: the
 `deploy-pages` workflow deploys on pushes to `main`, on manual dispatch, and
 after every successful `daily-summary` run. (Data commits are pushed with the
 workflow's `GITHUB_TOKEN`, which does not trigger `push` workflows, so the
-scrape workflow's completion is what catches them.)
+scrape workflow's completion is what catches them.) If another run pushed
+`main` between checkout and commit, the data commit rebases and retries the
+push instead of failing the run.

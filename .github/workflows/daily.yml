@@ -59,5 +59,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A -- data
-          git diff --cached --quiet && echo "no changes" || git commit -m "daily summary $(date -u +%F)"
-          git push
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "daily summary $(date -u +%F)"
+          # A concurrent run may have pushed between checkout and push; rebase
+          # (keeping our status timestamp on conflict) and retry.
+          for i in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "push rejected; rebasing onto origin/main and retrying ($i/3)"
+            git pull --rebase -X ours origin main
+            sleep 5
+          done
+          echo "push failed after 3 attempts"
+          exit 1
