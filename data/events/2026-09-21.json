@@ -153,6 +153,33 @@
       "item": "2.4.2 - Religion as Critique",
       "course": "American History EHS",
       "context_id": "183222"
+    },
+    {
+      "id": "25374316",
+      "at_utc": "2026-09-21T20:09:01.728Z",
+      "at": "2026-09-21T16:09:01",
+      "kind": "page_viewed",
+      "item": "2.5.4 - Wrap Up: Constructing Your Claim",
+      "course": "American History EHS",
+      "context_id": "183266"
+    },
+    {
+      "id": "25374672",
+      "at_utc": "2026-09-21T20:15:17.258Z",
+      "at": "2026-09-21T16:15:17",
+      "kind": "page_viewed",
+      "item": "2.5.5 - Module 2 Materials",
+      "course": "American History EHS",
+      "context_id": "183269"
+    },
+    {
+      "id": "25374913",
+      "at_utc": "2026-09-21T20:19:47.593Z",
+      "at": "2026-09-21T16:19:47",
+      "kind": "quiz_viewed",
+      "item": "Module 2 Quiz.",
+      "course": "American History EHS",
+      "context_id": "53083"
     }
   ]
 }
