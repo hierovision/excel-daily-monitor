@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-22",
+  "events": [
+    {
+      "id": "25417748",
+      "at_utc": "2026-09-22T15:31:30.336Z",
+      "at": "2026-09-22T11:31:30",
+      "kind": "page_viewed",
+      "item": "Module 3 Wrap-Up",
+      "course": "World History EHS",
+      "context_id": "189248"
+    },
+    {
+      "id": "25417765",
+      "at_utc": "2026-09-22T15:31:46.396Z",
+      "at": "2026-09-22T11:31:46",
+      "kind": "page_viewed",
+      "item": "Module 4 Overview",
+      "course": "World History EHS",
+      "context_id": "189166"
+    }
+  ]
+}
