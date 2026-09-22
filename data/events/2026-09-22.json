@@ -45,6 +45,42 @@
       "item": "Lesson 4.3 - China: Confucianism, Daoism, Legalism, and State Building",
       "course": "World History EHS",
       "context_id": "189169"
+    },
+    {
+      "id": "25432550",
+      "at_utc": "2026-09-22T18:38:39.926Z",
+      "at": "2026-09-22T14:38:39",
+      "kind": "quiz_viewed",
+      "item": "Module 4 Quiz",
+      "course": "World History EHS",
+      "context_id": "52839"
+    },
+    {
+      "id": "25432819",
+      "at_utc": "2026-09-22T18:42:35.909Z",
+      "at": "2026-09-22T14:42:35",
+      "kind": "quiz_submitted",
+      "item": "Module 4 Quiz",
+      "course": "World History EHS",
+      "context_id": "52839"
+    },
+    {
+      "id": "25432864",
+      "at_utc": "2026-09-22T18:43:04.181Z",
+      "at": "2026-09-22T14:43:04",
+      "kind": "page_viewed",
+      "item": "Module 4 Wrap-Up",
+      "course": "World History EHS",
+      "context_id": "189249"
+    },
+    {
+      "id": "25433374",
+      "at_utc": "2026-09-22T18:51:14.202Z",
+      "at": "2026-09-22T14:51:14",
+      "kind": "page_viewed",
+      "item": "Module 5 Overview",
+      "course": "World History EHS",
+      "context_id": "189170"
     }
   ]
 }
