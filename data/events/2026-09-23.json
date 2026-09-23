@@ -144,6 +144,15 @@
       "item": "3.5.1 - iste_ai_activity",
       "course": "American History EHS",
       "context_id": "183336"
+    },
+    {
+      "id": "25502166",
+      "at_utc": "2026-09-23T20:22:51.231Z",
+      "at": "2026-09-23T16:22:51",
+      "kind": "page_viewed",
+      "item": "3.5.2 - DBQ Packet & Writing Workshop",
+      "course": "American History EHS",
+      "context_id": "183337"
     }
   ]
 }
