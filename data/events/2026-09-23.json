@@ -153,6 +153,24 @@
       "item": "3.5.2 - DBQ Packet & Writing Workshop",
       "course": "American History EHS",
       "context_id": "183337"
+    },
+    {
+      "id": "25503172",
+      "at_utc": "2026-09-23T20:45:58.762Z",
+      "at": "2026-09-23T16:45:58",
+      "kind": "page_viewed",
+      "item": "3.5.3 - Wrap Up",
+      "course": "American History EHS",
+      "context_id": "183339"
+    },
+    {
+      "id": "25503240",
+      "at_utc": "2026-09-23T20:47:23.372Z",
+      "at": "2026-09-23T16:47:23",
+      "kind": "page_viewed",
+      "item": "3.5.4 - Module_materials",
+      "course": "American History EHS",
+      "context_id": "183340"
     }
   ]
 }
