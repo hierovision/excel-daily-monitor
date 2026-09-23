@@ -108,6 +108,42 @@
       "item": "3.3.3 - Lesson 3 Close",
       "course": "American History EHS",
       "context_id": "183332"
+    },
+    {
+      "id": "25500315",
+      "at_utc": "2026-09-23T19:50:20.385Z",
+      "at": "2026-09-23T15:50:20",
+      "kind": "page_viewed",
+      "item": "3.4.1 - From Articles to Convention",
+      "course": "American History EHS",
+      "context_id": "183333"
+    },
+    {
+      "id": "25500337",
+      "at_utc": "2026-09-23T19:50:40.366Z",
+      "at": "2026-09-23T15:50:40",
+      "kind": "page_viewed",
+      "item": "3.4.2 - Federalist vs. Anti-Federalist",
+      "course": "American History EHS",
+      "context_id": "183334"
+    },
+    {
+      "id": "25500965",
+      "at_utc": "2026-09-23T20:01:09.406Z",
+      "at": "2026-09-23T16:01:09",
+      "kind": "page_viewed",
+      "item": "3.4.3 - Lesson 4 Close",
+      "course": "American History EHS",
+      "context_id": "183335"
+    },
+    {
+      "id": "25501182",
+      "at_utc": "2026-09-23T20:04:21.349Z",
+      "at": "2026-09-23T16:04:21",
+      "kind": "page_viewed",
+      "item": "3.5.1 - iste_ai_activity",
+      "course": "American History EHS",
+      "context_id": "183336"
     }
   ]
 }
