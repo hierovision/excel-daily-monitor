@@ -63,6 +63,24 @@
       "item": "Advanced Close Reading & Textual Analysis 1.5",
       "course": "English 10 EHS",
       "context_id": "179880"
+    },
+    {
+      "id": "25542754",
+      "at_utc": "2026-09-24T16:10:42.534Z",
+      "at": "2026-09-24T12:10:42",
+      "kind": "quiz_viewed",
+      "item": "Module 1.5 AI Analysis Quiz!",
+      "course": "English 10 EHS",
+      "context_id": "52011"
+    },
+    {
+      "id": "25544302",
+      "at_utc": "2026-09-24T16:29:43.202Z",
+      "at": "2026-09-24T12:29:43",
+      "kind": "quiz_submitted",
+      "item": "Module 1.5 AI Analysis Quiz!",
+      "course": "English 10 EHS",
+      "context_id": "52011"
     }
   ]
 }

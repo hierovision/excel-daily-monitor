@@ -1,28 +1,28 @@
 {
   "date": "2026-09-24",
   "first_activity_at": "11:00:16",
-  "last_activity_at": "11:46:06",
-  "span_minutes": 46,
-  "measured_quiz_minutes": 23,
-  "reading_minutes_low": 23,
-  "reading_minutes_high": 23,
-  "active_minutes_low": 46,
-  "active_minutes_high": 46,
+  "last_activity_at": "12:29:43",
+  "span_minutes": 89,
+  "measured_quiz_minutes": 42,
+  "reading_minutes_low": 38,
+  "reading_minutes_high": 47,
+  "active_minutes_low": 80,
+  "active_minutes_high": 89,
   "sessions": [
     {
       "start": "11:00",
-      "end": "11:46",
-      "minutes": 46
+      "end": "12:29",
+      "minutes": 89
     }
   ],
   "by_course": [
     {
       "course": "English 10 EHS",
-      "measured_quiz_minutes": 23,
-      "reading_minutes_low": 23,
-      "reading_minutes_high": 23,
-      "active_minutes_low": 46,
-      "active_minutes_high": 46,
+      "measured_quiz_minutes": 42,
+      "reading_minutes_low": 38,
+      "reading_minutes_high": 47,
+      "active_minutes_low": 80,
+      "active_minutes_high": 89,
       "pages_viewed": 3,
       "quiz_submissions": [
         {
@@ -32,17 +32,27 @@
         {
           "item": "Module 1.4 Formative A",
           "at": "11:41"
+        },
+        {
+          "item": "Module 1.5 AI Analysis Quiz!",
+          "at": "12:29"
         }
       ]
     }
   ],
   "event_counts": {
     "page_viewed": 3,
-    "quiz_viewed": 2,
-    "quiz_submitted": 2,
+    "quiz_viewed": 3,
+    "quiz_submitted": 3,
     "other": 0
   },
   "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 1.5 AI Analysis Quiz!",
+      "course": "English 10 EHS",
+      "at": "12:29"
+    },
     {
       "kind": "quiz_submitted",
       "item": "Module 1.4 Formative A",
