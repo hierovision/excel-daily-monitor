@@ -162,6 +162,24 @@
       "item": "Section 2.4 - Using Fonts in Graphic Design",
       "course": "Media Arts EHS",
       "context_id": "1069"
+    },
+    {
+      "id": "25550701",
+      "at_utc": "2026-09-24T18:03:07.540Z",
+      "at": "2026-09-24T14:03:07",
+      "kind": "page_viewed",
+      "item": "Section 2.5 - Using Color in Graphic Design",
+      "course": "Media Arts EHS",
+      "context_id": "1025"
+    },
+    {
+      "id": "25550994",
+      "at_utc": "2026-09-24T18:08:19.899Z",
+      "at": "2026-09-24T14:08:19",
+      "kind": "page_viewed",
+      "item": "Section 2.6 - Working with Color Families",
+      "course": "Media Arts EHS",
+      "context_id": "1145"
     }
   ]
 }
