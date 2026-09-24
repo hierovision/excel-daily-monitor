@@ -144,6 +144,24 @@
       "item": "Section 2.2 - Principles of Design in Use",
       "course": "Media Arts EHS",
       "context_id": "744"
+    },
+    {
+      "id": "25549213",
+      "at_utc": "2026-09-24T17:37:07.225Z",
+      "at": "2026-09-24T13:37:07",
+      "kind": "page_viewed",
+      "item": "Section 2.3 - Exploring Typography",
+      "course": "Media Arts EHS",
+      "context_id": "730"
+    },
+    {
+      "id": "25549813",
+      "at_utc": "2026-09-24T17:48:31.147Z",
+      "at": "2026-09-24T13:48:31",
+      "kind": "page_viewed",
+      "item": "Section 2.4 - Using Fonts in Graphic Design",
+      "course": "Media Arts EHS",
+      "context_id": "1069"
     }
   ]
 }
