@@ -45,6 +45,24 @@
       "item": "Module 1.4 Formative A",
       "course": "English 10 EHS",
       "context_id": "52008"
+    },
+    {
+      "id": "25540361",
+      "at_utc": "2026-09-24T15:41:10.145Z",
+      "at": "2026-09-24T11:41:10",
+      "kind": "quiz_submitted",
+      "item": "Module 1.4 Formative A",
+      "course": "English 10 EHS",
+      "context_id": "52008"
+    },
+    {
+      "id": "25540735",
+      "at_utc": "2026-09-24T15:46:06.735Z",
+      "at": "2026-09-24T11:46:06",
+      "kind": "page_viewed",
+      "item": "Advanced Close Reading & Textual Analysis 1.5",
+      "course": "English 10 EHS",
+      "context_id": "179880"
     }
   ]
 }

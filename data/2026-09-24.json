@@ -1,44 +1,54 @@
 {
   "date": "2026-09-24",
   "first_activity_at": "11:00:16",
-  "last_activity_at": "11:23:05",
-  "span_minutes": 23,
-  "measured_quiz_minutes": 5,
-  "reading_minutes_low": 18,
-  "reading_minutes_high": 18,
-  "active_minutes_low": 23,
-  "active_minutes_high": 23,
+  "last_activity_at": "11:46:06",
+  "span_minutes": 46,
+  "measured_quiz_minutes": 23,
+  "reading_minutes_low": 23,
+  "reading_minutes_high": 23,
+  "active_minutes_low": 46,
+  "active_minutes_high": 46,
   "sessions": [
     {
       "start": "11:00",
-      "end": "11:23",
-      "minutes": 23
+      "end": "11:46",
+      "minutes": 46
     }
   ],
   "by_course": [
     {
       "course": "English 10 EHS",
-      "measured_quiz_minutes": 5,
-      "reading_minutes_low": 18,
-      "reading_minutes_high": 18,
-      "active_minutes_low": 23,
-      "active_minutes_high": 23,
-      "pages_viewed": 2,
+      "measured_quiz_minutes": 23,
+      "reading_minutes_low": 23,
+      "reading_minutes_high": 23,
+      "active_minutes_low": 46,
+      "active_minutes_high": 46,
+      "pages_viewed": 3,
       "quiz_submissions": [
         {
           "item": "Module 1.2 Vocab in Context",
           "at": "11:05"
+        },
+        {
+          "item": "Module 1.4 Formative A",
+          "at": "11:41"
         }
       ]
     }
   ],
   "event_counts": {
-    "page_viewed": 2,
+    "page_viewed": 3,
     "quiz_viewed": 2,
-    "quiz_submitted": 1,
+    "quiz_submitted": 2,
     "other": 0
   },
   "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 1.4 Formative A",
+      "course": "English 10 EHS",
+      "at": "11:41"
+    },
     {
       "kind": "quiz_submitted",
       "item": "Module 1.2 Vocab in Context",
