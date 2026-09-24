@@ -27,6 +27,24 @@
       "item": "Advanced Close Reading & Textual Analysis 1.3",
       "course": "English 10 EHS",
       "context_id": "179878"
+    },
+    {
+      "id": "25538773",
+      "at_utc": "2026-09-24T15:15:18.288Z",
+      "at": "2026-09-24T11:15:18",
+      "kind": "page_viewed",
+      "item": "Advanced Close Reading & Textual Analysis 1.4",
+      "course": "English 10 EHS",
+      "context_id": "179879"
+    },
+    {
+      "id": "25539251",
+      "at_utc": "2026-09-24T15:23:05.692Z",
+      "at": "2026-09-24T11:23:05",
+      "kind": "quiz_viewed",
+      "item": "Module 1.4 Formative A",
+      "course": "English 10 EHS",
+      "context_id": "52008"
     }
   ]
 }
