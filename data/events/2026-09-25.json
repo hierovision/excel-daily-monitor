@@ -81,6 +81,24 @@
       "item": "Module 2 Overview",
       "course": "Biology EHS",
       "context_id": "192579"
+    },
+    {
+      "id": "25611001",
+      "at_utc": "2026-09-25T20:29:17.096Z",
+      "at": "2026-09-25T16:29:17",
+      "kind": "page_viewed",
+      "item": "2.3.1 - The Blood Glucose Homeostasis Model",
+      "course": "Biology EHS",
+      "context_id": "192584"
+    },
+    {
+      "id": "25611201",
+      "at_utc": "2026-09-25T20:33:47.412Z",
+      "at": "2026-09-25T16:33:47",
+      "kind": "page_viewed",
+      "item": "2.3.2 - Homeostasis and Negative Feedback",
+      "course": "Biology EHS",
+      "context_id": "192585"
     }
   ]
 }
