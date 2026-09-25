@@ -18,6 +18,24 @@
       "item": "2.1.1 - The Heirarchy of Life",
       "course": "Biology EHS",
       "context_id": "192580"
+    },
+    {
+      "id": "25609476",
+      "at_utc": "2026-09-25T19:53:32.408Z",
+      "at": "2026-09-25T15:53:32",
+      "kind": "page_viewed",
+      "item": "2.1.2 - Inside the Eukaryotic Cell",
+      "course": "Biology EHS",
+      "context_id": "192581"
+    },
+    {
+      "id": "25609981",
+      "at_utc": "2026-09-25T20:04:49.167Z",
+      "at": "2026-09-25T16:04:49",
+      "kind": "page_viewed",
+      "item": "2.2.1 - The Cell Membrane",
+      "course": "Biology EHS",
+      "context_id": "192582"
     }
   ]
 }
