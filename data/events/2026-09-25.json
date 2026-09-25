@@ -36,6 +36,51 @@
       "item": "2.2.1 - The Cell Membrane",
       "course": "Biology EHS",
       "context_id": "192582"
+    },
+    {
+      "id": "25610602",
+      "at_utc": "2026-09-25T20:21:07.452Z",
+      "at": "2026-09-25T16:21:07",
+      "kind": "page_viewed",
+      "item": "2.2.2 - Membrane Transport",
+      "course": "Biology EHS",
+      "context_id": "192583"
+    },
+    {
+      "id": "25610624",
+      "at_utc": "2026-09-25T20:21:40.703Z",
+      "at": "2026-09-25T16:21:40",
+      "kind": "page_viewed",
+      "item": "2.2.1 - The Cell Membrane",
+      "course": "Biology EHS",
+      "context_id": "192582"
+    },
+    {
+      "id": "25610659",
+      "at_utc": "2026-09-25T20:22:23.636Z",
+      "at": "2026-09-25T16:22:23",
+      "kind": "page_viewed",
+      "item": "2.1.2 - Inside the Eukaryotic Cell",
+      "course": "Biology EHS",
+      "context_id": "192581"
+    },
+    {
+      "id": "25610707",
+      "at_utc": "2026-09-25T20:23:06.705Z",
+      "at": "2026-09-25T16:23:06",
+      "kind": "page_viewed",
+      "item": "2.1.1 - The Heirarchy of Life",
+      "course": "Biology EHS",
+      "context_id": "192580"
+    },
+    {
+      "id": "25610734",
+      "at_utc": "2026-09-25T20:23:49.847Z",
+      "at": "2026-09-25T16:23:49",
+      "kind": "page_viewed",
+      "item": "Module 2 Overview",
+      "course": "Biology EHS",
+      "context_id": "192579"
     }
   ]
 }
