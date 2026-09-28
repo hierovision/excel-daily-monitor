@@ -89,7 +89,12 @@ const weekStart = (date) => {
 };
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtMin = (m) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
-const mid = (low, high) => Math.round((low + high) / 2);
+// OQ3 (Rev 2026-09-27d): quantize an estimated value to the nearest 5-minute
+// bucket (ties round up); collapsed day lines carry the "≈" prefix. The band
+// and the expanded detail keep their exact raw ranges; a true zero renders
+// "0m" without the prefix.
+const quantize5 = (m) => Math.round(m / 5) * 5;
+const mid = (low, high) => quantize5((low + high) / 2);
 const rangeValue = (low, high) => (low === high ? fmtMin(low) : `${fmtMin(low)}–${fmtMin(high)}`);
 const pollMs = () => (typeof window.__pollMs === "number" && window.__pollMs > 0 ? window.__pollMs : POLL_MS);
 
@@ -123,7 +128,7 @@ async function fetchStatus() {
 function retrievalText() {
   return state.retrievedAt === null
     ? "Retrieval time unavailable"
-    : `Data retrieved ${fmtEtDateTime(state.retrievedAt)} ET`;
+    : `Data last checked ${fmtEtDateTime(state.retrievedAt)} ET`;
 }
 function fmtWeekOf(date) {
   return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" })
@@ -298,7 +303,14 @@ function renderBand(days, dates) {
       ? `<details><summary>Show submissions</summary><ul data-testid="week-submissions">${items.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul></details>`
       : "";
     const active = rangeValue(low, high);
-    totals = `<p data-testid="week-worked">Worked ${present.length} of ${WINDOW_DAYS} days</p>
+    // OQ2 (Rev 2026-09-27d): the current week's denominator counts elapsed
+    // days INCLUDING today; past weeks keep the full 7-day window. Future
+    // day markers never count as worked.
+    const isCurrent = state.anchor === weekStart(todayEt());
+    const elapsedDays = isCurrent
+      ? Math.min(WINDOW_DAYS, ((dayOfWeek(todayEt()) + 6) % 7) + 1) // Monday-zero index + 1
+      : WINDOW_DAYS;
+    totals = `<p data-testid="week-worked">Worked ${present.length} of ${elapsedDays} days${isCurrent ? " so far" : ""}</p>
     <p role="group" data-testid="week-active" aria-label="${esc(`Active: ${active}`)}">Active ${active}</p>
     <p data-testid="week-quizzes">Quizzes submitted: ${quizzes}</p>
     ${submissions}`;
@@ -312,7 +324,13 @@ function renderBand(days, dates) {
 
 function collapsedMeta(d) {
   const s = dayStats(d);
-  return s.v2 ? `about ${fmtMin(mid(s.low, s.high))} active` : `about ${d.estimated_active_minutes}m active`;
+  if (s.v2) {
+    if (s.low === 0 && s.high === 0) return "0m active";
+    return `≈${fmtMin(mid(s.low, s.high))} active`;
+  }
+  const est = Math.round(d.estimated_active_minutes);
+  if (!est) return "0m active";
+  return `≈${fmtMin(quantize5(est))} active`;
 }
 
 function quizBadge(d) {
@@ -443,8 +461,8 @@ async function render({ anchorToday = false } = {}) {
       if (days[i] && days[i].last_activity_at) { latest = days[i]; break; }
     }
     const footer = latest
-      ? `<p class="stale" data-testid="week-footer">Data as of ${esc(latest.date)} ${esc(fmt12(latest.last_activity_at))}</p>`
-      : `<p class="stale" data-testid="week-footer">Data as of —</p>`;
+      ? `<p class="stale" data-testid="week-footer">Data last imported ${esc(latest.date)} ${esc(fmt12(latest.last_activity_at))} ET</p>`
+      : `<p class="stale" data-testid="week-footer">Data last imported —</p>`;
     const dayCards = dates.map((date, i) => {
       const d = days[i];
       if (inList && date === today) return renderTodayInCard(date, d);
