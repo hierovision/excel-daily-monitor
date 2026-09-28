@@ -1,10 +1,14 @@
-// U1-U8 + AC1-AC23 + W1-W12 — at-a-glance band, collapsible day cards, the live
+// U1-U8 + AC1-AC23 + W1-W15 — at-a-glance band, collapsible day cards, the live
 // Today layer, the compact day detail, retrieval time, the Monday-start calendar
 // week, and the responsive weekly layout (Rev 2026-09-27): Today integrated
 // in-list (pinned strip only when browsing away), week-range identity,
 // weekday+number labels with ISO aria-labels, text state chips, CSS-only
 // reflow (single column narrow, 7-track grid at desktop), focus/scroll
 // survival across polls, and 12-hour time display (Rev 2026-09-27a, W12).
+// Rev 2026-09-27c (W15): "Data last checked" status + "Data last imported"
+// footer (ET suffix, em-dash branch). Rev 2026-09-27d (OQ2/OQ3): elapsed-day
+// band denominator ("so far"; past weeks keep the full window) and 5-minute
+// quantized collapse durations ("≈1h 05m"; the band/detail ranges stay raw).
 const { chromium } = require("playwright");
 const http = require("http");
 const fs = require("fs");
@@ -199,8 +203,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     `W4 week-range line (got "${await textIfPresent(page, "[data-testid=week-range]")}")`);
   assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent()) === "This week",
     `AC20 current-week heading is This week (got "${norm(await page.locator("[data-testid=week-band] h2").first().textContent().catch(() => ""))}")`);
-  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 4 of 7 days",
-    `AC20 default band worked line (got "${await textIfPresent(page, "[data-testid=week-worked]")}")`);
+  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 4 of 4 days so far",
+    `AC20/OQ2 default band worked line (got "${await textIfPresent(page, "[data-testid=week-worked]")}")`);
   assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 3h 48m–4h 44m",
     `AC20 default band active line is the calendar-week total (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
   assert(await textIfPresent(page, "[data-testid=week-quizzes]") === "Quizzes submitted: 1",
@@ -211,21 +215,55 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await safeVisible(weekSubs.getByText("Submitted: Module 1 Quiz — Media Arts EHS")), "band submission item visible when opened");
   await safeClick(weekSubs.locator("summary"));
 
+  // ---------- OQ2 (Rev 2026-09-27d): elapsed-day denominator on the current week ----------
+  // Thu 2026-09-17 at 20:00Z (16:00 ET): Mon..Thu elapsed INCLUSIVE = 4, all
+  // carried by activity files → "Worked 4 of 4 days so far" (the user's
+  // "4 of 5" example corresponds to a Friday clock). Sat 2026-09-19 04:01 UTC
+  // = 00:01 ET Sat → 6 elapsed with worked 4 → "Worked 4 of 6 days so far"
+  // (future markers never count as worked). Past weeks keep the full window.
+  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 4 of 4 days so far",
+    `OQ2 current-week band uses the elapsed denominator (got "${await textIfPresent(page, "[data-testid=week-worked]")}")`);
+  assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 3h 48m–4h 44m",
+    `OQ2 the active range stays the raw calendar-week total (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
+  {
+    const sat = await openPage({ now: "2026-09-19T04:01:00Z" }); // 00:01 ET Sat 19 (past the AC3 04:00Z boundary)
+    const sp2 = sat.page;
+    await waitSel(sp2, "[data-testid=day-card]");
+    const todayIso = await textIfPresent(sp2, "[data-testid=today-date]");
+    assert(todayIso === "2026-09-19", `OQ2 setup: ET day is Sat 2026-09-19 (got "${todayIso}")`);
+    assert(await textIfPresent(sp2, "[data-testid=week-worked]") === "Worked 4 of 6 days so far",
+      `OQ2 denominator includes Today (Sat; 6 elapsed days Mon..Sat) (got "${await textIfPresent(sp2, "[data-testid=week-worked]")}")`);
+    assert(await sp2.locator("[data-testid=day-card] [data-testid=today]").count() === 1, "OQ2 setup: Today still renders in-list");
+    await sp2.close();
+  }
+
   // ---------- U2/W4/W5/W6: collapsed day lines, labels, chips, justified rows ----------
   assert(await page.locator("[data-testid=day-summary]").count() === 4, `only active days are expandable (got ${await page.locator("[data-testid=day-summary]").count()} summaries)`);
   const top = todayCard;
   const firstLabel = norm(await page.locator("[data-testid=day-title]").first().textContent().catch(() => ""));
   assert(firstLabel === "Mon 14", `W4 collapsed label is weekday+day number (got "${firstLabel}")`);
   const topSummaryText = norm(await top.locator("[data-testid=day-summary]").textContent().catch(() => ""));
-  assert(topSummaryText.includes("Thu 17") && topSummaryText.includes("Today") && topSummaryText.includes("about 1h 07m active") && topSummaryText.includes("Quiz submitted"),
-    `Rev 2026-09-27: collapsed line carries label, Today chip, duration and badge (got "${topSummaryText}")`);
+  assert(topSummaryText.includes("Thu 17") && topSummaryText.includes("Today") && topSummaryText.includes("≈1h 05m active") && topSummaryText.includes("Quiz submitted"),
+    `OQ3/W15: collapsed line carries the quantized ≈ duration (got "${topSummaryText}")`);
   const s16 = norm(await cardFor(page, "2026-09-16").locator("[data-testid=day-summary]").textContent().catch(() => ""));
-  assert(s16.includes("Wed 16") && s16.includes("about 1h 05m active") && !/quiz/i.test(s16),
-    `collapsed line has a quiz badge only when submissions exist (got "${s16}")`);
+  assert(s16.includes("Wed 16") && s16.includes("≈1h 05m active") && !/quiz/i.test(s16),
+    `OQ3 collapsed line quantizes the 65-min centre to ≈1h 05m (got "${s16}")`);
   assert((await ev(cardFor(page, "2026-09-16").locator("[data-testid=day-summary]"), (e) => getComputedStyle(e).justifyContent)) === "space-between",
     "W6 collapsed row justifies label left / duration right");
   assert((await getAttr(page.locator("[data-testid=day-title]").first(), "aria-label")) === "Monday, 2026-09-14",
     `W4 day-title aria-label is "Monday, 2026-09-14"-style (got "${await getAttr(page.locator("[data-testid=day-title]").first(), "aria-label")}")`);
+  // OQ3 + W15: collapsed durations are the 5-min-quantized centre ("about"
+  // dropped); the band/detail ranges and course/session values stay raw.
+  const collapsedLines = await page.$$eval("[data-testid=day-summary]", (els) => els.map((e) => (e.textContent || "").replace(/\s+/g, " ")));
+  assert(collapsedLines.length === 4 && collapsedLines.every((s) => /≈\d/.test(s) && !/about /.test(s)),
+    `OQ3 every collapsed line quantizes with the ≈ prefix — no "about " remains (got ${JSON.stringify(collapsedLines)})`);
+  assert(!collapsedLines.some((s) => /≈\d+h \d{2}[13-8]m/.test(s)), "OQ3 non-5-multiple minute buckets absent (67→05, 65→05)");
+  const quantParts = await page.$$eval("[data-testid=day-summary]", (els) => els.map((e) => {
+    const m = (e.textContent || "").match(/≈\s*(?:(\d+)h\s)?(\d{1,2})m/);
+    return m ? { h: m[1] ? Number(m[1]) : 0, m: Number(m[2]) } : null;
+  }));
+  assert(quantParts.length === 4 && quantParts.every((p) => p && (p.h * 60 + p.m) % 5 === 0),
+    `OQ3 collapsed minute buckets are multiples of 5 (got ${JSON.stringify(quantParts)})`);
   for (const sel of ["active-minutes", "quiz-line", "reading-line", "courses", "sessions", "submissions"]) {
     assert(await safeHidden(cardFor(page, "2026-09-16").locator(`[data-testid=${sel}]`)), `detail ${sel} hidden before expansion`);
   }
@@ -280,10 +318,10 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   // ---------- U4: bars removed ----------
   assert(await page.locator(".bar").count() === 0, "no bar elements remain");
 
-  // ---------- U5: single week-level footer ----------
+  // ---------- U5 + W15: single week-level footer ("Data last imported") ----------
   assert(await page.locator("[data-testid=week-footer]").count() === 1, "exactly one week footer");
-  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data as of 2026-09-17 5:30 PM",
-    `W12 footer shows latest activity in 12-hour time (got "${await textIfPresent(page, "[data-testid=week-footer]")}")`);
+  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data last imported 2026-09-17 5:30 PM ET",
+    `W15 footer shows the import stamp with ET (got "${await textIfPresent(page, "[data-testid=week-footer]")}")`);
   assert(await page.locator("[data-testid=data-as-of]").count() === 0, "per-card data-as-of removed");
 
   // ---------- U6: accessibility (compact contract) + AC15 ----------
@@ -342,11 +380,12 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(t.length === 7 && t[6] === "2026-09-13", `AC21 prev yields the previous calendar week (got ${t.join(",")})`);
   assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent().catch(() => "")) === "Week of Sep 7",
     `AC21 heading follows the browsed week (got "${norm(await page.locator("[data-testid=week-band] h2").first().textContent().catch(() => ""))}")`);
-  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 5 of 7 days", "AC21 prev band worked");
+  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 5 of 7 days", "AC21 prev band worked (past week: full window, no so far)");
+  assert(!/so far/.test(await textIfPresent(page, "[data-testid=week-worked]")), "OQ2 past weeks keep the full-window worked line");
   assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 3h 40m–4h 50m",
     `AC21 prev band active (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
   assert(await textIfPresent(page, "[data-testid=week-quizzes]") === "Quizzes submitted: 0", "AC21 prev band quizzes");
-  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data as of 2026-09-11 5:30 PM", "W12 AC21 prev footer");
+  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data last imported 2026-09-11 5:30 PM ET", "W15 AC21 prev footer");
   assert(!(await page.locator("[data-testid=next-week]").isDisabled().catch(() => true)), "AC21 next re-enables after moving back");
   await safeClick(page.locator("[data-testid=prev-week]"));
   await waitAnchor(page, "2026-08-31");
@@ -376,7 +415,7 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   t = await titles(page);
   assert(t[0] === "2026-09-07" && t[6] === "2026-09-13",
     `AC22 picker maps 2026-09-08 to the week of Sep 7 (got ${t.join(",")})`);
-  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data as of 2026-09-11 5:30 PM", "W12 AC22 footer follows the mapped week");
+  assert(await textIfPresent(page, "[data-testid=week-footer]") === "Data last imported 2026-09-11 5:30 PM ET", "W15 AC22 footer follows the mapped week");
 
   const v2 = cardFor(page, "2026-09-08");
   await safeClick(v2.locator("[data-testid=day-summary]"));
@@ -392,8 +431,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
 
   const v1 = cardFor(page, "2026-09-03");
   const v1Line = norm(await v1.locator("[data-testid=day-summary]").textContent().catch(() => ""));
-  assert(v1Line.includes("Thu 3") && v1Line.includes("about 42m active"),
-    `Rev 2026-09-27: v1 collapsed line uses the new label + single number (got "${v1Line}")`);
+  assert(v1Line.includes("Thu 3") && v1Line.includes("≈40m active"),
+    `OQ3 v1 collapsed line quantizes the legacy single number to ≈40m (got "${v1Line}")`);
   await safeClick(v1.locator("[data-testid=day-summary]"));
   const v1active = await readText(v1.locator("[data-testid=day-detail] [data-testid=active-minutes]"));
   assert(v1active === "42m", `v1 detail shows the legacy single number (got "${v1active}")`);
@@ -571,15 +610,66 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     { item: "Module 2 Quiz", course: "World History EHS", at: "15:48" },
     { item: "Module 3 Quiz", course: "World History EHS", at: "17:37" },
   ];
+  // OQ3 bucket-boundary bank (Rev 2026-09-27d): centre (61+74)/2 = 67.5 — the
+  // tie rounds UP to the 70-minute bucket ("≈1h 10m"), while centre 67
+  // (Today's 60/74 default) rounds DOWN to 65 ("≈1h 05m").
+  multi.active_minutes_low = 61;
+  multi.active_minutes_high = 74;
   overrides.set("/data/2026-09-16.json", Buffer.from(JSON.stringify(multi)));
   await page.reload({ waitUntil: "load" });
   await page.waitForSelector("[data-testid=day-card]");
   const multiSummary = norm(await cardFor(page, "2026-09-16").locator("[data-testid=day-summary]").textContent().catch(() => ""));
-  assert(multiSummary.includes("Wed 16") && multiSummary.includes("about 1h 05m active") && multiSummary.includes("2 quizzes"),
-    `multiple submissions get a count badge (got "${multiSummary}")`);
+  assert(multiSummary.includes("Wed 16") && multiSummary.includes("≈1h 10m active") && multiSummary.includes("2 quizzes"),
+    `OQ3 tie boundary: centre 67.5 rounds up to ≈1h 10m; count badge kept (got "${multiSummary}")`);
   assert(await textIfPresent(page, "[data-testid=week-quizzes]") === "Quizzes submitted: 3",
     `band counts every submission (got "${await textIfPresent(page, "[data-testid=week-quizzes]")}")`);
+  // OQ3 scope: the expanded detail keeps the exact raw range (honest bounds).
+  await safeClick(cardFor(page, "2026-09-16").locator("[data-testid=day-summary]"));
+  assert(await readText(cardFor(page, "2026-09-16").locator("[data-testid=active-minutes]")) === "1h 01m–1h 14m",
+    `OQ3 the detail keeps the raw 61/74 range (got "${await readText(cardFor(page, "2026-09-16").locator("[data-testid=active-minutes]"))}")`);
+  await safeClick(cardFor(page, "2026-09-16").locator("[data-testid=day-summary]"));
   overrides.delete("/data/2026-09-16.json");
+
+  // ---------- Rev 2026-09-27d (W15/OQ2/OQ3) break-restore bank ----------
+  // Thursday probe: with an off-boundary centre the band stays raw while
+  // collapse lines quantize; the footer/status strings stay exact.
+  const thur = fixture("2026-09-16");
+  thur.active_minutes_low = 60; // centre 67 → quantize DOWN to 65 (nearest bucket)
+  thur.active_minutes_high = 70;
+  overrides.set("/data/2026-09-16.json", Buffer.from(JSON.stringify(thur)));
+  await page.reload({ waitUntil: "load" });
+  await page.waitForSelector("[data-testid=day-card]");
+  await waitFn(page, () => {
+    const el = document.querySelector("[data-testid=week-active]");
+    return el && el.textContent.includes("3h 50m");
+  }, null, 5000);
+  assert(await textIfPresent(page, "[data-testid=week-active]") === "Active 3h 50m–4h 42m",
+    `OQ3 the band keeps the raw range (230/282 minutes) with quantized day lines (got "${await textIfPresent(page, "[data-testid=week-active]")}")`);
+  const q17 = (await page.$$eval("[data-testid=day-summary]", (els) => els.map((e) => (e.textContent || "").replace(/\s+/g, " ")).find((s) => s.includes("Thu 17")))) || "";
+  assert(q17.includes("≈1h 05m active"),
+    `OQ3 the un-overridden 67-minute centre stays quantized DOWN to ≈1h 05m beside the probe (got "${q17.trim()}")`);
+  assert(!(await page.locator("[data-testid=week-active]").getAttribute("aria-label") || "").includes("≈"),
+    "OQ3 the band's accessible name stays raw (quantization is collapse-line-only)");
+  assert(await textIfPresent(page, "[data-testid=week-worked]") === "Worked 4 of 4 days so far",
+    `OQ2 the worked line keeps the so-far form with unchanged counts (got "${await textIfPresent(page, "[data-testid=week-worked]")}")`);
+  overrides.delete("/data/2026-09-16.json");
+
+  // OQ3 zero guard: a day whose estimate centres on a true zero renders "0m"
+  // WITHOUT the ≈ prefix (no false precision on zero).
+  const zeroDay = fixture("2026-09-15");
+  zeroDay.active_minutes_low = 0;
+  zeroDay.active_minutes_high = 0;
+  overrides.set("/data/2026-09-15.json", Buffer.from(JSON.stringify(zeroDay)));
+  await page.reload({ waitUntil: "load" });
+  await page.waitForSelector("[data-testid=day-card]");
+  await waitFn(page, () => {
+    const el = [...document.querySelectorAll("[data-testid=day-summary]")].find((e) => (e.textContent || "").includes("Tue 15"));
+    return el && /0m active/.test(el.textContent) && !el.textContent.includes("≈");
+  }, null, 5000);
+  const zeroLine = (await page.$$eval("[data-testid=day-summary]", (els) => els.map((e) => (e.textContent || "").replace(/\s+/g, " ")).find((s) => s.includes("Tue 15")))) || "";
+  assert(zeroLine.includes("0m active") && !zeroLine.includes("≈"),
+    `OQ3 a true zero renders 0m without the ≈ prefix (got "${zeroLine.trim()}")`);
+  overrides.delete("/data/2026-09-15.json");
 
   assert(pageerrors.length === 0, `no pageerrors, got ${JSON.stringify(pageerrors)}`);
   await page.close();
@@ -601,7 +691,7 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await np.locator("[data-testid=week-worked]").count() === 0, "W10 worked line replaced by the message");
   assert(await np.locator("[data-testid=week-active]").count() === 0, "W10 active line replaced by the message");
   assert(await np.locator("[data-testid=week-quizzes]").count() === 0, "W10 quizzes line replaced by the message");
-  assert(await textIfPresent(np, "[data-testid=week-footer]") === "Data as of —", "AC19 empty footer");
+  assert(await textIfPresent(np, "[data-testid=week-footer]") === "Data last imported —", "W15 AC19 empty footer (em-dash branch)");
   const today19 = cardFor(np, "2026-09-21");
   assert(/No activity/.test(await readText(today19)),
     `AC19/W10 today (elapsed, no file) keeps the no-activity chip (got "${await readText(today19)}")`);
@@ -679,8 +769,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     `W12 AC13 sessions summary merges count and span (got "${await readText(topDetail.locator("[data-testid=sessions] summary"))}")`);
   assert(await topDetail.locator("[data-testid=submissions]").count() === 0, "AC13 a no-submission day renders no submissions block");
   const detailText = await readText(topDetail);
-  for (const s of ["range", "(estimated)", "about "]) {
-    assert(!detailText.includes(s), `AC13 detail does not repeat "${s}" (got ${JSON.stringify(detailText)})`);
+  for (const s of ["range", "(estimated)", "about ", "≈"]) {
+    assert(!detailText.includes(s), `AC13 detail keeps raw exact values — no "${s}" (got ${JSON.stringify(detailText)})`);
   }
   assert(await tp.locator("[data-testid=legend]").count() === 1, "AC13 exactly one legend");
   assert(await textIfPresent(tp, "[data-testid=legend]") === "Unmarked durations are estimated from page-open gaps; quizzes are measured.",
@@ -717,6 +807,10 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(w3Order && w3Order.precedesBand === true, "W3 the pinned Today strip precedes the week band when browsing away");
   assert(w3Order && w3Order.inCard === false, "W3 the pinned strip is not inside a day card");
   assert(w3Order && w3Order.heading === "Today · Sep 17", `W3 pinned strip heading (got "${w3Order && w3Order.heading}")`);
+  // W15 (Rev 2026-09-27c): the pinned strip's status line uses the same
+  // last-checked wording as the in-list card.
+  assert(await textIfPresent(tp, "[data-testid=today] [data-testid=today-status]") === "Data last checked Sep 17, 4:10 PM ET",
+    `W15 pinned strip keeps the last-checked retrieval line (got "${await textIfPresent(tp, "[data-testid=today] [data-testid=today-status]")}")`);
   assert(await tp.locator("[data-testid=day-card] [data-testid=day-today]").count() === 0, "W3 browsed window carries no Today marker");
 
   // AC14 — v1 detail stays honest.
@@ -762,6 +856,10 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   const epe = E.pageerrors;
   assert(await waitSel(ep, "[data-testid=today-empty]"), "AC4 empty state renders without error");
   assert(await safeVisible(ep.locator("[data-testid=today-empty]")), "AC4 today-empty is visible");
+  // W15: the empty-day state keeps its retrieval-time-based status line — now
+  // with the last-checked wording.
+  assert(await textIfPresent(ep, "[data-testid=today-status]") === "Data last checked Sep 17, 4:10 PM ET",
+    `W15 empty-day keeps the last-checked retrieval line (got "${await textIfPresent(ep, "[data-testid=today-status]")}")`);
   assert(await ep.locator("[data-testid=today] [data-testid=active-minutes]").count() === 0, "AC4 no active value in the empty state");
   assert(epe.length === 0, `AC4 no pageerrors, got ${JSON.stringify(epe)}`);
   await ep.close();
@@ -801,7 +899,7 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     return el && el.textContent.includes("1h 39m");
   }, null, 5000), "AC6 poll updates the Today detail in place");
   assert(await readText(gp.locator("[data-testid=today] [data-testid=active-minutes]")) === "1h 39m", "AC6 new active value");
-  assert(await textIfPresent(gp, "[data-testid=today-status]") === "Data retrieved Sep 17, 4:10 PM ET",
+  assert(await textIfPresent(gp, "[data-testid=today-status]") === "Data last checked Sep 17, 4:10 PM ET",
     `AC6 status shows the pipeline retrieval time, never the page clock (got "${await textIfPresent(gp, "[data-testid=today-status]")}")`);
   assert(await gp.evaluate(() => window.__marker) === 1, "AC6 no reload happened");
   assert(await safeVisible(openCard.locator("[data-testid=active-minutes]")), "AC6 open day disclosure survives the render");
@@ -828,7 +926,7 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   overrides.delete("/data/2026-09-17.json");
   assert(await waitFn(hp, () => {
     const el = document.querySelector("[data-testid=today-status]");
-    return el && el.textContent.replace(/\s+/g, " ").trim() === "Data retrieved Sep 17, 4:10 PM ET";
+    return el && el.textContent.replace(/\s+/g, " ").trim() === "Data last checked Sep 17, 4:10 PM ET";
   }, null, 5000), "AC7 recovers to the retrieval line after the failure clears");
   assert(await readText(hp.locator("[data-testid=today] [data-testid=active-minutes]")) === lastGood, "AC7 detail correct after recovery");
   await hp.close();
@@ -846,7 +944,7 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     const el = document.querySelector("[data-testid=today] [data-testid=active-minutes]");
     return el && el.textContent.includes("1h 39m");
   }, null, 5000), "AC8 Refresh forces an immediate fetch");
-  assert(await textIfPresent(ip, "[data-testid=today-status]") === "Data retrieved Sep 17, 4:10 PM ET",
+  assert(await textIfPresent(ip, "[data-testid=today-status]") === "Data last checked Sep 17, 4:10 PM ET",
     `AC8 status ends on the retrieval line (got "${await textIfPresent(ip, "[data-testid=today-status]")}")`);
   overrides.delete("/data/2026-09-17.json");
   await ip.close();
@@ -895,7 +993,7 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   const U = await openPage({ now: "2026-09-17T20:00:00Z", pollMs: 100 });
   const up = U.page;
   const upe = U.pageerrors;
-  const RETRIEVED = "Data retrieved Sep 17, 4:10 PM ET";
+  const RETRIEVED = "Data last checked Sep 17, 4:10 PM ET";
   assert(await waitSel(up, "[data-testid=today] [data-testid=active-minutes]"), "AC17 setup: Today's detail renders on load");
   assert(await textIfPresent(up, "[data-testid=today-status]") === RETRIEVED,
     `AC17 status reads the fixture retrieval line on load (got "${await textIfPresent(up, "[data-testid=today-status]")}")`);
@@ -919,7 +1017,7 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await clickIf(up.locator("[data-testid=today-refresh]")), "AC17 Refresh present (status override)");
   assert(await waitFn(up, () => {
     const el = document.querySelector("[data-testid=today-status]");
-    return el && el.textContent.replace(/\s+/g, " ").trim() === "Data retrieved Sep 17, 5:45 PM ET";
+    return el && el.textContent.replace(/\s+/g, " ").trim() === "Data last checked Sep 17, 5:45 PM ET";
   }, null, 5000), "AC17 manual refresh surfaces the new pipeline retrieval time");
   overrides.set("/data/status.json", Buffer.from("not json {"));
   assert(await clickIf(up.locator("[data-testid=today-refresh]")), "AC17 Refresh present (invalid status)");
@@ -1014,8 +1112,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await readText(todayCardD.locator("[data-testid=sessions] summary")) === "Sessions (1) · 4:00–5:30 PM",
     `W12 desktop sessions summary (got "${await readText(todayCardD.locator("[data-testid=sessions] summary"))}")`);
   assert(await safeVisible(todayCardD.getByText("Module 1 Quiz · 5:21 PM")), "W12 desktop submission time");
-  assert(await textIfPresent(pp, "[data-testid=week-footer]") === "Data as of 2026-09-17 5:30 PM",
-    `W12 desktop footer (got "${await textIfPresent(pp, "[data-testid=week-footer]")}")`);
+  assert(await textIfPresent(pp, "[data-testid=week-footer]") === "Data last imported 2026-09-17 5:30 PM ET",
+    `W15 desktop footer (got "${await textIfPresent(pp, "[data-testid=week-footer]")}")`);
   const sessionsD = todayCardD.locator("[data-testid=sessions]");
   await safeClick(sessionsD.locator("summary"));
   const bodyText = await pp.evaluate(() => document.body.innerText);

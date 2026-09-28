@@ -7,23 +7,26 @@ up to date on its own.
 **At a glance:** the page opens on the current calendar week — Monday–Sunday,
 ET — as one chronological flow: the week band totals the week first (carrying a
 `Sep 14 – 20, 2026` range line for week identity, both months spelled when the
-week crosses a month boundary), then the seven days render in ascending order
-beneath it. **Today** lives inside that sequence: its day card carries the
-`Today` chip, is expanded by default, and hosts the live status line and
-`Refresh` button; a separate **Today** strip is pinned above the band only
-while you browse a past week, so the live day never leaves the screen. Each
-day is one collapsed line — `Mon 14` on the left, the estimated duration on
-the right (`about 1h 07m active`) — that expands to the shared compact detail.
-Day states carry text, not tint alone: elapsed days with no capture show
-`No activity`, days that have not happened yet show a non-interactive `Not
-yet` chip. The visible label is weekday + day number; the full date lives in
-the day's accessible name (`Monday, 2026-09-14`) and repeats inside the
+week crosses a month boundary, and a worked line that reads `Worked 4 of 5
+days so far` mid-week — the denominator counts elapsed days including today —
+settling to `Worked 4 of 7 days` on past weeks), then the seven days render in
+ascending order beneath it. **Today** lives inside that sequence: its day card
+carries the `Today` chip, is expanded by default, and hosts the live status
+line and `Refresh` button; a separate **Today** strip is pinned above the band
+only while you browse a past week, so the live day never leaves the screen.
+Each day is one collapsed line — `Mon 14` on the left, the estimated duration
+on the right (`≈1h 05m active`, quantized to the nearest 5 minutes; the
+expanded detail keeps the exact range) — that expands to the shared compact
+detail. Day states carry text, not tint alone: elapsed days with no capture
+show `No activity`, days that have not happened yet show a non-interactive
+`Not yet` chip. The visible label is weekday + day number; the full date lives
+in the day's accessible name (`Monday, 2026-09-14`) and repeats inside the
 expanded detail. A week with no activity at all replaces the totals with
 `No activity logged this week`. On open — and whenever you return to the
-current week — the page starts anchored at **Today**: the viewport lands on its
-expanded card (top edge at the viewport top, or as close as the page's scroll
-allows), with the week band one scroll-up away; the page's own poll re-renders
-never move your scroll.
+current week — the page starts anchored at **Today**: the viewport lands on
+its expanded card (top edge at the viewport top, or as close as the page's
+scroll allows), with the week band one scroll-up away; the page's own poll
+re-renders never move your scroll.
 
 **Responsive:** below 1080px the week is a single ascending column (the
 collapsed row justifies label left / duration right; nothing overflows at
@@ -87,15 +90,17 @@ How the numbers are built:
   re-renders in place. Open day cards and session disclosures survive the
   re-render.
 - The status line shows the **last pipeline retrieval time**, when the
-  scheduled run last queried the LMS API — `Data retrieved <Mon D, h:mm AM/PM
-  ET>`, read from `data/status.json`'s `fetched_at`. It is never the page
-  refresh time (the page clock is not displayed). The `Refresh` button
+  scheduled run last queried the LMS API — `Data last checked <Mon D, h:mm
+  AM/PM ET>`, read from `data/status.json`'s `fetched_at`. It is never the
+  page refresh time (the page clock is not displayed). The `Refresh` button
   re-fetches it immediately (`Checking…` while in flight); a failed day fetch
   shows `Showing last loaded data` — the last good detail stays on screen and
   the page recovers on the next successful poll — and a missing or invalid
   status file shows `Retrieval time unavailable`. The footer's
-  `Data as of <date> <time>` (e.g. `Data as of 2026-09-17 5:30 PM`) remains an
-  activity timestamp, not a retrieval time.
+  `Data last imported <date> <h:mm AM/PM> ET` (e.g. `Data last imported
+  2026-09-17 5:30 PM ET`) remains an activity timestamp, not a retrieval
+  time; a window with no activity file carrying `last_activity_at` reads
+  `Data last imported —`.
 - Polling pauses while the tab is hidden and refreshes immediately when it
   becomes visible again.
 - **Freshness bound:** new data appears within one capture interval (~15 min)
@@ -143,8 +148,8 @@ The run page carries a downloadable **scrape-failure** artifact
 (`failure.json`, `page-*.png`, `page-*.html`, `console.log`, `network.log`)
 capturing the page state at the failure point. Auth tokens are redacted before
 writing; the full Playwright trace stays on the runner because traces embed
-URLs and network bodies. The page keeps showing the last successful data with
-its "data as of" line. A scrape failure no longer blocks a deploy: the
+URLs and network bodies. The page keeps showing the last successful data with its
+`Data last imported` footer. A scrape failure no longer blocks a deploy: the
 `deploy-pages` workflow deploys on pushes to `main`, on manual dispatch, and
 after every successful `daily-summary` run. (Data commits are pushed with the
 workflow's `GITHUB_TOKEN`, which does not trigger `push` workflows, so the
