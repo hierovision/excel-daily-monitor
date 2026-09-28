@@ -9,23 +9,28 @@
   body { font-family: system-ui, sans-serif; margin: 0; padding: 12px; max-width: 640px; margin-inline: auto; }
   h1 { font-size: 1.15rem; }
   .nav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
-  .nav button, .nav input { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; }
+  .nav button, .nav input { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; min-height: 24px; }
   .nav button:disabled { opacity: .4; }
-  .today { border: 1px solid #9ac9ec; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
-  .today h2 { margin: 0; font-size: 1.05rem; }
+  .today-wrap { margin: 4px 0 0; }
+  .today-strip { border: 1px solid #9ac9ec; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .today-strip h2 { margin: 0; font-size: 1.05rem; }
   .today-date { margin: 0; font-size: .9rem; }
   .today-status { margin: 2px 0 8px; }
-  .today button { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; }
+  .today-wrap button, .today-strip button { font: inherit; padding: 6px 10px; border: 1px solid #ccc8; border-radius: 8px; background: transparent; min-height: 24px; }
   .week-band { border: 1px solid #ccc3; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
   .week-band h2 { margin: 0 0 6px; font-size: 1rem; }
   .week-band p { margin: 2px 0; font-size: .9rem; }
   .legend { color: #6b6b6b; font-size: .8rem; margin: 0 2px 10px; }
-  .day { border: 1px solid #ccc3; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; }
-  .day summary { cursor: pointer; }
+  .day { border: 1px solid #ccc3; border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; min-width: 0; }
+  .day summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 8px; min-height: 44px; }
+  .day summary::-webkit-details-marker { display: none; }
   .day summary h3 { display: inline; margin: 0; font-size: 1rem; }
   .day-meta { font-size: .9rem; }
   .badge { display: inline-block; font-size: .75rem; border: 1px solid #9ac9ec; border-radius: 999px; padding: 1px 8px; color: #225566; }
+  .chip { display: inline-block; font-size: .75rem; border: 1px solid #ccc8; border-radius: 999px; padding: 1px 8px; }
+  .chip.today-chip { border-color: #9ac9ec; color: #225566; font-weight: 600; }
   .day-detail { margin-top: 6px; font-size: .88rem; }
+  .day-date { margin: 0 0 4px; font-size: .8rem; }
   .metrics { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: baseline; margin: 6px 0; }
   .metrics dt { min-width: 0; }
   .metrics dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -35,21 +40,30 @@
   .course-line span:first-child { min-width: 0; overflow-wrap: anywhere; }
   .course-line .course-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
   .v1-note { margin: 2px 0 0; }
-  .day.empty h3 { display: inline; margin: 0; font-size: 1rem; }
-  .day.upcoming h3 { display: inline; margin: 0; font-size: 1rem; }
+  .day.empty h3, .day.future h3 { display: inline; margin: 0; font-size: 1rem; }
+  .day.empty, .day.future { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 8px; min-height: 44px; }
   .muted { color: #6b6b6b; font-size: .8rem; }
-  .day.empty .muted, .day.upcoming .muted { margin-left: 6px; }
   ul { margin: 4px 0 0; padding-left: 18px; font-size: .85rem; }
   .stale { color: #8a4b00; font-size: .8rem; margin-top: 2px; }
   @media (prefers-color-scheme: dark) {
     .muted, .legend { color: #b0b0b0; }
     .stale { color: #e0a060; }
     .badge { color: #bcdcf5; border-color: #4a6b86; }
+    .chip.today-chip { color: #bcdcf5; border-color: #4a6b86; }
+  }
+  @media (min-width: 1080px) {
+    body { max-width: 1200px; display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 8px; }
+    h1 { flex: 1 1 auto; margin: 0 0 12px; }
+    .nav { flex: 0 0 auto; margin-bottom: 12px; flex-wrap: nowrap; }
+    #days { flex: 1 1 100%; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: start; }
+    .week-band, .legend, .stale, .today-strip { grid-column: 1 / -1; }
+    .week-band { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 18px; }
+    .week-band h2 { margin: 0 8px 0 0; }
+    .legend { align-self: center; margin: 0 0 8px; }
   }
 </style>
 </head>
 <body>
-<main>
 <h1>Excel High School — Daily Activity</h1>
 <nav class="nav" aria-label="Week navigation">
   <button type="button" data-testid="prev-week">← Prev week</button>
@@ -58,7 +72,6 @@
   <button type="button" data-testid="next-week">Next week →</button>
 </nav>
 <div id="days"><p class="muted">Loading…</p></div>
-</main>
 <script>
 "use strict";
 const WINDOW_DAYS = 7;
@@ -77,7 +90,6 @@ const weekStart = (date) => {
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtMin = (m) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
 const mid = (low, high) => Math.round((low + high) / 2);
-const hhmm = (t) => (t ? String(t).slice(0, 5) : "—");
 const rangeValue = (low, high) => (low === high ? fmtMin(low) : `${fmtMin(low)}–${fmtMin(high)}`);
 const pollMs = () => (typeof window.__pollMs === "number" && window.__pollMs > 0 ? window.__pollMs : POLL_MS);
 
@@ -117,6 +129,51 @@ function fmtWeekOf(date) {
   return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" })
     .format(new Date(date + "T00:00:00Z"));
 }
+function fmtMonthDay(date) {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short", day: "numeric" })
+    .format(new Date(date + "T00:00:00Z"));
+}
+// Week identity line: "Sep 14 – 20, 2026"; both months when the week crosses a
+// month boundary; the year is always spelled out (Rev 2026-09-27, W4).
+function fmtWeekRange(start, end) {
+  const sMon = fmtMonthDay(start).split(" ")[0];
+  const eMon = fmtMonthDay(end).split(" ")[0];
+  const year = start.slice(0, 4);
+  if (sMon === eMon) return `${sMon} ${Number(start.slice(8, 10))} – ${Number(end.slice(8, 10))}, ${year}`;
+  return `${sMon} ${Number(start.slice(8, 10))} – ${eMon} ${Number(end.slice(8, 10))}, ${year}`;
+}
+const WEEKDAYS_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const WEEKDAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+function dayOfWeek(date) {
+  return new Date(Date.parse(date + "T00:00:00Z")).getUTCDay();
+}
+// Collapsed label "Mon 14" + accessible name "Monday, 2026-09-14" (W4).
+function dayLabel(date) {
+  return `${WEEKDAYS_SHORT[dayOfWeek(date)]} ${Number(date.slice(8, 10))}`;
+}
+function dayName(date) {
+  return `${WEEKDAYS_FULL[dayOfWeek(date)]}, ${date}`;
+}
+// 12-hour display of the ET wall-clock strings carried by the day JSON
+// (Rev 2026-09-27a, W12). Data untouched; formatting only.
+function fmt12(t) {
+  if (!t) return "—";
+  const parts = String(t).split(":");
+  const h = Number(parts[0]);
+  const m = parts[1] || "00";
+  if (!Number.isFinite(h)) return String(t);
+  const meridiem = h < 12 ? "AM" : "PM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${m} ${meridiem}`;
+}
+function timeRange(a, b) {
+  const at = fmt12(a);
+  const bt = fmt12(b);
+  const am = at.slice(-2);
+  const bm = bt.slice(-2);
+  if (am === bm) return `${at.slice(0, -3)}–${bt}`;
+  return `${at}–${bt}`;
+}
 
 function dayStats(d) {
   if (typeof d.active_minutes_low === "number") {
@@ -136,14 +193,14 @@ function sessionsBlock(d) {
   if (!sessions.length) return "";
   const first = d.first_activity_at ? String(d.first_activity_at).slice(0, 5) : "";
   const last = d.last_activity_at ? String(d.last_activity_at).slice(0, 5) : "";
-  const span = first && last ? ` · ${first}–${last}` : "";
-  const items = sessions.map((s) => `<li>${esc(s.start)}–${esc(s.end)}</li>`).join("");
+  const span = first && last ? ` · ${timeRange(first, last)}` : "";
+  const items = sessions.map((s) => `<li>${esc(timeRange(s.start, s.end))}</li>`).join("");
   return `<details data-testid="sessions"><summary>Sessions (${sessions.length})${span}</summary><ul>${items}</ul></details>`;
 }
 function subsBlock(d) {
   const subs = d.submissions_and_grades || [];
   if (!subs.length) return "";
-  const items = subs.map((s) => `<li>${esc(s.course)} — ${esc(s.item)} · ${esc(hhmm(s.at))}</li>`).join("");
+  const items = subs.map((s) => `<li>${esc(s.course)} — ${esc(s.item)} · ${esc(fmt12(s.at))}</li>`).join("");
   if (subs.length <= 3) return `<ul data-testid="submissions">${items}</ul>`;
   return `<details data-testid="submissions"><summary>Submissions (${subs.length})</summary><ul>${items}</ul></details>`;
 }
@@ -159,7 +216,8 @@ function dayDetail(d) {
     <dt>Active</dt><dd class="hero" data-testid="active-minutes">${fmtMin(d.estimated_active_minutes)}</dd>
   </dl>
   <p class="v1-note muted" data-testid="v1-note">estimated from session span</p>`;
-  return `<div class="day-detail" data-testid="day-detail">${metrics}${coursesBlock(d, s.v2)}${sessionsBlock(d)}${subsBlock(d)}</div>`;
+  const dateLine = `<p class="day-date muted" data-testid="day-date">${esc(d.date)}</p>`;
+  return `<div class="day-detail" data-testid="day-detail">${dateLine}${metrics}${coursesBlock(d, s.v2)}${sessionsBlock(d)}${subsBlock(d)}</div>`;
 }
 
 async function loadDay(date) {
@@ -181,24 +239,46 @@ async function loadToday() {
   return day;
 }
 
-function renderToday() {
-  const date = todayEt();
-  const listed = state.dates.includes(date);
-  const day = state.todayDay;
+// The live layer: date, status (the single aria-live region), refresh, empty
+// state. Rendered inside the in-list Today card when the window is the current
+// week, or inside the pinned strip when browsing away (Rev 2026-09-27).
+function liveLayer(date, { withDate = true } = {}) {
+  return `${withDate ? `<p class="today-date muted" data-testid="today-date">${esc(date)}</p>` : ""}
+    <p class="today-status muted" data-testid="today-status" aria-live="polite">${esc(state.todayStatus)}</p>
+    <button type="button" data-testid="today-refresh">Refresh</button>`;
+}
+
+function renderTodayInCard(date, day) {
+  const hasActivity = day && (typeof day.active_minutes_low === "number" || typeof day.estimated_active_minutes === "number");
+  const inner = hasActivity
+    ? `${liveLayer(date)}${dayDetail(day)}`
+    : `${liveLayer(date)}
+    <p class="muted" data-testid="today-empty">No activity recorded for today yet.</p>`;
+  const meta = hasActivity ? collapsedMeta(day) : `<span class="chip muted" data-testid="day-empty-chip">No activity</span>`;
+  return `<details class="day" data-testid="day-card" open>
+    <summary data-testid="day-summary">
+      <h3 data-testid="day-title" aria-label="${esc(dayName(date))}">${esc(dayLabel(date))}</h3>
+      <span class="chip today-chip" data-testid="day-today">Today</span>
+      <span class="day-meta">${meta}</span>
+      ${hasActivity ? quizBadge(day) : ""}
+    </summary>
+    <div class="today-wrap" data-testid="today">${inner}</div>
+  </details>`;
+}
+
+function renderTodayPinned(date, day) {
   const hasActivity = day && (typeof day.active_minutes_low === "number" || typeof day.estimated_active_minutes === "number");
   const body = hasActivity
     ? dayDetail(day)
-    : (listed ? "" : `<p class="muted" data-testid="today-empty">No activity recorded for today yet.</p>`);
-  return `<section class="today" data-testid="today" aria-labelledby="today-heading">
-    <h2 id="today-heading">Today</h2>
-    <p class="today-date" data-testid="today-date">${esc(date)}</p>
-    <p class="today-status muted" data-testid="today-status" aria-live="polite">${esc(state.todayStatus)}</p>
-    <button type="button" data-testid="today-refresh">Refresh</button>
+    : `<p class="muted" data-testid="today-empty">No activity recorded for today yet.</p>`;
+  return `<section class="today-strip" data-testid="today" aria-labelledby="today-heading">
+    <h2 id="today-heading">Today · ${esc(fmtMonthDay(date))}</h2>
+    ${liveLayer(date)}
     ${body}
   </section>`;
 }
 
-function renderBand(days) {
+function renderBand(days, dates) {
   const present = days.filter(Boolean);
   let low = 0, high = 0, quizzes = 0;
   const items = [];
@@ -208,32 +288,44 @@ function renderBand(days) {
     high += s.high;
     for (const sub of d.submissions_and_grades || []) { quizzes++; items.push(sub); }
   }
-  const submissions = items.length
-    ? `<details><summary>Show submissions</summary><ul data-testid="week-submissions">${items.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul></details>`
-    : "";
-  const active = rangeValue(low, high);
   const heading = state.anchor === weekStart(todayEt()) ? "This week" : `Week of ${fmtWeekOf(state.anchor)}`;
-  return `<section class="week-band" data-testid="week-band" aria-live="polite">
-    <h2>${heading}</h2>
-    <p data-testid="week-worked">Worked ${present.length} of ${WINDOW_DAYS} days</p>
+  const range = `<p class="muted" data-testid="week-range">${esc(fmtWeekRange(dates[0], dates[dates.length - 1]))}</p>`;
+  let totals;
+  if (!present.length) {
+    totals = `<p data-testid="week-empty">No activity logged this week</p>`;
+  } else {
+    const submissions = items.length
+      ? `<details><summary>Show submissions</summary><ul data-testid="week-submissions">${items.map((s) => `<li>Submitted: ${esc(s.item)} — ${esc(s.course)}</li>`).join("")}</ul></details>`
+      : "";
+    const active = rangeValue(low, high);
+    totals = `<p data-testid="week-worked">Worked ${present.length} of ${WINDOW_DAYS} days</p>
     <p role="group" data-testid="week-active" aria-label="${esc(`Active: ${active}`)}">Active ${active}</p>
     <p data-testid="week-quizzes">Quizzes submitted: ${quizzes}</p>
-    ${submissions}
+    ${submissions}`;
+  }
+  return `<section class="week-band" data-testid="week-band">
+    <h2>${heading}</h2>
+    ${range}
+    ${totals}
   </section>`;
 }
 
-function renderActiveDay(d) {
+function collapsedMeta(d) {
   const s = dayStats(d);
+  return s.v2 ? `about ${fmtMin(mid(s.low, s.high))} active` : `about ${d.estimated_active_minutes}m active`;
+}
+
+function quizBadge(d) {
   const quizzes = (d.submissions_and_grades || []).length;
-  const badge = quizzes === 0 ? "" : `<span class="badge">${quizzes === 1 ? "Quiz submitted" : `${quizzes} quizzes`}</span>`;
-  const meta = s.v2
-    ? `about ${fmtMin(mid(s.low, s.high))} active`
-    : `about ${d.estimated_active_minutes}m active`;
+  return quizzes === 0 ? "" : `<span class="badge">${quizzes === 1 ? "Quiz submitted" : `${quizzes} quizzes`}</span>`;
+}
+
+function renderActiveDay(d) {
   return `<details class="day" data-testid="day-card">
     <summary data-testid="day-summary">
-      <h3 data-testid="day-title">${esc(d.date)}</h3>
-      <span class="day-meta">${meta}</span>
-      ${badge}
+      <h3 data-testid="day-title" aria-label="${esc(dayName(d.date))}">${esc(dayLabel(d.date))}</h3>
+      <span class="day-meta">${collapsedMeta(d)}</span>
+      ${quizBadge(d)}
     </summary>
     ${dayDetail(d)}
   </details>`;
@@ -241,41 +333,81 @@ function renderActiveDay(d) {
 
 function renderEmpty(date, today) {
   if (date > today) {
-    return `<div class="day upcoming" data-testid="day-card">
-    <h3 data-testid="day-title">${date}</h3>
-    <span class="muted" data-testid="day-upcoming">—</span>
+    return `<div class="day future" data-testid="day-card">
+    <h3 data-testid="day-title" aria-label="${esc(dayName(date))}">${esc(dayLabel(date))}</h3>
+    <span class="chip muted" data-testid="day-future">Not yet</span>
   </div>`;
   }
   return `<div class="day empty" data-testid="day-card">
-    <h3 data-testid="day-title">${date}</h3>
-    <span class="muted">no activity</span>
+    <h3 data-testid="day-title" aria-label="${esc(dayName(date))}">${esc(dayLabel(date))}</h3>
+    <span class="chip muted" data-testid="day-empty-chip">No activity</span>
   </div>`;
 }
 
+function isoOfTitle(el) {
+  const title = el.querySelector("[data-testid=day-title]");
+  if (!title) return "";
+  const label = title.getAttribute("aria-label") || "";
+  if (label) return label.split(", ").pop();
+  return title.textContent.trim();
+}
 function captureDisclosure(root) {
-  const openDays = [];
+  const dayState = {};
   const openSessions = [];
-  for (const el of root.querySelectorAll("details.day[open]")) {
-    const title = el.querySelector("[data-testid=day-title]");
-    if (title) openDays.push(title.textContent.trim());
+  for (const el of root.querySelectorAll("details.day")) {
+    const iso = isoOfTitle(el);
+    if (iso) dayState[iso] = el.open;
   }
   for (const el of root.querySelectorAll("details[data-testid=sessions][open]")) {
     const card = el.closest("details.day");
-    const title = card && card.querySelector("[data-testid=day-title]");
-    if (title) openSessions.push(title.textContent.trim());
+    const iso = card ? isoOfTitle(card) : "";
+    if (iso) openSessions.push(iso);
   }
-  return { openDays, openSessions };
+  return { dayState, openSessions };
 }
 function restoreDisclosure(root, snapshot) {
   for (const el of root.querySelectorAll("details.day")) {
+    const iso = isoOfTitle(el);
+    if (!iso || !(iso in snapshot.dayState)) continue;
+    const want = snapshot.dayState[iso];
+    el.open = want;
+    if (want) el.setAttribute("open", ""); else el.removeAttribute("open");
+    if (snapshot.openSessions.includes(iso)) {
+      const nested = el.querySelector("details[data-testid=sessions]");
+      if (nested) { nested.open = true; nested.setAttribute("open", ""); }
+    }
+  }
+}
+// Focus + scroll survival across re-renders (Rev 2026-09-27, W8): capture the
+// focused day's identity, restore the same summary and the scroll offset after
+// the innerHTML replacement.
+function captureView() {
+  const ae = document.activeElement;
+  let focus = null;
+  if (ae && ae !== document.body && ae.closest) {
+    const card = ae.closest("[data-testid=day-card]");
+    const title = card && card.querySelector("[data-testid=day-title]");
+    if (title) {
+      const label = title.getAttribute("aria-label") || "";
+      focus = { iso: label ? label.split(", ").pop() : title.textContent.trim(), onSummary: ae.tagName === "SUMMARY" };
+    }
+  }
+  return { focus, scrollY: window.scrollY };
+}
+function restoreView(root, view) {
+  window.scrollTo(0, view.scrollY);
+  if (!view.focus) return;
+  for (const el of root.querySelectorAll("[data-testid=day-card]")) {
     const title = el.querySelector("[data-testid=day-title]");
     if (!title) continue;
-    const date = title.textContent.trim();
-    if (snapshot.openDays.includes(date)) el.open = true;
-    if (snapshot.openSessions.includes(date)) {
-      const nested = el.querySelector("details[data-testid=sessions]");
-      if (nested) nested.open = true;
-    }
+    const label = title.getAttribute("aria-label") || "";
+    const iso = label ? label.split(", ").pop() : title.textContent.trim();
+    if (iso !== view.focus.iso) continue;
+    const target = view.focus.onSummary
+      ? el.querySelector("[data-testid=day-summary]")
+      : el.querySelector("[data-testid=today-refresh]");
+    if (target && target.focus) target.focus({ preventScroll: true });
+    break;
   }
 }
 
@@ -287,22 +419,31 @@ async function render() {
     const dates = [];
     for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, i));
     const days = await Promise.all(dates.map(loadDay));
+    const inList = dates.includes(today);
     let latest = null;
     for (let i = days.length - 1; i >= 0; i--) {
       if (days[i] && days[i].last_activity_at) { latest = days[i]; break; }
     }
     const footer = latest
-      ? `<p class="stale" data-testid="week-footer">Data as of ${esc(latest.date)} ${esc(hhmm(latest.last_activity_at))}</p>`
+      ? `<p class="stale" data-testid="week-footer">Data as of ${esc(latest.date)} ${esc(fmt12(latest.last_activity_at))}</p>`
       : `<p class="stale" data-testid="week-footer">Data as of —</p>`;
+    const dayCards = dates.map((date, i) => {
+      const d = days[i];
+      if (inList && date === today) return renderTodayInCard(date, d);
+      if (d) return renderActiveDay(d);
+      return renderEmpty(date, today);
+    }).join("");
     const html =
-      renderToday() +
-      renderBand(days) +
+      (inList ? "" : renderTodayPinned(today, state.todayDay)) +
+      renderBand(days, dates) +
       `<p class="legend" data-testid="legend">Unmarked durations are estimated from page-open gaps; quizzes are measured.</p>` +
-      days.map((d, i) => (d ? renderActiveDay(d) : renderEmpty(dates[i], today))).join("") +
+      dayCards +
       footer;
     const snapshot = captureDisclosure(root);
+    const view = captureView();
     root.innerHTML = html;
     restoreDisclosure(root, snapshot);
+    restoreView(root, view);
   } finally {
     root.removeAttribute("aria-busy");
     const prev = document.querySelector("[data-testid=prev-week]");
