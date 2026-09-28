@@ -4,22 +4,36 @@ Daily summary of your child's Excel High School (LearnStage) activity,
 delivered as a phone-friendly GitHub Pages page that keeps the current day
 up to date on its own.
 
-**At a glance:** the page opens with a pinned **Today** section for the
-literal calendar date in `America/New_York`, expanded by default; below it a
-week band totals the **calendar week (Monday–Sunday)** containing the anchor
-date, and each day is one collapsed line (`about 1h 07m active`, `no activity`,
-or `—` for a day that has not happened yet) that expands to the shared compact
-detail. A single footer stamps the data's `Data as of` date and time.
+**At a glance:** the page opens on the current calendar week — Monday–Sunday,
+ET — as one chronological flow: the week band totals the week first (carrying a
+`Sep 14 – 20, 2026` range line for week identity, both months spelled when the
+week crosses a month boundary), then the seven days render in ascending order
+beneath it. **Today** lives inside that sequence: its day card carries the
+`Today` chip, is expanded by default, and hosts the live status line and
+`Refresh` button; a separate **Today** strip is pinned above the band only
+while you browse a past week, so the live day never leaves the screen. Each
+day is one collapsed line — `Mon 14` on the left, the estimated duration on
+the right (`about 1h 07m active`) — that expands to the shared compact detail.
+Day states carry text, not tint alone: elapsed days with no capture show
+`No activity`, days that have not happened yet show a non-interactive `Not
+yet` chip. The visible label is weekday + day number; the full date lives in
+the day's accessible name (`Monday, 2026-09-14`) and repeats inside the
+expanded detail. A week with no activity at all replaces the totals with
+`No activity logged this week`.
+
+**Responsive:** below 1080px the week is a single ascending column (the
+collapsed row justifies label left / duration right; nothing overflows at
+390px). At ≥1080px the same DOM reflows purely with CSS into a seven-column
+grid — each column expands downward in place, no element reorders and no JS
+layout listener exists, so resizing never loses state. Open disclosures, focus
+and scroll position also survive the page's own re-renders.
+
 Prev/Next step one calendar week; the date picker maps the picked date to its
 containing week, and the `Today` nav button jumps back to the current week
-(disabled while it is already shown). The pinned `Today` section stays put.
-
-**Calendar week:** the default view is the current ET week, Monday start,
-rendered ascending (Mon→Sun). The band heading reads `This week` only there;
-browsing back shows `Week of <Mon D>`. Elapsed days with no capture stay
-`no activity`; days after today render a muted `—` (they have not happened).
-`Next` is disabled at the current week (no future browsing) and `Prev` at the
-earliest week with a day file; the picker's `max` is today.
+(disabled while it is already shown). The band heading reads `This week` only
+on the current week; browsing back shows `Week of <Mon D>`. `Next` is disabled
+at the current week (no future browsing) and `Prev` at the earliest week with
+a day file; the picker's `max` is today.
 
 **Compact detail** (the same markup in `Today` and every expanded day):
 
@@ -29,9 +43,11 @@ earliest week with a day file; the picker's `max` is today.
 - `Courses` lists each course with the **low** estimate only — the same page
   gaps are apportioned across courses, so per-course ranges would imply
   precision that does not exist.
-- `Sessions (N) · first–last` expands to the session segments.
-- Submissions render course-first with the time (`Course — Item · HH:MM`),
-  inline up to three, then collapsed under `Submissions (N)`.
+- `Sessions (N) · first–last` expands to the session segments — times render
+  12-hour (`Sessions (1) · 4:00–5:30 PM`; a span crossing noon spells both
+  meridiems, `11:30 AM–1:00 PM`).
+- Submissions render course-first with a 12-hour time (`Course — Item ·
+  5:21 PM`), inline up to three, then collapsed under `Submissions (N)`.
 - A one-line legend under the week band defines the estimate basis:
   `Unmarked durations are estimated from page-open gaps; quizzes are measured.`
 - Days captured with the legacy v1 summarizer show only a single `Active`
@@ -74,8 +90,8 @@ How the numbers are built:
   shows `Showing last loaded data` — the last good detail stays on screen and
   the page recovers on the next successful poll — and a missing or invalid
   status file shows `Retrieval time unavailable`. The footer's
-  `Data as of <date> <time>` remains an activity timestamp, not a retrieval
-  time.
+  `Data as of <date> <time>` (e.g. `Data as of 2026-09-17 5:30 PM`) remains an
+  activity timestamp, not a retrieval time.
 - Polling pauses while the tab is hidden and refreshes immediately when it
   becomes visible again.
 - **Freshness bound:** new data appears within one capture interval (~15 min)
