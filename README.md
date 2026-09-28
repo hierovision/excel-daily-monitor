@@ -19,7 +19,11 @@ Day states carry text, not tint alone: elapsed days with no capture show
 yet` chip. The visible label is weekday + day number; the full date lives in
 the day's accessible name (`Monday, 2026-09-14`) and repeats inside the
 expanded detail. A week with no activity at all replaces the totals with
-`No activity logged this week`.
+`No activity logged this week`. On open — and whenever you return to the
+current week — the page starts anchored at **Today**: the viewport lands on its
+expanded card (top edge at the viewport top, or as close as the page's scroll
+allows), with the week band one scroll-up away; the page's own poll re-renders
+never move your scroll.
 
 **Responsive:** below 1080px the week is a single ascending column (the
 collapsed row justifies label left / duration right; nothing overflows at

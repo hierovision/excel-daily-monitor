@@ -124,6 +124,30 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
       .first();
   };
   const fixture = (date) => JSON.parse(fs.readFileSync(path.join(site, "data", `${date}.json`), "utf8"));
+  // Rev 2026-09-27b (W13/W14): geometry of the current-anchoring viewport.
+  // "Anchored" = the page scrolled to Today's card optimum: its top edge at the
+  // viewport top when the scroll allows, else as far down as the document goes
+  // (mid-week the card sits deep in a Mon→Sun list, so the browser clamps —
+  // scrollY === min(offsetTop, maxScroll) is the exact spec). The band's bottom
+  // edge above the viewport top keeps it reachable by scrolling up. Nulls mean
+  // the in-list Today card did not render (past week → pinned strip).
+  const todayGeo = (page) => page.$eval("#days", (root) => {
+    const anchor = root.querySelector("[data-testid=day-card] [data-testid=today]");
+    const band = document.querySelector("[data-testid=week-band]");
+    const de = document.documentElement;
+    const maxScroll = Math.round(de.scrollHeight - de.clientHeight);
+    if (!anchor) return { scrollY: Math.round(window.scrollY), offsetTop: null, todayTop: null, bandBottom: null, maxScroll, overflow: de.scrollHeight > de.clientHeight };
+    const card = anchor.closest("[data-testid=day-card]");
+    const offsetTop = Math.round(card.getBoundingClientRect().top + window.scrollY);
+    return {
+      scrollY: Math.round(window.scrollY),
+      offsetTop,
+      todayTop: Math.round(card.getBoundingClientRect().top),
+      bandBottom: band ? Math.round(band.getBoundingClientRect().bottom) : null,
+      maxScroll,
+      overflow: de.scrollHeight > de.clientHeight,
+    };
+  }).catch(() => ({ scrollY: 0, offsetTop: null, todayTop: null, bandBottom: null, maxScroll: 0, overflow: false }));
 
   // ================= legacy U1-U8 page (pinned to the fixture week) =================
   const A = await openPage({ now: "2026-09-17T20:00:00Z" });
@@ -274,6 +298,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert((await getAttr(picker, "min")) === "2026-08-31", `AC22 picker min is the earliest data week's Monday (got ${await getAttr(picker, "min")})`);
   assert((await getAttr(picker, "max")) === "2026-09-17", `AC22 picker max is today, not a future week (got ${await getAttr(picker, "max")})`);
   assert((await picker.inputValue().catch(() => "")) === "2026-09-14", `picker value is the week anchor (got ${await picker.inputValue().catch(() => "")})`);
+  // W13 (Rev 2026-09-27b): the picker is an anchor trigger when it lands on the
+  // current week — the current-week window re-anchors at Today's card.
   await safeClick(second.locator("[data-testid=day-summary]"));
   assert(await second.locator("[data-testid=day-detail]").count() === 1, "AC15 setup: detail present to inspect");
   // AC15 — the visible dt is the accessible label for its dd; no aria-label restatement.
@@ -414,6 +440,110 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(norm(await page.locator("[data-testid=week-band] h2").first().textContent().catch(() => "")) === "This week",
     "AC23 heading restored after the picker jump");
   assert(await disabledIfPresent(jump) === true, "AC23 jump disabled at the current week again");
+
+  // ================= W13/W14 — scroll-anchor Today on open (Rev 2026-09-27b) =================
+  // Anchor triggers only: (1) initial open on the current week; (2) navigation
+  // landing on the current week (Today-jump, picker into the current week).
+  // Never on poll re-renders, day-file changes, disclosure toggles, or week
+  // changes to a past week.
+  {
+    const V = await openPage({ now: "2026-09-17T20:00:00Z", pollMs: 50 });
+    const vp = V.page;
+    await waitSel(vp, "[data-testid=day-card]");
+    assert(await safeVisible(vp.locator("[data-testid=today] [data-testid=active-minutes]")), "W13 setup: Today's detail rendered on load");
+    const optimumOf = (g) => (g.offsetTop === null ? null : Math.min(g.offsetTop, g.maxScroll));
+    let geo = await todayGeo(vp);
+    assert(geo.overflow === true, `W13 setup: the fixture page overflows at 390px (got ${JSON.stringify(geo)})`);
+    let want = Math.min(geo.offsetTop, geo.maxScroll);
+    assert(geo.scrollY > 0 && Math.abs(geo.scrollY - want) <= 2,
+      `W13 initial open anchors the viewport at Today's card (scrollY ${geo.scrollY}, optimum ${want})`);
+    assert(geo.bandBottom !== null && geo.bandBottom <= 12,
+      `W13 the band scrolled above the viewport top — reachable by scrolling up (bandBottom ${geo.bandBottom})`);
+    assert(geo.todayTop >= -2,
+      `W13 the anchor never scrolls past Today's top edge (todayTop ${geo.todayTop})`);
+    // Past-week navigation does not scroll-jump: the offset is kept within the
+    // document's own scroll range (event dispatch, not a real click, so the
+    // locator machinery itself does not scroll).
+    const anchoredScrollY = geo.scrollY;
+    await vp.locator("[data-testid=prev-week]").dispatchEvent("click");
+    await waitAnchor(vp, "2026-09-07");
+    const pastMax = await vp.evaluate(() => Math.round(document.documentElement.scrollHeight - window.innerHeight));
+    const afterPrev = await vp.evaluate(() => Math.round(window.scrollY));
+    assert(Math.abs(afterPrev - Math.min(anchoredScrollY, pastMax)) <= 2,
+      `W13 opening a past week does not scroll-jump (scrollY ${afterPrev}, kept ${Math.min(anchoredScrollY, pastMax)})`);
+    // Returning via Today-jump re-anchors (event dispatch avoids the click scroll).
+    assert(await vp.locator("[data-testid=today-jump]").isEnabled(), "W13 setup: Today-jump clickable");
+    await vp.locator("[data-testid=today-jump]").dispatchEvent("click");
+    await waitAnchor(vp, "2026-09-14");
+    geo = await todayGeo(vp);
+    want = Math.min(geo.offsetTop, geo.maxScroll);
+    assert(geo.scrollY > 0 && Math.abs(geo.scrollY - want) <= 2 && geo.todayTop >= -2,
+      `W13 Today-jump re-anchors the viewport at Today's card (scrollY ${geo.scrollY}, optimum ${want}, todayTop ${geo.todayTop})`);
+    // Picker: a past-week date is a non-trigger (no jump); a date inside the
+    // current week (from a past week) re-anchors. Value set + change event via
+    // evaluate: fill() would scroll the picker into view and pollute the scroll
+    // comparison. Sep 2026 starts on a Monday, so Sun 13 belongs to the week of
+    // Sep 7 and is deliberately avoided.
+    const scrollBeforePastPick = geo.scrollY;
+    await vp.evaluate(() => {
+      const el = document.querySelector("[data-testid=picker]");
+      el.value = "2026-09-08";
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await waitAnchor(vp, "2026-09-07");
+    const pastMax2 = await vp.evaluate(() => Math.round(document.documentElement.scrollHeight - window.innerHeight));
+    const afterPastPick = await vp.evaluate(() => Math.round(window.scrollY));
+    assert(Math.abs(afterPastPick - Math.min(scrollBeforePastPick, pastMax2)) <= 2,
+      `W13 picker into a past week does not scroll-jump (scrollY ${afterPastPick}, kept ${Math.min(scrollBeforePastPick, pastMax2)})`);
+    await vp.evaluate(() => {
+      const el = document.querySelector("[data-testid=picker]");
+      el.value = "2026-09-16";
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await waitAnchor(vp, "2026-09-14");
+    geo = await todayGeo(vp);
+    want = Math.min(geo.offsetTop, geo.maxScroll);
+    assert(geo.scrollY > 0 && Math.abs(geo.scrollY - want) <= 2 && geo.todayTop >= -2,
+      `W13 picker into the current week re-anchors (scrollY ${geo.scrollY}, optimum ${want}, todayTop ${geo.todayTop})`);
+    assert(norm(await vp.locator("[data-testid=week-band] h2").first().textContent().catch(() => "")) === "This week",
+      "W13 picker into the current week shows the current week");
+    assert(geo.bandBottom !== null && geo.bandBottom <= 12,
+      `W13 band reachable above the anchor after re-navigation (bandBottom ${geo.bandBottom})`);
+    assert((await getAttr(vp.locator("[data-testid=week-band]"), "aria-live")) === null, "W14 a11y baseline: band carries no live region");
+    // W14 — anchor discipline: a poll re-render (today file mutated, __pollMs=50)
+    // must not move the scroll position.
+    await safeClick(cardFor(vp, "2026-09-14").locator("[data-testid=day-summary]"));
+    const scrolled = await vp.evaluate(() => { window.scrollTo(0, 180); return Math.round(window.scrollY); });
+    assert(scrolled === 180, `W14 setup: the user scroll position (got ${scrolled})`);
+    const bumped3 = fixture("2026-09-17");
+    bumped3.active_minutes_low = 99;
+    bumped3.active_minutes_high = 99;
+    overrides.set("/data/2026-09-17.json", Buffer.from(JSON.stringify(bumped3)));
+    assert(await waitFn(vp, () => {
+      const el = document.querySelector("[data-testid=today] [data-testid=active-minutes]");
+      return el && el.textContent.includes("1h 39m");
+    }, null, 5000), "W14 setup: poll re-render with the mutated day file landed");
+    const geoAfterPoll = await todayGeo(vp);
+    assert(geoAfterPoll.scrollY === scrolled,
+      `W14 poll re-render does not move scrollY (before ${scrolled}, after ${geoAfterPoll.scrollY})`);
+    assert((await ev(cardFor(vp, "2026-09-14"), (el) => !!el.open)) === true, "W14 opened disclosure survives the poll alongside scroll invariance");
+    overrides.delete("/data/2026-09-17.json");
+    assert(V.pageerrors.length === 0, `W13/W14 no pageerrors, got ${JSON.stringify(V.pageerrors)}`);
+    await vp.close();
+  }
+
+  // ---------- W13: a viewport where the whole page fits — anchor is a no-op ----------
+  {
+    const Z = await openPage({ now: "2026-09-21T13:00:00Z", width: 390, height: 1200 });
+    const zp = Z.page;
+    await waitSel(zp, "[data-testid=day-card]");
+    const fits = await zp.evaluate(() => document.documentElement.scrollHeight <= document.documentElement.clientHeight);
+    assert(fits, "W13 setup: the zero-activity week at a tall viewport fits without overflow");
+    const y = await zp.evaluate(() => Math.round(window.scrollY));
+    assert(y === 0, `W13 on a page that already fits the viewport the anchor does nothing (scrollY ${y})`);
+    assert(Z.pageerrors.length === 0, `W13 no pageerrors on the fits case, got ${JSON.stringify(Z.pageerrors)}`);
+    await zp.close();
+  }
 
   // ---------- HTTP cache regression (Pages serves max-age=600) ----------
   const fresh = fixture("2026-09-17");
