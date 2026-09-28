@@ -1,13 +1,13 @@
 {
   "date": "2026-09-28",
   "first_activity_at": "11:53:02",
-  "last_activity_at": "14:15:18",
-  "span_minutes": 142,
-  "measured_quiz_minutes": 0,
-  "reading_minutes_low": 57,
-  "reading_minutes_high": 82,
-  "active_minutes_low": 57,
-  "active_minutes_high": 82,
+  "last_activity_at": "14:46:39",
+  "span_minutes": 174,
+  "measured_quiz_minutes": 21,
+  "reading_minutes_low": 67,
+  "reading_minutes_high": 92,
+  "active_minutes_low": 89,
+  "active_minutes_high": 113,
   "sessions": [
     {
       "start": "11:53",
@@ -16,27 +16,39 @@
     },
     {
       "start": "14:15",
-      "end": "14:15",
-      "minutes": 0
+      "end": "14:46",
+      "minutes": 31
     }
   ],
   "by_course": [
     {
       "course": "World History EHS",
-      "measured_quiz_minutes": 0,
-      "reading_minutes_low": 57,
-      "reading_minutes_high": 82,
-      "active_minutes_low": 57,
-      "active_minutes_high": 82,
-      "pages_viewed": 5,
-      "quiz_submissions": []
+      "measured_quiz_minutes": 21,
+      "reading_minutes_low": 67,
+      "reading_minutes_high": 92,
+      "active_minutes_low": 89,
+      "active_minutes_high": 113,
+      "pages_viewed": 8,
+      "quiz_submissions": [
+        {
+          "item": "Module 5 Quiz",
+          "at": "14:36"
+        }
+      ]
     }
   ],
   "event_counts": {
-    "page_viewed": 5,
+    "page_viewed": 8,
     "quiz_viewed": 1,
-    "quiz_submitted": 0,
+    "quiz_submitted": 1,
     "other": 0
   },
-  "submissions_and_grades": []
+  "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 5 Quiz",
+      "course": "World History EHS",
+      "at": "14:36"
+    }
+  ]
 }

@@ -54,6 +54,42 @@
       "item": "Module 5 Quiz",
       "course": "World History EHS",
       "context_id": "52840"
+    },
+    {
+      "id": "25724165",
+      "at_utc": "2026-09-28T18:36:36.001Z",
+      "at": "2026-09-28T14:36:36",
+      "kind": "quiz_submitted",
+      "item": "Module 5 Quiz",
+      "course": "World History EHS",
+      "context_id": "52840"
+    },
+    {
+      "id": "25724301",
+      "at_utc": "2026-09-28T18:38:10.380Z",
+      "at": "2026-09-28T14:38:10",
+      "kind": "page_viewed",
+      "item": "Module 5 Wrap-Up",
+      "course": "World History EHS",
+      "context_id": "189250"
+    },
+    {
+      "id": "25724539",
+      "at_utc": "2026-09-28T18:41:28.340Z",
+      "at": "2026-09-28T14:41:28",
+      "kind": "page_viewed",
+      "item": "Module 6 Overview",
+      "course": "World History EHS",
+      "context_id": "189176"
+    },
+    {
+      "id": "25724948",
+      "at_utc": "2026-09-28T18:46:39.839Z",
+      "at": "2026-09-28T14:46:39",
+      "kind": "page_viewed",
+      "item": "Lesson 6.1 - Maurya and Gupta India",
+      "course": "World History EHS",
+      "context_id": "189177"
     }
   ]
 }
