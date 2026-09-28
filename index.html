@@ -235,6 +235,30 @@ async function loadDay(date) {
   } catch { return null; }
 }
 
+const FOOTER_PROBE_LIMIT = 14;
+// Rev 2026-09-27d (W16): when the window's 7 day files carry no activity day,
+// the footer falls back to the newest imported day across the whole store —
+// a descending manifest scan, bounded at 14 probes, over manifest-listed
+// paths only (the no-404 rule: never probe an unlisted date), reusing
+// loadDay's no-store fetch and cache. The em-dash survives only when the
+// bounded scan itself finds no activity day.
+async function footerStamp(days) {
+  const candidates = days.filter((d) => d && d.last_activity_at);
+  const latest = candidates.length ? candidates.reduce((a, b) => (a.date > b.date ? a : b)) : null;
+  if (latest) return footerHtml(latest);
+  // Window quiet: descend the manifest's listed dates (state.dates is sorted
+  // ascending — walk it end→start), bounded at 14 probes, reusing loadDay
+  // (no-store fetch + cache; unlisted dates are never probed).
+  for (let i = state.dates.length - 1, probed = 0; i >= 0 && probed < FOOTER_PROBE_LIMIT; i--, probed++) {
+    const day = await loadDay(state.dates[i]);
+    if (day && day.last_activity_at) return footerHtml(day);
+  }
+  return `<p class="stale" data-testid="week-footer">Data last imported —</p>`;
+}
+function footerHtml(day) {
+  return `<p class="stale" data-testid="week-footer">Data last imported ${esc(day.date)} ${esc(fmt12(day.last_activity_at))} ET</p>`;
+}
+
 async function loadToday() {
   const date = todayEt();
   const res = await fetch(`data/${date}.json`, { cache: "no-store" });
@@ -456,13 +480,9 @@ async function render({ anchorToday = false } = {}) {
     for (let i = 0; i < WINDOW_DAYS; i++) dates.push(addDays(state.anchor, i));
     const days = await Promise.all(dates.map(loadDay));
     const inList = dates.includes(today);
-    let latest = null;
-    for (let i = days.length - 1; i >= 0; i--) {
-      if (days[i] && days[i].last_activity_at) { latest = days[i]; break; }
-    }
-    const footer = latest
-      ? `<p class="stale" data-testid="week-footer">Data last imported ${esc(latest.date)} ${esc(fmt12(latest.last_activity_at))} ET</p>`
-      : `<p class="stale" data-testid="week-footer">Data last imported —</p>`;
+    // W16 (Rev 2026-09-27d): the footer stamp is assembled via footerStamp()
+    // (window scan first, then the bounded global fallback) and awaited here.
+    const footer = await footerStamp(days);
     const dayCards = dates.map((date, i) => {
       const d = days[i];
       if (inList && date === today) return renderTodayInCard(date, d);

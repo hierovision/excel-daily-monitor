@@ -691,7 +691,11 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await np.locator("[data-testid=week-worked]").count() === 0, "W10 worked line replaced by the message");
   assert(await np.locator("[data-testid=week-active]").count() === 0, "W10 active line replaced by the message");
   assert(await np.locator("[data-testid=week-quizzes]").count() === 0, "W10 quizzes line replaced by the message");
-  assert(await textIfPresent(np, "[data-testid=week-footer]") === "Data last imported —", "W15 AC19 empty footer (em-dash branch)");
+  // Rev 2026-09-27d (W16): on a window with no activity day the footer falls
+  // back to the newest imported day across the manifest (descending scan,
+  // ≤14 probes) — the em-dash survives only when the whole bounded scan misses.
+  assert(await textIfPresent(np, "[data-testid=week-footer]") === "Data last imported 2026-09-17 5:30 PM ET",
+    `W16 AC19 empty footer shows the newest imported day's stamp, not the em-dash (got "${await textIfPresent(np, "[data-testid=week-footer]")}")`);
   const today19 = cardFor(np, "2026-09-21");
   assert(/No activity/.test(await readText(today19)),
     `AC19/W10 today (elapsed, no file) keeps the no-activity chip (got "${await readText(today19)}")`);
@@ -707,6 +711,74 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   }
   assert(npe.length === 0, `AC19 no pageerrors, got ${JSON.stringify(npe)}`);
   await np.close();
+
+  // ================= W16 — footer global fallback (Rev 2026-09-27d) =================
+  // The footer keeps its window scan first (no extra fetches when the window
+  // has activity); when the window is quiet it scans the manifest dates
+  // descending, bounded at 14 probes, over listed paths only; a bounded-scan
+  // miss keeps `Data last imported —`.
+  {
+    // Leg A — window has activity: the stamp comes from the window scan and
+    // ZERO extra day fetches occur (non-window listed dates are never probed).
+    const atLegA = new Map(hits); // delta accounting: hits/requests are process-global
+    const F16 = await openPage({ now: "2026-09-17T20:00:00Z", pollMs: 600000 });
+    const f16 = F16.page;
+    assert(await waitSel(f16, "[data-testid=today] [data-testid=active-minutes]"), "W16 setup: window with activity renders Today");
+    await f16.waitForLoadState("networkidle", { timeout: 2000 }).catch(() => {});
+    for (const u of hits.keys()) {
+      if (/^\/data\/2026-09-(02|03|04|05|06|07|08|09|10|11)\.json$/.test(u) && (hitCount(u) - (atLegA.get(u) || 0)) > 0) {
+        assert(false, `W16 window-with-activity fetches no extra day files (got ${hitCount(u) - (atLegA.get(u) || 0)} hit(s) on ${u})`);
+      }
+    }
+    assert(await textIfPresent(f16, "[data-testid=week-footer]") === "Data last imported 2026-09-17 5:30 PM ET",
+      `W16 window stamp unchanged when the window has activity (got "${await textIfPresent(f16, "[data-testid=week-footer]")}")`);
+    await f16.close();
+
+    // Leg B — bounded scan miss: every manifest-listed day serves an
+    // activity-less day file ({"date":"2026-09-17"}-shaped payloads), so the
+    // scan probes the 14 listed paths in manifest order, finds nothing, and
+    // the footer keeps the em-dash. The request log proves the probe bound
+    // (exactly 14 on this fixture), the listed-only rule and the descending
+    // order (the break/restore target: a broken ascending scan probes the
+    // oldest listed day first and stamps the WRONG day on a partial hit).
+    const E16 = await openPage({ now: "2026-09-21T13:00:00Z" });
+    const e16 = E16.page;
+    assert(await waitSel(e16, "[data-testid=week-empty]"), "W16 setup: the zero-activity window rendered");
+    const manifest16 = JSON.parse(fs.readFileSync(path.join(site, "data", "index.json"), "utf8"));
+    const dayRefs16 = manifest16.map((ref) => "/" + ref);
+    const emptyDay16 = Buffer.from(JSON.stringify({ date: "2026-09-17" }));
+    for (const u of dayRefs16) overrides.set(u, emptyDay16);
+    const logBefore16 = requests.length;
+    await e16.reload({ waitUntil: "load" });
+    assert(await waitSel(e16, "[data-testid=week-empty]"), "W16 setup: the zero-activity window rendered after reload");
+    // Day-probe filter: ".json" tail match instead of the strict
+    // \d{4}-\d{2}-\d{2} shape — today's *absent* (404) live-layer file
+    // (2026-09-21, justified, not part of the footer scan) must not count
+    // against, or slip past, the footer scan's request-log window.
+    const isProbe16 = (r) => /\.json$/.test(r.path) && /\/data\/202[0-9]-/.test(r.path) && r.path !== "/data/index.json";
+    assert(await waitNode(() => {
+      const probes = requests.slice(logBefore16).filter(isProbe16);
+      return probes.length >= dayRefs16.length;
+    }, 3000), "W16 setup: the fallback scan's probes are observed in the request log");
+    const stamp16 = await textIfPresent(e16, "[data-testid=week-footer]");
+    assert(stamp16 === "Data last imported —",
+      `W16 em-dash survives when the bounded scan finds no activity day (got "${stamp16}")`);
+    const probedPaths16 = requests.slice(logBefore16).filter(isProbe16).map((r) => r.path);
+    // The zero week itself (Sep 21–27) fetches its 7 unlisted day paths via
+    // the legitimate render/live layer — none are footer-scan probes. The
+    // scan's own probe set is the manifest intersection (checked below).
+    const zeroWeek16 = new Set(["21", "22", "23", "24", "25", "26", "27"].map((d) => `/data/2026-09-${d}.json`));
+    assert(probedPaths16.filter((u) => dayRefs16.includes(u)).length === dayRefs16.length,
+      `W16 the fallback probes at most the 14 listed paths on a quiet window (listed paths hit: ${probedPaths16.filter((u) => dayRefs16.includes(u)).length}/14)`);
+    const unlisted16 = probedPaths16.filter((u) => !dayRefs16.includes(u) && !zeroWeek16.has(u));
+    assert(unlisted16.length === 0,
+      `W16 the fallback probes only manifest-listed paths (got ${JSON.stringify(unlisted16)})`);
+    assert(probedPaths16.filter((u) => dayRefs16.includes(u)).join(",") === dayRefs16.join(","),
+      `W16 the fallback scans manifest dates in descending order (${JSON.stringify(probedPaths16.filter((u) => dayRefs16.includes(u)))})`);
+    assert(E16.pageerrors.length === 0, `W16 em-dash case no pageerrors, got ${JSON.stringify(E16.pageerrors)}`);
+    for (const u of dayRefs16) overrides.delete(u);
+    await e16.close();
+  }
 
   // ================= AC1/AC2/AC11/AC13/AC16/AC10/AC14 page =================
   const T = await openPage({ now: "2026-09-17T20:00:00Z" });

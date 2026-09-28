@@ -99,8 +99,11 @@ How the numbers are built:
   status file shows `Retrieval time unavailable`. The footer's
   `Data last imported <date> <h:mm AM/PM> ET` (e.g. `Data last imported
   2026-09-17 5:30 PM ET`) remains an activity timestamp, not a retrieval
-  time; a window with no activity file carrying `last_activity_at` reads
-  `Data last imported —`.
+  time: the footer scans the visible week first; when the window has no
+  activity day it falls back to the newest imported day across the whole
+  store (the manifest is scanned newest-first, bounded at 14 probes over
+  listed day files), and `Data last imported —` only when that bounded
+  scan finds no activity either (an empty or near-empty store).
 - Polling pauses while the tab is hidden and refreshes immediately when it
   becomes visible again.
 - **Freshness bound:** new data appears within one capture interval (~15 min)
