@@ -411,7 +411,25 @@ function restoreView(root, view) {
   }
 }
 
-async function render() {
+// Scroll-anchor (Rev 2026-09-27b, W13/W14): on anchor-triggering events only —
+// the initial open of the current week and navigation that lands on it
+// (Today-jump, picker inside the current week) — the viewport moves to Today's
+// in-list card: top edge at the viewport top when the scroll allows, otherwise
+// as far down as the document goes (the band and earlier days stay one
+// scroll-up away). Renders driven by polls, day-file changes or disclosure
+// toggles never call this. Instant jump (plain scrollTo, no smooth behavior),
+// so prefers-reduced-motion is respected by construction.
+function anchorToToday() {
+  const de = document.documentElement;
+  if (de.scrollHeight <= de.clientHeight) return; // page fits: nothing to anchor
+  const wrap = document.querySelector("[data-testid=day-card] [data-testid=today]");
+  const card = wrap && wrap.closest("[data-testid=day-card]");
+  if (!card) return;
+  const top = card.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo(0, Math.max(0, top));
+}
+
+async function render({ anchorToday = false } = {}) {
   const root = document.getElementById("days");
   root.setAttribute("aria-busy", "true");
   try {
@@ -444,6 +462,7 @@ async function render() {
     root.innerHTML = html;
     restoreDisclosure(root, snapshot);
     restoreView(root, view);
+    if (anchorToday) anchorToToday();
   } finally {
     root.removeAttribute("aria-busy");
     const prev = document.querySelector("[data-testid=prev-week]");
@@ -572,7 +591,9 @@ function setAnchor(date) {
   const week = weekStart(date);
   const clamped = week < state.minAnchor ? state.minAnchor : week > state.maxAnchor ? state.maxAnchor : week;
   state.anchor = clamped;
-  render();
+  // Navigation that lands on the current week is an anchor trigger (W13);
+  // moving to a past week is not.
+  render({ anchorToday: clamped === weekStart(todayEt()) });
 }
 function bindControls() {
   document.querySelector("[data-testid=prev-week]").addEventListener("click", () => setAnchor(addDays(state.anchor, -WINDOW_DAYS)));
@@ -600,6 +621,7 @@ async function main() {
   state.anchor = state.maxAnchor;
   bindControls();
   await refresh({ manifest });
+  anchorToToday(); // initial open of the current week is an anchor trigger (W13)
   startPolling();
 }
 main();
