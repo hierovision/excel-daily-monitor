@@ -1,13 +1,13 @@
 {
   "date": "2026-09-29",
   "first_activity_at": "10:49:20",
-  "last_activity_at": "14:00:23",
-  "span_minutes": 191,
+  "last_activity_at": "14:20:15",
+  "span_minutes": 211,
   "measured_quiz_minutes": 0,
-  "reading_minutes_low": 98,
-  "reading_minutes_high": 111,
-  "active_minutes_low": 98,
-  "active_minutes_high": 111,
+  "reading_minutes_low": 113,
+  "reading_minutes_high": 131,
+  "active_minutes_low": 113,
+  "active_minutes_high": 131,
   "sessions": [
     {
       "start": "10:49",
@@ -16,8 +16,8 @@
     },
     {
       "start": "12:56",
-      "end": "14:00",
-      "minutes": 64
+      "end": "14:20",
+      "minutes": 84
     }
   ],
   "by_course": [
@@ -34,17 +34,17 @@
     {
       "course": "Geometry EHS",
       "measured_quiz_minutes": 0,
-      "reading_minutes_low": 59,
-      "reading_minutes_high": 64,
-      "active_minutes_low": 59,
-      "active_minutes_high": 64,
+      "reading_minutes_low": 74,
+      "reading_minutes_high": 84,
+      "active_minutes_low": 74,
+      "active_minutes_high": 84,
       "pages_viewed": 6,
       "quiz_submissions": []
     }
   ],
   "event_counts": {
     "page_viewed": 10,
-    "quiz_viewed": 0,
+    "quiz_viewed": 1,
     "quiz_submitted": 0,
     "other": 0
   },
