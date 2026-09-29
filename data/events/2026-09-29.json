@@ -81,6 +81,15 @@
       "item": "1.5 The Tools Of Proof",
       "course": "Geometry EHS",
       "context_id": "193303"
+    },
+    {
+      "id": "25784234",
+      "at_utc": "2026-09-29T18:00:23.600Z",
+      "at": "2026-09-29T14:00:23",
+      "kind": "page_viewed",
+      "item": "1.AI Geometric Proof Analysis",
+      "course": "Geometry EHS",
+      "context_id": "193310"
     }
   ]
 }
