@@ -1,34 +1,34 @@
 {
   "date": "2026-09-29",
   "first_activity_at": "10:49:20",
-  "last_activity_at": "11:27:44",
-  "span_minutes": 38,
+  "last_activity_at": "11:36:47",
+  "span_minutes": 47,
   "measured_quiz_minutes": 0,
-  "reading_minutes_low": 30,
-  "reading_minutes_high": 38,
-  "active_minutes_low": 30,
-  "active_minutes_high": 38,
+  "reading_minutes_low": 39,
+  "reading_minutes_high": 47,
+  "active_minutes_low": 39,
+  "active_minutes_high": 47,
   "sessions": [
     {
       "start": "10:49",
-      "end": "11:27",
-      "minutes": 38
+      "end": "11:36",
+      "minutes": 47
     }
   ],
   "by_course": [
     {
       "course": "World History EHS",
       "measured_quiz_minutes": 0,
-      "reading_minutes_low": 30,
-      "reading_minutes_high": 38,
-      "active_minutes_low": 30,
-      "active_minutes_high": 38,
-      "pages_viewed": 3,
+      "reading_minutes_low": 39,
+      "reading_minutes_high": 47,
+      "active_minutes_low": 39,
+      "active_minutes_high": 47,
+      "pages_viewed": 4,
       "quiz_submissions": []
     }
   ],
   "event_counts": {
-    "page_viewed": 3,
+    "page_viewed": 4,
     "quiz_viewed": 0,
     "quiz_submitted": 0,
     "other": 0
