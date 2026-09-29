@@ -54,6 +54,24 @@
       "item": "1.2 Conditional Statements",
       "course": "Geometry EHS",
       "context_id": "193309"
+    },
+    {
+      "id": "25781457",
+      "at_utc": "2026-09-29T17:26:11.071Z",
+      "at": "2026-09-29T13:26:11",
+      "kind": "page_viewed",
+      "item": "1.3 Converse, Inverse, Contrapositive.",
+      "course": "Geometry EHS",
+      "context_id": "193316"
+    },
+    {
+      "id": "25781957",
+      "at_utc": "2026-09-29T17:31:58.710Z",
+      "at": "2026-09-29T13:31:58",
+      "kind": "page_viewed",
+      "item": "1.4 Deductive Reasoning & Valid Arguments",
+      "course": "Geometry EHS",
+      "context_id": "193307"
     }
   ]
 }
