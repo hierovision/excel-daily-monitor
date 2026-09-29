@@ -45,6 +45,15 @@
       "item": "1.1 Inductive Reasoning",
       "course": "Geometry EHS",
       "context_id": "193312"
+    },
+    {
+      "id": "25780473",
+      "at_utc": "2026-09-29T17:13:19.154Z",
+      "at": "2026-09-29T13:13:19",
+      "kind": "page_viewed",
+      "item": "1.2 Conditional Statements",
+      "course": "Geometry EHS",
+      "context_id": "193309"
     }
   ]
 }
