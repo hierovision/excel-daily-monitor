@@ -1,13 +1,13 @@
 {
   "date": "2026-09-29",
   "first_activity_at": "10:49:20",
-  "last_activity_at": "14:36:01",
-  "span_minutes": 227,
-  "measured_quiz_minutes": 15,
+  "last_activity_at": "14:57:46",
+  "span_minutes": 248,
+  "measured_quiz_minutes": 37,
   "reading_minutes_low": 113,
   "reading_minutes_high": 132,
-  "active_minutes_low": 128,
-  "active_minutes_high": 147,
+  "active_minutes_low": 150,
+  "active_minutes_high": 169,
   "sessions": [
     {
       "start": "10:49",
@@ -16,20 +16,25 @@
     },
     {
       "start": "12:56",
-      "end": "14:36",
-      "minutes": 100
+      "end": "14:57",
+      "minutes": 121
     }
   ],
   "by_course": [
     {
       "course": "World History EHS",
-      "measured_quiz_minutes": 0,
+      "measured_quiz_minutes": 22,
       "reading_minutes_low": 39,
       "reading_minutes_high": 48,
-      "active_minutes_low": 39,
-      "active_minutes_high": 48,
-      "pages_viewed": 4,
-      "quiz_submissions": []
+      "active_minutes_low": 61,
+      "active_minutes_high": 69,
+      "pages_viewed": 5,
+      "quiz_submissions": [
+        {
+          "item": "Module 6 Quiz",
+          "at": "14:57"
+        }
+      ]
     },
     {
       "course": "Geometry EHS",
@@ -48,12 +53,18 @@
     }
   ],
   "event_counts": {
-    "page_viewed": 10,
+    "page_viewed": 11,
     "quiz_viewed": 2,
-    "quiz_submitted": 1,
+    "quiz_submitted": 2,
     "other": 0
   },
   "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 6 Quiz",
+      "course": "World History EHS",
+      "at": "14:57"
+    },
     {
       "kind": "quiz_submitted",
       "item": "Module 1 Review",
