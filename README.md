@@ -30,10 +30,13 @@ re-renders never move your scroll.
 
 **Responsive:** below 1080px the week is a single ascending column (the
 collapsed row justifies label left / duration right; nothing overflows at
-390px). At ≥1080px the same DOM reflows purely with CSS into a seven-column
-grid — each column expands downward in place, no element reorders and no JS
-layout listener exists, so resizing never loses state. Open disclosures, focus
-and scroll position also survive the page's own re-renders.
+390px). At ≥1080px the same DOM reflows purely with CSS into a four-column
+grid over a 1200px body — the seven days wrap row-major (`Mon–Thu` then
+`Fri–Sun`), each column expands downward in place, and the two-column metric
+pairs stay on one line. At ≥1800px the grid widens to seven columns over an
+1800px body, so the whole week fits one row. No element reorders and no JS
+layout listener exists, so resizing across tiers never loses state. Open
+disclosures, focus and scroll position also survive the page's own re-renders.
 
 Prev/Next step one calendar week; the date picker maps the picked date to its
 containing week, and the `Today` nav button jumps back to the current week

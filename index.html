@@ -55,18 +55,16 @@
     body { max-width: 1200px; display: flex; flex-wrap: wrap; align-items: flex-start; column-gap: 8px; }
     h1 { flex: 1 1 auto; margin: 0 0 12px; }
     .nav { flex: 0 0 auto; margin-bottom: 12px; flex-wrap: nowrap; }
-    #days { flex: 1 1 100%; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: start; }
+    #days { flex: 1 1 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; align-items: start; }
     .week-band, .legend, .stale, .today-strip { grid-column: 1 / -1; }
     .week-band { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 18px; }
     .week-band h2 { margin: 0 8px 0 0; }
     .legend { align-self: center; margin: 0 0 8px; }
-    /* Desktop 7-track cards have a ~118px content box; the widest metric value
-       (~119.5px at the hero size) cannot stay on one nowrap line inside it, so
-       stack each pair and let only the overlong values wrap. */
-    .metrics { grid-template-columns: minmax(0, 1fr); }
-    .metrics dd { text-align: left; white-space: normal; margin-bottom: 6px; }
-    .course-line { align-items: flex-end; }
-    .today-status, [data-testid=sessions] summary { text-wrap: pretty; }
+  }
+  @media (min-width: 1800px) {
+    /* 7 tracks need ~1770px body content for >=220px cards; 1800-1920 yields 221-224px. */
+    body { max-width: 1800px; }
+    #days { grid-template-columns: repeat(7, minmax(0, 1fr)); }
   }
 </style>
 </head>

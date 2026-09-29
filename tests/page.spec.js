@@ -1,10 +1,14 @@
-// U1-U8 + AC1-AC23 + W1-W15 — at-a-glance band, collapsible day cards, the live
+// U1-U8 + AC1-AC23 + W1-W17 — at-a-glance band, collapsible day cards, the live
 // Today layer, the compact day detail, retrieval time, the Monday-start calendar
 // week, and the responsive weekly layout (Rev 2026-09-27): Today integrated
 // in-list (pinned strip only when browsing away), week-range identity,
 // weekday+number labels with ISO aria-labels, text state chips, CSS-only
-// reflow (single column narrow, 7-track grid at desktop), focus/scroll
-// survival across polls, and 12-hour time display (Rev 2026-09-27a, W12).
+// reflow (single column narrow; 4-track grid at ≥1080px; 7-track grid at
+// ≥1800px), focus/scroll survival across polls, and 12-hour time display
+// (Rev 2026-09-27a, W12). Rev 2026-09-29 (desktop-layout): breakpoint matrix —
+// 4-up at ≥1080px over a 1200px body, 7-up only at ≥1800px over an 1800px
+// body, two-column metrics restored at every grid tier, row-major wrap,
+// tier-crossing reflow and the unchanged desktop anchor contract (D1-D11).
 // Rev 2026-09-27c (W15): "Data last checked" status + "Data last imported"
 // footer (ET suffix, em-dash branch). Rev 2026-09-27d (OQ2/OQ3): elapsed-day
 // band denominator ("so far"; past weeks keep the full window) and 5-minute
@@ -152,6 +156,55 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
       overflow: de.scrollHeight > de.clientHeight,
     };
   }).catch(() => ({ scrollY: 0, offsetTop: null, todayTop: null, bandBottom: null, maxScroll: 0, overflow: false }));
+  // D3 (desktop-layout): a day card's content box. clientWidth already excludes
+  // borders, so only the horizontal padding (24px) is subtracted; card chrome
+  // is 26px (12px padding + 1px border per side).
+  const cardContentWidth = async (p, iso) => {
+    try {
+      return await cardFor(p, iso).evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return Math.round(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+      });
+    } catch { return null; }
+  };
+  // D4: grid-auto-flow:column is never used — visual order must not desync
+  // from DOM/tab order.
+  const stylesheetHasColumnFlow = () => {
+    try {
+      return /grid-auto-flow\s*:\s*column/.test(fs.readFileSync(path.join(root, "index.html"), "utf8"));
+    } catch { return true; }
+  };
+  // D6: per .metrics grid — used track count, overflow, and same-row dt/dd
+  // text-rect collisions (Range rects, so wrapped words measure where they
+  // actually render).
+  const metricsCheck = (p) => p.$$eval("[data-testid=day-detail]:visible .metrics", (els) => els.map((m) => {
+    const textRects = (el) => {
+      const out = [];
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if (!n.textContent.trim()) continue;
+        const r = document.createRange();
+        r.selectNodeContents(n);
+        for (const rect of r.getClientRects()) {
+          if (rect.width > 0 && rect.height > 0) out.push(rect);
+        }
+      }
+      return out;
+    };
+    const dts = [...m.querySelectorAll("dt")].map(textRects);
+    const dds = [...m.querySelectorAll("dd")].map(textRects);
+    const overlaps = (a, b) => !(a.right <= b.left + 0.5 || b.right <= a.left + 0.5 || a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5);
+    let collisions = 0;
+    for (let i = 0; i < dts.length; i++) {
+      for (const a of dts[i]) for (const b of (dds[i] || [])) if (overlaps(a, b)) collisions++;
+    }
+    return {
+      tracks: getComputedStyle(m).gridTemplateColumns.split(" ").filter(Boolean).length,
+      sw: m.scrollWidth,
+      cw: m.clientWidth,
+      collisions,
+    };
+  }));
 
   // ================= legacy U1-U8 page (pinned to the fixture week) =================
   const A = await openPage({ now: "2026-09-17T20:00:00Z" });
@@ -582,6 +635,124 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     assert(y === 0, `W13 on a page that already fits the viewport the anchor does nothing (scrollY ${y})`);
     assert(Z.pageerrors.length === 0, `W13 no pageerrors on the fits case, got ${JSON.stringify(Z.pageerrors)}`);
     await zp.close();
+  }
+
+  // ================= D9 — desktop anchor contract (1280×600) =================
+  // No JS change: the anchor still targets Today's in-list card by its own rect.
+  // (a) Today in row 1; (b) Today = Friday in row 2 at 4-up; (c) fits = no-op.
+  {
+    // Setup note (desktop-layout): the current-week fixture (now = Thu 09-17)
+    // tops out at 653px with Mon–Wed expanded, because the open Today card
+    // already fixes row 1's height — maxScroll 53 < the band's 108px bottom,
+    // so the band can never scroll away. Thu 09-10's week carries an active
+    // row-2 Friday (09-11); expanding it as well makes the page tall enough
+    // for the non-clamped anchor the criterion describes.
+    const DA = await openPage({ now: "2026-09-10T20:00:00Z", width: 1280, height: 600 });
+    const da = DA.page;
+    assert(await waitSel(da, "[data-testid=day-card]"), "D9a setup: the week renders at 1280x600");
+    for (const iso of ["2026-09-07", "2026-09-08", "2026-09-09", "2026-09-11"]) {
+      await da.evaluate((d) => {
+        const card = [...document.querySelectorAll("[data-testid=day-card]")].find((c) => {
+          const t = c.querySelector("[data-testid=day-title]");
+          return t && (t.getAttribute("aria-label") || "").endsWith(d);
+        });
+        if (card && !card.open) {
+          const s = card.querySelector("[data-testid=day-summary]");
+          if (s) s.click();
+        }
+      }, iso);
+    }
+    // Re-anchor via a picker change inside the current week: the dates do not
+    // change, so the render restores the open cards and anchorToToday runs.
+    await da.evaluate(() => {
+      window.__anchorRender = 0;
+      new MutationObserver(() => { window.__anchorRender++; }).observe(document.getElementById("days"), { childList: true });
+      const el = document.querySelector("[data-testid=picker]");
+      el.value = "2026-09-08";
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    assert(await waitFn(da, () => {
+      if (!window.__anchorRender) return false;
+      const wrap = document.querySelector("[data-testid=day-card] [data-testid=today]");
+      const card = wrap && wrap.closest("[data-testid=day-card]");
+      if (!card) return false;
+      const de = document.documentElement;
+      const maxScroll = de.scrollHeight - de.clientHeight;
+      const top = card.getBoundingClientRect().top + window.scrollY;
+      return Math.abs(window.scrollY - Math.min(top, maxScroll)) <= 2;
+    }, null, 5000), "D9a the same-week picker re-anchor lands at the anchor optimum");
+    const geoA = await todayGeo(da);
+    const wantA = Math.min(geoA.offsetTop, geoA.maxScroll);
+    assert(geoA.overflow === true, `D9a the expanded page overflows at 1280x600 (got ${JSON.stringify(geoA)})`);
+    assert(geoA.scrollY > 0 && Math.abs(geoA.scrollY - wantA) <= 2,
+      `D9a anchor targets Today's row-1 card (scrollY ${geoA.scrollY}, optimum ${wantA})`);
+    assert(geoA.todayTop >= -2, `D9a the anchor never scrolls past Today's top edge (todayTop ${geoA.todayTop})`);
+    assert(geoA.bandBottom !== null && geoA.bandBottom <= 12,
+      `D9a the band sits above the viewport top — one scroll-up away (bandBottom ${geoA.bandBottom})`);
+    assert(DA.pageerrors.length === 0, `D9a no pageerrors, got ${JSON.stringify(DA.pageerrors)}`);
+    await da.close();
+  }
+  {
+    const DB = await openPage({ now: "2026-09-11T20:00:00Z", width: 1280, height: 600 });
+    const db = DB.page;
+    assert(await waitSel(db, "[data-testid=day-card]"), "D9b setup: the week renders at 1280x600");
+    for (const iso of ["2026-09-07", "2026-09-08", "2026-09-09"]) {
+      await db.evaluate((d) => {
+        const card = [...document.querySelectorAll("[data-testid=day-card]")].find((c) => {
+          const t = c.querySelector("[data-testid=day-title]");
+          return t && (t.getAttribute("aria-label") || "").endsWith(d);
+        });
+        if (card && !card.open) {
+          const s = card.querySelector("[data-testid=day-summary]");
+          if (s) s.click();
+        }
+      }, iso);
+    }
+    // Today = Friday 2026-09-11 is the 5th card: row 2 at 4-up.
+    const rowsB = await db.$$eval("[data-testid=day-card]", (els) => els.map((e) => {
+      const r = e.getBoundingClientRect();
+      return { x: Math.round(r.x), top: Math.round(r.top + window.scrollY) };
+    }));
+    assert(rowsB.length === 7 && rowsB[4].x === rowsB[0].x && rowsB[4].top > rowsB[0].top,
+      `D9b setup: Friday sits in row 2 at Monday's x (Mon ${JSON.stringify(rowsB[0])}, Fri ${JSON.stringify(rowsB[4])})`);
+    await db.evaluate(() => {
+      window.__anchorRender = 0;
+      new MutationObserver(() => { window.__anchorRender++; }).observe(document.getElementById("days"), { childList: true });
+      const el = document.querySelector("[data-testid=picker]");
+      el.value = "2026-09-09";
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    assert(await waitFn(db, () => {
+      if (!window.__anchorRender) return false;
+      const wrap = document.querySelector("[data-testid=day-card] [data-testid=today]");
+      const card = wrap && wrap.closest("[data-testid=day-card]");
+      if (!card) return false;
+      const de = document.documentElement;
+      const maxScroll = de.scrollHeight - de.clientHeight;
+      const top = card.getBoundingClientRect().top + window.scrollY;
+      return Math.abs(window.scrollY - Math.min(top, maxScroll)) <= 2;
+    }, null, 5000), "D9b the same-week picker re-anchor lands at the anchor optimum");
+    const geoB = await todayGeo(db);
+    const wantB = Math.min(geoB.offsetTop, geoB.maxScroll);
+    assert(geoB.overflow === true, `D9b the expanded page overflows at 1280x600 (got ${JSON.stringify(geoB)})`);
+    assert(geoB.scrollY > 0 && Math.abs(geoB.scrollY - wantB) <= 2,
+      `D9b anchor targets the row-2 Today card by its own rect (scrollY ${geoB.scrollY}, optimum ${wantB})`);
+    assert(geoB.todayTop >= -2, `D9b the anchor never scrolls past Today's top edge (todayTop ${geoB.todayTop})`);
+    assert(geoB.bandBottom !== null && geoB.bandBottom <= 12,
+      `D9b the band sits above the viewport top — one scroll-up away (bandBottom ${geoB.bandBottom})`);
+    assert(DB.pageerrors.length === 0, `D9b no pageerrors, got ${JSON.stringify(DB.pageerrors)}`);
+    await db.close();
+  }
+  {
+    const DC = await openPage({ now: "2026-09-17T20:00:00Z", width: 1920, height: 1080 });
+    const dc = DC.page;
+    assert(await waitSel(dc, "[data-testid=day-card]"), "D9c setup: the week renders at 1920x1080");
+    const fitsC = await dc.evaluate(() => document.documentElement.scrollHeight <= document.documentElement.clientHeight);
+    assert(fitsC, "D9c setup: the fixture page fits at 1920x1080");
+    const yC = await dc.evaluate(() => Math.round(window.scrollY));
+    assert(yC === 0, `D9c the anchor is a no-op on a page that fits (scrollY ${yC})`);
+    assert(DC.pageerrors.length === 0, `D9c no pageerrors, got ${JSON.stringify(DC.pageerrors)}`);
+    await dc.close();
   }
 
   // ---------- HTTP cache regression (Pages serves max-age=600) ----------
@@ -1132,19 +1303,56 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await sp.evaluate(() => window.__statusNode === document.querySelector("[data-testid=today-status]")), "unchanged polls reuse the aria-live status node");
   await sp.close();
 
+  // ================= D1: 1080px boundary leg — 4-track grid =================
+  {
+    const B = await openPage({ now: "2026-09-17T20:00:00Z", width: 1080, height: 900 });
+    const bp = B.page;
+    const bpe = B.pageerrors;
+    assert(await waitSel(bp, "[data-testid=day-card]"), "D1 setup: the week renders at 1080px");
+    const bGrid = await bp.$eval("#days", (el) => {
+      const cs = getComputedStyle(el);
+      return { display: cs.display, cols: cs.gridTemplateColumns.split(" ").filter(Boolean).length };
+    });
+    assert(bGrid.display === "grid" && bGrid.cols === 4, `D1 exactly 4 grid tracks at 1080px (got ${JSON.stringify(bGrid)})`);
+    const bBodyMax = await bp.$eval("body", (el) => getComputedStyle(el).maxWidth);
+    assert(bBodyMax === "1200px", `D1 body max-width 1200px at 1080px (got "${bBodyMax}")`);
+    const bHeaderRow = await bp.$eval("body", (el) => {
+      const h1 = el.querySelector("h1");
+      const navEl = el.querySelector('nav[aria-label="Week navigation"]');
+      if (!h1 || !navEl) return null;
+      return Math.abs(h1.getBoundingClientRect().top - navEl.getBoundingClientRect().top) < 40;
+    });
+    assert(bHeaderRow === true, "D1 h1 and week nav share one row at 1080px");
+    const bTitles = await titles(bp);
+    assert(bTitles.join(",") === ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20"].join(","),
+      `D1 DOM order stays ascending at 1080px (got ${bTitles.join(",")})`);
+    const content1080 = await cardContentWidth(bp, "2026-09-14");
+    assert(content1080 >= 226, `D3 first-card content box ≥226px at 1080px (got ${content1080})`);
+    // D7: the W7 inner-scroll + page-overflow checks re-run at the boundary.
+    await safeClick(cardFor(bp, "2026-09-15").locator("[data-testid=day-summary]"));
+    const innerScroll1080 = await safeEval(cardFor(bp, "2026-09-15"), (el) =>
+      [...el.querySelectorAll("[data-testid=day-detail] *")].filter((n) => n.scrollHeight > n.clientHeight + 1).length);
+    assert(innerScroll1080 === 0, `D7 no expanded detail element scrolls internally at 1080px (got ${innerScroll1080})`);
+    const overflow1080 = await bp.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+    assert(overflow1080 === true, "D7 no horizontal overflow at 1080px");
+    assert(bpe.length === 0, `D1 no pageerrors at 1080px, got ${JSON.stringify(bpe)}`);
+    await bp.close();
+  }
+
   // ================= W7/W8/W9/W12 desktop page (1280x800) — Rev 2026-09-27 =================
   const P = await openPage({ now: "2026-09-17T20:00:00Z", width: 1280, height: 800 });
   const pp = P.page;
   const ppe = P.pageerrors;
   assert(await waitSel(pp, "[data-testid=day-card]"), "W7 setup: the week renders at desktop");
 
-  // W7: 7-track CSS grid, ascending, inline expansion grows only its column.
+  // W7/D1/D4: 4-track CSS grid at 1280, ascending, row-major wrap.
   const grid = await pp.$eval("#days", (el) => {
     const cs = getComputedStyle(el);
-    return { display: cs.display, cols: cs.gridTemplateColumns.split(" ").filter(Boolean).length };
+    return { display: cs.display, cols: cs.gridTemplateColumns.split(" ").filter(Boolean).length, autoFlow: cs.gridAutoFlow };
   });
   assert(grid.display === "grid", `W7 day list computes display:grid at 1280px (got "${grid.display}")`);
-  assert(grid.cols === 7, `W7 exactly 7 grid tracks (got ${grid.cols})`);
+  assert(grid.cols === 4, `W7 exactly 4 grid tracks (got ${grid.cols})`);
+  assert(grid.autoFlow === "row", `W7 grid-auto-flow stays row (got "${grid.autoFlow}")`);
   const alignStart = await pp.$eval("#days", (el) => getComputedStyle(el).alignItems);
   assert(alignStart === "start", `W7 align-items:start (got "${alignStart}")`);
   const bodyMax = await pp.$eval("body", (el) => getComputedStyle(el).maxWidth);
@@ -1159,14 +1367,41 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   const dTitles = await titles(pp);
   assert(dTitles.join(",") === ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20"].join(","),
     `W7 DOM order stays ascending at desktop (got ${dTitles.join(",")})`);
-  const xsBefore = await pp.$$eval("[data-testid=day-card]", (els) => els.map((e) => Math.round(e.getBoundingClientRect().x)));
-  const expandCard = cardFor(pp, "2026-09-15");
+  const content1280 = await cardContentWidth(pp, "2026-09-14");
+  assert(content1280 >= 226, `D3 first-card content box ≥226px at 1280 (got ${content1280})`);
+  // D4: Friday (index 4) wraps row-major to row 2 at Monday's x.
+  const cardRects = (p) => p.$$eval("[data-testid=day-card]", (els) => els.map((e) => {
+    const r = e.getBoundingClientRect();
+    return { x: Math.round(r.x), top: Math.round(r.top + window.scrollY), h: Math.round(r.height) };
+  }));
+  const before = await cardRects(pp);
+  assert(before.length === 7, `D4 seven day cards render at 1280 (got ${before.length})`);
+  assert(before[4].x === before[0].x && before[4].top > before[0].top,
+    `D4 Friday wraps row-major to row 2 at Monday's x (Mon ${JSON.stringify(before[0])}, Fri ${JSON.stringify(before[4])})`);
+  assert(!stylesheetHasColumnFlow(), "D4 no grid-auto-flow:column value exists in the stylesheet");
+  // D5: expanding a row-1 card grows only it; peers keep x/height; row 2 only shifts down.
+  const expandCard = cardFor(pp, "2026-09-14");
   await safeClick(expandCard.locator("[data-testid=day-summary]"));
-  const xsAfter = await pp.$$eval("[data-testid=day-card]", (els) => els.map((e) => Math.round(e.getBoundingClientRect().x)));
-  assert(JSON.stringify(xsBefore) === JSON.stringify(xsAfter),
-    `W7 expanding one column leaves every sibling x unchanged (before ${JSON.stringify(xsBefore)}, after ${JSON.stringify(xsAfter)})`);
+  const after = await cardRects(pp);
+  assert(after[0].h > before[0].h, `D5 the expanded card grows downward (${before[0].h} → ${after[0].h})`);
+  for (const i of [1, 2, 3]) {
+    assert(after[i].x === before[i].x && after[i].h === before[i].h,
+      `D5 row-1 peer ${i} keeps x and height (before ${JSON.stringify(before[i])}, after ${JSON.stringify(after[i])})`);
+  }
+  for (const i of [4, 5, 6]) {
+    assert(after[i].x === before[i].x && after[i].top >= before[i].top,
+      `D5 row-2 card ${i} keeps x and only shifts down (before ${JSON.stringify(before[i])}, after ${JSON.stringify(after[i])})`);
+  }
+  assert(JSON.stringify(before.map((r) => r.x)) === JSON.stringify(after.map((r) => r.x)),
+    `W7 expanding one column leaves every sibling x unchanged (before ${JSON.stringify(before.map((r) => r.x))}, after ${JSON.stringify(after.map((r) => r.x))})`);
   const grew = await safeEval(expandCard, (el) => el.getBoundingClientRect().height > 120);
   assert(grew === true, "W7 the expanded column grows downward");
+  // D6: two-column metrics restored, no overflow, no same-row text collision.
+  const metrics1280 = await metricsCheck(pp);
+  assert(metrics1280.length >= 2, `D6 at least two metric blocks render at 1280 (got ${metrics1280.length})`);
+  assert(metrics1280.every((m) => m.tracks === 2), `D6 .metrics computes exactly 2 tracks at 1280 (got ${JSON.stringify(metrics1280.map((m) => m.tracks))})`);
+  assert(metrics1280.every((m) => m.sw <= m.cw), `D6 no .metrics overflows at 1280 (got ${JSON.stringify(metrics1280.map((m) => ({ sw: m.sw, cw: m.cw })))})`);
+  assert(metrics1280.every((m) => m.collisions === 0), `D6 no same-row dt/dd text collision at 1280 (got ${JSON.stringify(metrics1280.map((m) => m.collisions))})`);
   const innerScroll = await safeEval(expandCard, (el) =>
     [...el.querySelectorAll("[data-testid=day-detail] *")].filter((n) => n.scrollHeight > n.clientHeight + 1).length);
   assert(innerScroll === 0, `W7 no expanded detail element scrolls internally (got ${innerScroll})`);
@@ -1212,8 +1447,89 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await safeEval(cardFor(pp, "2026-09-16"), (el) => !!el.open) === true, "W8 disclosure still open after the round trip");
   const backGrid = await pp.$eval("#days", (el) => getComputedStyle(el).display);
   assert(backGrid === "grid", `W8 grid returns above the breakpoint (got "${backGrid}")`);
+  const backOverflow = await pp.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+  assert(backOverflow === true, "D8 no horizontal overflow back at 1280");
+  // D8: continue through the 7-up tier and back; order/disclosure/grid survive.
+  await pp.setViewportSize({ width: 1920, height: 1080 });
+  const wideOrder = await titles(pp);
+  assert(wideOrder.join(",") === dTitles.join(","), `D8 ascending order survives the resize to 1920 (got ${wideOrder.join(",")})`);
+  assert(await safeEval(cardFor(pp, "2026-09-16"), (el) => !!el.open) === true, "D8 disclosure stays open at 1920");
+  const wideGrid = await pp.$eval("#days", (el) => {
+    const cs = getComputedStyle(el);
+    return { display: cs.display, cols: cs.gridTemplateColumns.split(" ").filter(Boolean).length };
+  });
+  assert(wideGrid.display === "grid" && wideGrid.cols === 7, `D8 seven tracks at 1920 (got ${JSON.stringify(wideGrid)})`);
+  const wideOverflow = await pp.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+  assert(wideOverflow === true, "D8 no horizontal overflow at 1920");
+  await pp.setViewportSize({ width: 1280, height: 800 });
+  const backOrder2 = await titles(pp);
+  assert(backOrder2.join(",") === dTitles.join(","), `D8 ascending order survives the resize back from 1920 (got ${backOrder2.join(",")})`);
+  assert(await safeEval(cardFor(pp, "2026-09-16"), (el) => !!el.open) === true, "D8 disclosure still open after the 1920 leg");
+  const backGrid2 = await pp.$eval("#days", (el) => {
+    const cs = getComputedStyle(el);
+    return { display: cs.display, cols: cs.gridTemplateColumns.split(" ").filter(Boolean).length };
+  });
+  assert(backGrid2.display === "grid" && backGrid2.cols === 4, `D8 four tracks return at 1280 (got ${JSON.stringify(backGrid2)})`);
+  const backOverflow2 = await pp.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+  assert(backOverflow2 === true, "D8 no horizontal overflow after the 1920 leg");
   assert(ppe.length === 0, `W8 no pageerrors across the resize sequence, got ${JSON.stringify(ppe)}`);
   await pp.close();
+
+  // ================= W17/D2/D3/D6/D7 — 7-up tier at ≥1800px =================
+  {
+    const P17 = await openPage({ now: "2026-09-17T20:00:00Z", width: 1800, height: 900 });
+    const p17 = P17.page;
+    const p17e = P17.pageerrors;
+    assert(await waitSel(p17, "[data-testid=day-card]"), "W17 setup: the week renders at 1800px");
+    const tier17 = () => p17.$eval("#days", (el) => {
+      const cs = getComputedStyle(el);
+      return { display: cs.display, cols: cs.gridTemplateColumns.split(" ").filter(Boolean).length };
+    });
+    let g17 = await tier17();
+    assert(g17.display === "grid" && g17.cols === 7, `D2 exactly 7 grid tracks at 1800px (got ${JSON.stringify(g17)})`);
+    let body17 = await p17.$eval("body", (el) => getComputedStyle(el).maxWidth);
+    assert(body17 === "1800px", `D2 body max-width 1800px at 1800px (got "${body17}")`);
+    let t17 = await titles(p17);
+    assert(t17.join(",") === ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20"].join(","),
+      `D2 DOM order stays ascending at 1800px (got ${t17.join(",")})`);
+    const content1800 = await cardContentWidth(p17, "2026-09-14");
+    assert(content1800 >= 220, `D3 first-card content box ≥220px at 1800px (got ${content1800})`);
+    await safeClick(cardFor(p17, "2026-09-15").locator("[data-testid=day-summary]"));
+    const innerScroll1800 = await safeEval(cardFor(p17, "2026-09-15"), (el) =>
+      [...el.querySelectorAll("[data-testid=day-detail] *")].filter((n) => n.scrollHeight > n.clientHeight + 1).length);
+    assert(innerScroll1800 === 0, `D7 no expanded detail element scrolls internally at 1800px (got ${innerScroll1800})`);
+    const overflow1800 = await p17.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+    assert(overflow1800 === true, "D7 no horizontal overflow at 1800px");
+
+    // D2 boundary: 1799px is still the 4-up tier.
+    await p17.setViewportSize({ width: 1799, height: 900 });
+    g17 = await tier17();
+    assert(g17.display === "grid" && g17.cols === 4, `D2 1799px is still 4 tracks (got ${JSON.stringify(g17)})`);
+
+    // D2/D3/D6/D7 at 1920.
+    await p17.setViewportSize({ width: 1920, height: 1080 });
+    g17 = await tier17();
+    assert(g17.display === "grid" && g17.cols === 7, `D2 exactly 7 grid tracks at 1920px (got ${JSON.stringify(g17)})`);
+    body17 = await p17.$eval("body", (el) => getComputedStyle(el).maxWidth);
+    assert(body17 === "1800px", `D2 body max-width 1800px at 1920px (got "${body17}")`);
+    t17 = await titles(p17);
+    assert(t17.join(",") === ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19", "2026-09-20"].join(","),
+      `D2 DOM order stays ascending at 1920px (got ${t17.join(",")})`);
+    const content1920 = await cardContentWidth(p17, "2026-09-14");
+    assert(content1920 >= 220, `D3 first-card content box ≥220px at 1920px (got ${content1920})`);
+    const innerScroll1920 = await safeEval(cardFor(p17, "2026-09-15"), (el) =>
+      [...el.querySelectorAll("[data-testid=day-detail] *")].filter((n) => n.scrollHeight > n.clientHeight + 1).length);
+    assert(innerScroll1920 === 0, `D7 no expanded detail element scrolls internally at 1920px (got ${innerScroll1920})`);
+    const overflow1920 = await p17.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+    assert(overflow1920 === true, "D7 no horizontal overflow at 1920px");
+    const metrics1920 = await metricsCheck(p17);
+    assert(metrics1920.length >= 2, `D6 at least two metric blocks render at 1920 (got ${metrics1920.length})`);
+    assert(metrics1920.every((m) => m.tracks === 2), `D6 .metrics computes exactly 2 tracks at 1920 (got ${JSON.stringify(metrics1920.map((m) => m.tracks))})`);
+    assert(metrics1920.every((m) => m.sw <= m.cw), `D6 no .metrics overflows at 1920 (got ${JSON.stringify(metrics1920.map((m) => ({ sw: m.sw, cw: m.cw })))})`);
+    assert(metrics1920.every((m) => m.collisions === 0), `D6 no same-row dt/dd text collision at 1920 (got ${JSON.stringify(metrics1920.map((m) => m.collisions))})`);
+    assert(p17e.length === 0, `W17 no pageerrors, got ${JSON.stringify(p17e)}`);
+    await p17.close();
+  }
 
   // ================= W8 focus/scroll survival + W9 mobile — Rev 2026-09-27 =================
   const Q = await openPage({ now: "2026-09-17T20:00:00Z", pollMs: 50 });
