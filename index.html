@@ -60,6 +60,13 @@
     .week-band { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 18px; }
     .week-band h2 { margin: 0 8px 0 0; }
     .legend { align-self: center; margin: 0 0 8px; }
+    /* Desktop 7-track cards have a ~118px content box; the widest metric value
+       (~119.5px at the hero size) cannot stay on one nowrap line inside it, so
+       stack each pair and let only the overlong values wrap. */
+    .metrics { grid-template-columns: minmax(0, 1fr); }
+    .metrics dd { text-align: left; white-space: normal; margin-bottom: 6px; }
+    .course-line { align-items: flex-end; }
+    .today-status, [data-testid=sessions] summary { text-wrap: pretty; }
   }
 </style>
 </head>
@@ -209,7 +216,7 @@ function subsBlock(d) {
   if (subs.length <= 3) return `<ul data-testid="submissions">${items}</ul>`;
   return `<details data-testid="submissions"><summary>Submissions (${subs.length})</summary><ul>${items}</ul></details>`;
 }
-function dayDetail(d) {
+function dayDetail(d, { withDate = true } = {}) {
   const s = dayStats(d);
   const metrics = s.v2
     ? `<dl class="metrics">
@@ -221,7 +228,7 @@ function dayDetail(d) {
     <dt>Active</dt><dd class="hero" data-testid="active-minutes">${fmtMin(d.estimated_active_minutes)}</dd>
   </dl>
   <p class="v1-note muted" data-testid="v1-note">estimated from session span</p>`;
-  const dateLine = `<p class="day-date muted" data-testid="day-date">${esc(d.date)}</p>`;
+  const dateLine = withDate ? `<p class="day-date muted" data-testid="day-date">${esc(d.date)}</p>` : "";
   return `<div class="day-detail" data-testid="day-detail">${dateLine}${metrics}${coursesBlock(d, s.v2)}${sessionsBlock(d)}${subsBlock(d)}</div>`;
 }
 
@@ -280,7 +287,7 @@ function liveLayer(date, { withDate = true } = {}) {
 function renderTodayInCard(date, day) {
   const hasActivity = day && (typeof day.active_minutes_low === "number" || typeof day.estimated_active_minutes === "number");
   const inner = hasActivity
-    ? `${liveLayer(date)}${dayDetail(day)}`
+    ? `${liveLayer(date)}${dayDetail(day, { withDate: false })}`
     : `${liveLayer(date)}
     <p class="muted" data-testid="today-empty">No activity recorded for today yet.</p>`;
   const meta = hasActivity ? collapsedMeta(day) : `<span class="chip muted" data-testid="day-empty-chip">No activity</span>`;
@@ -298,7 +305,7 @@ function renderTodayInCard(date, day) {
 function renderTodayPinned(date, day) {
   const hasActivity = day && (typeof day.active_minutes_low === "number" || typeof day.estimated_active_minutes === "number");
   const body = hasActivity
-    ? dayDetail(day)
+    ? dayDetail(day, { withDate: false })
     : `<p class="muted" data-testid="today-empty">No activity recorded for today yet.</p>`;
   return `<section class="today-strip" data-testid="today" aria-labelledby="today-heading">
     <h2 id="today-heading">Today · ${esc(fmtMonthDay(date))}</h2>
