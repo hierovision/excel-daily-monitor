@@ -27,6 +27,24 @@
       "item": "2.1.2 - Inside the Eukaryotic Cell",
       "course": "Biology EHS",
       "context_id": "192581"
+    },
+    {
+      "id": "25836509",
+      "at_utc": "2026-09-30T15:51:04.632Z",
+      "at": "2026-09-30T11:51:04",
+      "kind": "page_viewed",
+      "item": "2.2.1 - The Cell Membrane",
+      "course": "Biology EHS",
+      "context_id": "192582"
+    },
+    {
+      "id": "25837601",
+      "at_utc": "2026-09-30T16:04:47.846Z",
+      "at": "2026-09-30T12:04:47",
+      "kind": "page_viewed",
+      "item": "2.2.2 - Membrane Transport",
+      "course": "Biology EHS",
+      "context_id": "192583"
     }
   ]
 }
