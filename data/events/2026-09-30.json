@@ -126,6 +126,24 @@
       "item": "Module 2 Quiz",
       "course": "Media Arts EHS",
       "context_id": "16099"
+    },
+    {
+      "id": "25850274",
+      "at_utc": "2026-09-30T19:06:10.839Z",
+      "at": "2026-09-30T15:06:10",
+      "kind": "quiz_submitted",
+      "item": "Module 2 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16099"
+    },
+    {
+      "id": "25850320",
+      "at_utc": "2026-09-30T19:06:31.984Z",
+      "at": "2026-09-30T15:06:31",
+      "kind": "page_viewed",
+      "item": "Section 3.1 - Critiquing Design",
+      "course": "Media Arts EHS",
+      "context_id": "1121"
     }
   ]
 }
