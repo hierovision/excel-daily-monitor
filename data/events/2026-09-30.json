@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-30",
+  "events": [
+    {
+      "id": "25832328",
+      "at_utc": "2026-09-30T14:57:17.043Z",
+      "at": "2026-09-30T10:57:17",
+      "kind": "page_viewed",
+      "item": "Module 2 Overview",
+      "course": "Biology EHS",
+      "context_id": "192579"
+    },
+    {
+      "id": "25832330",
+      "at_utc": "2026-09-30T14:57:19.985Z",
+      "at": "2026-09-30T10:57:19",
+      "kind": "page_viewed",
+      "item": "2.1.1 - The Heirarchy of Life",
+      "course": "Biology EHS",
+      "context_id": "192580"
+    }
+  ]
+}
