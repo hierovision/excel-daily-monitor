@@ -81,6 +81,33 @@
       "item": "Module 2 Quiz",
       "course": "Biology EHS",
       "context_id": "53648"
+    },
+    {
+      "id": "25846888",
+      "at_utc": "2026-09-30T18:17:46.728Z",
+      "at": "2026-09-30T14:17:46",
+      "kind": "quiz_submitted",
+      "item": "Module 2 Quiz",
+      "course": "Biology EHS",
+      "context_id": "53648"
+    },
+    {
+      "id": "25846993",
+      "at_utc": "2026-09-30T18:19:05.422Z",
+      "at": "2026-09-30T14:19:05",
+      "kind": "page_viewed",
+      "item": "Module 3 Overview",
+      "course": "Biology EHS",
+      "context_id": "192587"
+    },
+    {
+      "id": "25847292",
+      "at_utc": "2026-09-30T18:23:18.867Z",
+      "at": "2026-09-30T14:23:18",
+      "kind": "page_viewed",
+      "item": "3.1.1 - The Cell Cycle and Mitosis",
+      "course": "Biology EHS",
+      "context_id": "192588"
     }
   ]
 }
