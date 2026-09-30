@@ -108,6 +108,24 @@
       "item": "3.1.1 - The Cell Cycle and Mitosis",
       "course": "Biology EHS",
       "context_id": "192588"
+    },
+    {
+      "id": "25848113",
+      "at_utc": "2026-09-30T18:35:08.953Z",
+      "at": "2026-09-30T14:35:08",
+      "kind": "page_viewed",
+      "item": "3.1.2 - The Cell Cycle Explorer",
+      "course": "Biology EHS",
+      "context_id": "192589"
+    },
+    {
+      "id": "25849087",
+      "at_utc": "2026-09-30T18:48:40.801Z",
+      "at": "2026-09-30T14:48:40",
+      "kind": "quiz_viewed",
+      "item": "Module 2 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16099"
     }
   ]
 }
