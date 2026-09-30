@@ -63,6 +63,24 @@
       "item": "2.3.2 - Homeostasis and Negative Feedback",
       "course": "Biology EHS",
       "context_id": "192585"
+    },
+    {
+      "id": "25844679",
+      "at_utc": "2026-09-30T17:47:28.936Z",
+      "at": "2026-09-30T13:47:28",
+      "kind": "page_viewed",
+      "item": "Module 2 Wrap Up",
+      "course": "Biology EHS",
+      "context_id": "192586"
+    },
+    {
+      "id": "25844755",
+      "at_utc": "2026-09-30T17:48:38.600Z",
+      "at": "2026-09-30T13:48:38",
+      "kind": "quiz_viewed",
+      "item": "Module 2 Quiz",
+      "course": "Biology EHS",
+      "context_id": "53648"
     }
   ]
 }
