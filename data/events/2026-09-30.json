@@ -54,6 +54,15 @@
       "item": "2.3.1 - The Blood Glucose Homeostasis Model",
       "course": "Biology EHS",
       "context_id": "192584"
+    },
+    {
+      "id": "25839654",
+      "at_utc": "2026-09-30T16:34:58.985Z",
+      "at": "2026-09-30T12:34:58",
+      "kind": "page_viewed",
+      "item": "2.3.2 - Homeostasis and Negative Feedback",
+      "course": "Biology EHS",
+      "context_id": "192585"
     }
   ]
 }
