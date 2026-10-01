@@ -9,6 +9,33 @@
       "item": "Section 3.3 - Reviewing Graphics Software",
       "course": "Media Arts EHS",
       "context_id": "1156"
+    },
+    {
+      "id": "25902472",
+      "at_utc": "2026-10-01T17:55:15.974Z",
+      "at": "2026-10-01T13:55:15",
+      "kind": "page_viewed",
+      "item": "Section 3.1 - Critiquing Design",
+      "course": "Media Arts EHS",
+      "context_id": "1121"
+    },
+    {
+      "id": "25902479",
+      "at_utc": "2026-10-01T17:55:25.713Z",
+      "at": "2026-10-01T13:55:25",
+      "kind": "page_viewed",
+      "item": "Section 3.4 - Bitmap and Vector Images",
+      "course": "Media Arts EHS",
+      "context_id": "1038"
+    },
+    {
+      "id": "25903125",
+      "at_utc": "2026-10-01T18:06:00.468Z",
+      "at": "2026-10-01T14:06:00",
+      "kind": "page_viewed",
+      "item": "Section 3.5 - File Types for File Sharing",
+      "course": "Media Arts EHS",
+      "context_id": "1133"
     }
   ]
 }
