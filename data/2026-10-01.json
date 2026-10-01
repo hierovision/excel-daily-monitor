@@ -1,8 +1,8 @@
 {
   "date": "2026-10-01",
   "first_activity_at": "13:25:34",
-  "last_activity_at": "14:40:12",
-  "span_minutes": 75,
+  "last_activity_at": "15:43:00",
+  "span_minutes": 137,
   "measured_quiz_minutes": 0,
   "reading_minutes_low": 41,
   "reading_minutes_high": 70,
@@ -13,6 +13,11 @@
       "start": "13:25",
       "end": "14:40",
       "minutes": 75
+    },
+    {
+      "start": "15:43",
+      "end": "15:43",
+      "minutes": 0
     }
   ],
   "by_course": [
@@ -23,12 +28,12 @@
       "reading_minutes_high": 70,
       "active_minutes_low": 41,
       "active_minutes_high": 70,
-      "pages_viewed": 5,
+      "pages_viewed": 6,
       "quiz_submissions": []
     }
   ],
   "event_counts": {
-    "page_viewed": 5,
+    "page_viewed": 6,
     "quiz_viewed": 0,
     "quiz_submitted": 0,
     "other": 0
