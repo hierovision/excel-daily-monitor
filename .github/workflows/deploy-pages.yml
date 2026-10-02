@@ -14,8 +14,14 @@ permissions:
   contents: read
 
 concurrency:
+  # Publish the newest commit; a superseded deploy is worthless. This also
+  # keeps a single stuck deploy from blocking the group: a run parked on a
+  # `github-pages` deployment-approval gate (or a Pages/Actions outage) is
+  # cancelled by the next trigger instead of holding the group while every
+  # later run is queued and then cancelled — which stalled publishing for a
+  # day after the 2026-10-01 Actions "deployment gate" incident.
   group: github-pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -24,6 +30,8 @@ jobs:
     # nothing, so there is nothing new to publish).
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    # A deploy takes ~20s; bound a genuine hang so it cannot linger.
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write
