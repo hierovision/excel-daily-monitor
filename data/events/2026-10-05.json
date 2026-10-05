@@ -135,6 +135,24 @@
       "item": "Section 4.1 - The Transition from Web 1.0 to Web 2.0",
       "course": "Media Arts EHS",
       "context_id": "1175"
+    },
+    {
+      "id": "26060945",
+      "at_utc": "2026-10-05T17:42:27.001Z",
+      "at": "2026-10-05T13:42:27",
+      "kind": "page_viewed",
+      "item": "Section 4.2 - Using Blogs and Wikis",
+      "course": "Media Arts EHS",
+      "context_id": "1293"
+    },
+    {
+      "id": "26061462",
+      "at_utc": "2026-10-05T17:48:15.265Z",
+      "at": "2026-10-05T13:48:15",
+      "kind": "page_viewed",
+      "item": "Section 4.3 - Principles of 21st Century Learning",
+      "course": "Media Arts EHS",
+      "context_id": "1301"
     }
   ]
 }
