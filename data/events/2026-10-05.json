@@ -171,6 +171,42 @@
       "item": "Section 4.5 - Slideshow Fundamentals",
       "course": "Media Arts EHS",
       "context_id": "944"
+    },
+    {
+      "id": "26064211",
+      "at_utc": "2026-10-05T18:17:21.817Z",
+      "at": "2026-10-05T14:17:21",
+      "kind": "page_viewed",
+      "item": "Section 4.6 - Web 2.0 Tools Reviewed",
+      "course": "Media Arts EHS",
+      "context_id": "777"
+    },
+    {
+      "id": "26064493",
+      "at_utc": "2026-10-05T18:20:34.345Z",
+      "at": "2026-10-05T14:20:34",
+      "kind": "page_viewed",
+      "item": "Section 4.7 - Podcasts and Vodcast",
+      "course": "Media Arts EHS",
+      "context_id": "1060"
+    },
+    {
+      "id": "26065061",
+      "at_utc": "2026-10-05T18:26:51.657Z",
+      "at": "2026-10-05T14:26:51",
+      "kind": "page_viewed",
+      "item": "Section 4.8 - Using Creative Commons Licensing",
+      "course": "Media Arts EHS",
+      "context_id": "1322"
+    },
+    {
+      "id": "26065622",
+      "at_utc": "2026-10-05T18:33:23.899Z",
+      "at": "2026-10-05T14:33:23",
+      "kind": "page_viewed",
+      "item": "Section 4.9 - Creating a Blog Listing",
+      "course": "Media Arts EHS",
+      "context_id": "809"
     }
   ]
 }
