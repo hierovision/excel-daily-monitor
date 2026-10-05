@@ -153,6 +153,24 @@
       "item": "Section 4.3 - Principles of 21st Century Learning",
       "course": "Media Arts EHS",
       "context_id": "1301"
+    },
+    {
+      "id": "26061770",
+      "at_utc": "2026-10-05T17:52:27.136Z",
+      "at": "2026-10-05T13:52:27",
+      "kind": "page_viewed",
+      "item": "Section 4.4 - Web 2.0 Tools",
+      "course": "Media Arts EHS",
+      "context_id": "768"
+    },
+    {
+      "id": "26062733",
+      "at_utc": "2026-10-05T18:03:10.909Z",
+      "at": "2026-10-05T14:03:10",
+      "kind": "page_viewed",
+      "item": "Section 4.5 - Slideshow Fundamentals",
+      "course": "Media Arts EHS",
+      "context_id": "944"
     }
   ]
 }
