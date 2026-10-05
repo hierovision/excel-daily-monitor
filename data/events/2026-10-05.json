@@ -81,6 +81,24 @@
       "item": "Section 3.1 - Critiquing Design",
       "course": "Media Arts EHS",
       "context_id": "1121"
+    },
+    {
+      "id": "26055523",
+      "at_utc": "2026-10-05T16:35:13.875Z",
+      "at": "2026-10-05T12:35:13",
+      "kind": "page_viewed",
+      "item": "Section 3.8 - Understanding Web and Print Design Differences",
+      "course": "Media Arts EHS",
+      "context_id": "1285"
+    },
+    {
+      "id": "26056423",
+      "at_utc": "2026-10-05T16:45:37.338Z",
+      "at": "2026-10-05T12:45:37",
+      "kind": "page_viewed",
+      "item": "Section 3.9 - Web Design Fundamentals",
+      "course": "Media Arts EHS",
+      "context_id": "1050"
     }
   ]
 }
