@@ -117,6 +117,24 @@
       "item": "Module 3 Quiz",
       "course": "Media Arts EHS",
       "context_id": "16084"
+    },
+    {
+      "id": "26060037",
+      "at_utc": "2026-10-05T17:31:17.954Z",
+      "at": "2026-10-05T13:31:17",
+      "kind": "quiz_submitted",
+      "item": "Module 3 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16084"
+    },
+    {
+      "id": "26060217",
+      "at_utc": "2026-10-05T17:33:08.159Z",
+      "at": "2026-10-05T13:33:08",
+      "kind": "page_viewed",
+      "item": "Section 4.1 - The Transition from Web 1.0 to Web 2.0",
+      "course": "Media Arts EHS",
+      "context_id": "1175"
     }
   ]
 }
