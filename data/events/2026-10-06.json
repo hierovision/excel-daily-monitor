@@ -81,6 +81,24 @@
       "item": "Section 5.5 - The Right Microphone Matters",
       "course": "Media Arts EHS",
       "context_id": "896"
+    },
+    {
+      "id": "26137972",
+      "at_utc": "2026-10-06T19:53:39.257Z",
+      "at": "2026-10-06T15:53:39",
+      "kind": "page_viewed",
+      "item": "Section 5.6 - Audio Editing Software",
+      "course": "Media Arts EHS",
+      "context_id": "626"
+    },
+    {
+      "id": "26138705",
+      "at_utc": "2026-10-06T20:07:04.243Z",
+      "at": "2026-10-06T16:07:04",
+      "kind": "page_viewed",
+      "item": "Section 5.7 - A Story With Sound",
+      "course": "Media Arts EHS",
+      "context_id": "1370"
     }
   ]
 }
