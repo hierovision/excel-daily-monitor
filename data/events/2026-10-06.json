@@ -45,6 +45,42 @@
       "item": "Section 5.1 - Parts of the Ear",
       "course": "Media Arts EHS",
       "context_id": "1311"
+    },
+    {
+      "id": "26135578",
+      "at_utc": "2026-10-06T19:14:53.820Z",
+      "at": "2026-10-06T15:14:53",
+      "kind": "page_viewed",
+      "item": "Section 5.2 - How Sound Waves Work",
+      "course": "Media Arts EHS",
+      "context_id": "1204"
+    },
+    {
+      "id": "26136091",
+      "at_utc": "2026-10-06T19:22:04.395Z",
+      "at": "2026-10-06T15:22:04",
+      "kind": "page_viewed",
+      "item": "Section 5.3 - Sound Frequencies",
+      "course": "Media Arts EHS",
+      "context_id": "796"
+    },
+    {
+      "id": "26136372",
+      "at_utc": "2026-10-06T19:26:34.387Z",
+      "at": "2026-10-06T15:26:34",
+      "kind": "page_viewed",
+      "item": "Section 5.4 - Sound in the Real World",
+      "course": "Media Arts EHS",
+      "context_id": "819"
+    },
+    {
+      "id": "26136905",
+      "at_utc": "2026-10-06T19:34:43.122Z",
+      "at": "2026-10-06T15:34:43",
+      "kind": "page_viewed",
+      "item": "Section 5.5 - The Right Microphone Matters",
+      "course": "Media Arts EHS",
+      "context_id": "896"
     }
   ]
 }
