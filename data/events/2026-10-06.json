@@ -27,6 +27,24 @@
       "item": "Module 4 Quiz",
       "course": "Media Arts EHS",
       "context_id": "16088"
+    },
+    {
+      "id": "26134833",
+      "at_utc": "2026-10-06T19:05:24.266Z",
+      "at": "2026-10-06T15:05:24",
+      "kind": "quiz_submitted",
+      "item": "Module 4 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16088"
+    },
+    {
+      "id": "26134840",
+      "at_utc": "2026-10-06T19:05:31.961Z",
+      "at": "2026-10-06T15:05:31",
+      "kind": "page_viewed",
+      "item": "Section 5.1 - Parts of the Ear",
+      "course": "Media Arts EHS",
+      "context_id": "1311"
     }
   ]
 }
