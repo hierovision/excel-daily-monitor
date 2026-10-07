@@ -9,6 +9,33 @@
       "item": "Module 5 Quiz",
       "course": "Media Arts EHS",
       "context_id": "16140"
+    },
+    {
+      "id": "26184768",
+      "at_utc": "2026-10-07T16:54:54.343Z",
+      "at": "2026-10-07T12:54:54",
+      "kind": "quiz_submitted",
+      "item": "Module 5 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16140"
+    },
+    {
+      "id": "26184884",
+      "at_utc": "2026-10-07T16:56:59.741Z",
+      "at": "2026-10-07T12:56:59",
+      "kind": "page_viewed",
+      "item": "Section 5.1 - Parts of the Ear",
+      "course": "Media Arts EHS",
+      "context_id": "1311"
+    },
+    {
+      "id": "26186666",
+      "at_utc": "2026-10-07T17:18:19.199Z",
+      "at": "2026-10-07T13:18:19",
+      "kind": "page_viewed",
+      "item": "Section 5.2 - How Sound Waves Work",
+      "course": "Media Arts EHS",
+      "context_id": "1204"
     }
   ]
 }
