@@ -72,6 +72,51 @@
       "item": "Section 5.6 - Audio Editing Software",
       "course": "Media Arts EHS",
       "context_id": "626"
+    },
+    {
+      "id": "26190476",
+      "at_utc": "2026-10-07T18:09:21.919Z",
+      "at": "2026-10-07T14:09:21",
+      "kind": "page_viewed",
+      "item": "Section 5.7 - A Story With Sound",
+      "course": "Media Arts EHS",
+      "context_id": "1370"
+    },
+    {
+      "id": "26190743",
+      "at_utc": "2026-10-07T18:13:45.678Z",
+      "at": "2026-10-07T14:13:45",
+      "kind": "page_viewed",
+      "item": "Section 5.8 - Radio Advertising",
+      "course": "Media Arts EHS",
+      "context_id": "831"
+    },
+    {
+      "id": "26191854",
+      "at_utc": "2026-10-07T18:28:03.723Z",
+      "at": "2026-10-07T14:28:03",
+      "kind": "page_viewed",
+      "item": "Section 5.9 - Recording Audio and Creating Ads",
+      "course": "Media Arts EHS",
+      "context_id": "1379"
+    },
+    {
+      "id": "26192548",
+      "at_utc": "2026-10-07T18:37:49.344Z",
+      "at": "2026-10-07T14:37:49",
+      "kind": "quiz_viewed",
+      "item": "Module 5 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16140"
+    },
+    {
+      "id": "26195447",
+      "at_utc": "2026-10-07T19:26:11.280Z",
+      "at": "2026-10-07T15:26:11",
+      "kind": "quiz_submitted",
+      "item": "Module 5 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16140"
     }
   ]
 }
