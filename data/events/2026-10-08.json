@@ -63,6 +63,33 @@
       "item": "Section 6.4 - The Default Formats of Cameras",
       "course": "Media Arts EHS",
       "context_id": "1181"
+    },
+    {
+      "id": "26252627",
+      "at_utc": "2026-10-08T18:18:49.759Z",
+      "at": "2026-10-08T14:18:49",
+      "kind": "page_viewed",
+      "item": "Section 6.5 - Writing About a Photographer",
+      "course": "Media Arts EHS",
+      "context_id": "530"
+    },
+    {
+      "id": "26252907",
+      "at_utc": "2026-10-08T18:22:09.846Z",
+      "at": "2026-10-08T14:22:09",
+      "kind": "page_viewed",
+      "item": "Section 6.6 - Rule of Thirds",
+      "course": "Media Arts EHS",
+      "context_id": "1331"
+    },
+    {
+      "id": "26253656",
+      "at_utc": "2026-10-08T18:31:01.998Z",
+      "at": "2026-10-08T14:31:01",
+      "kind": "page_viewed",
+      "item": "Section 6.7 - Basic Photo Editing",
+      "course": "Media Arts EHS",
+      "context_id": "1341"
     }
   ]
 }
