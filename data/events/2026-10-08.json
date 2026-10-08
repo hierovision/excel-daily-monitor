@@ -18,6 +18,24 @@
       "item": "Media Arts - Midterm Exam",
       "course": "Media Arts EHS",
       "context_id": "16105"
+    },
+    {
+      "id": "26247430",
+      "at_utc": "2026-10-08T17:19:48.795Z",
+      "at": "2026-10-08T13:19:48",
+      "kind": "quiz_submitted",
+      "item": "Media Arts - Midterm Exam",
+      "course": "Media Arts EHS",
+      "context_id": "16105"
+    },
+    {
+      "id": "26247883",
+      "at_utc": "2026-10-08T17:25:06.328Z",
+      "at": "2026-10-08T13:25:06",
+      "kind": "page_viewed",
+      "item": "Section 6.1 - Early Cameras",
+      "course": "Media Arts EHS",
+      "context_id": "1391"
     }
   ]
 }
