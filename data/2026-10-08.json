@@ -1,29 +1,29 @@
 {
   "date": "2026-10-08",
   "first_activity_at": "11:51:07",
-  "last_activity_at": "14:42:40",
-  "span_minutes": 172,
+  "last_activity_at": "15:11:00",
+  "span_minutes": 200,
   "measured_quiz_minutes": 87,
-  "reading_minutes_low": 84,
-  "reading_minutes_high": 85,
-  "active_minutes_low": 171,
-  "active_minutes_high": 172,
+  "reading_minutes_low": 99,
+  "reading_minutes_high": 113,
+  "active_minutes_low": 186,
+  "active_minutes_high": 200,
   "sessions": [
     {
       "start": "11:51",
-      "end": "14:42",
-      "minutes": 172
+      "end": "15:11",
+      "minutes": 200
     }
   ],
   "by_course": [
     {
       "course": "Media Arts EHS",
       "measured_quiz_minutes": 87,
-      "reading_minutes_low": 84,
-      "reading_minutes_high": 85,
-      "active_minutes_low": 171,
-      "active_minutes_high": 172,
-      "pages_viewed": 9,
+      "reading_minutes_low": 99,
+      "reading_minutes_high": 113,
+      "active_minutes_low": 186,
+      "active_minutes_high": 200,
+      "pages_viewed": 10,
       "quiz_submissions": [
         {
           "item": "Media Arts - Midterm Exam",
@@ -33,7 +33,7 @@
     }
   ],
   "event_counts": {
-    "page_viewed": 9,
+    "page_viewed": 10,
     "quiz_viewed": 1,
     "quiz_submitted": 1,
     "other": 0
