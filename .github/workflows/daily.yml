@@ -21,6 +21,13 @@ concurrency:
 jobs:
   scrape-and-commit:
     runs-on: ubuntu-latest
+    # Bound a stalled step so it cannot hold the `daily-summary` concurrency
+    # group for hours (2026-10-07: a hung `playwright install` stopped capture
+    # for 4h40m; GitHub's default is 6h). Across 779 successful runs the job
+    # max is 17m19s and the sum of per-step maxima is 22m38s (install 16m12s,
+    # scrape 5m44s, test 17s, commit 24s), so 25m covers every observed
+    # success; the two observed stalls ran 24m47s and 1h52m.
+    timeout-minutes: 25
     permissions:
       contents: write # commit data/*.json back to main
     steps:
