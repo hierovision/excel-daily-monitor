@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-08",
+  "events": [
+    {
+      "id": "26240816",
+      "at_utc": "2026-10-08T15:51:07.077Z",
+      "at": "2026-10-08T11:51:07",
+      "kind": "page_viewed",
+      "item": "Writing Assignment Guidelines",
+      "course": "Media Arts EHS",
+      "context_id": "930"
+    },
+    {
+      "id": "26241009",
+      "at_utc": "2026-10-08T15:53:14.356Z",
+      "at": "2026-10-08T11:53:14",
+      "kind": "quiz_viewed",
+      "item": "Media Arts - Midterm Exam",
+      "course": "Media Arts EHS",
+      "context_id": "16105"
+    }
+  ]
+}
