@@ -27,6 +27,24 @@
       "item": "Section 6.3 - Color Temperatures",
       "course": "Media Arts EHS",
       "context_id": "1403"
+    },
+    {
+      "id": "26312949",
+      "at_utc": "2026-10-09T21:12:22.580Z",
+      "at": "2026-10-09T17:12:22",
+      "kind": "page_viewed",
+      "item": "Section 6.4 - The Default Formats of Cameras",
+      "course": "Media Arts EHS",
+      "context_id": "1181"
+    },
+    {
+      "id": "26313288",
+      "at_utc": "2026-10-09T21:23:08.232Z",
+      "at": "2026-10-09T17:23:08",
+      "kind": "page_viewed",
+      "item": "Section 6.5 - Writing About a Photographer",
+      "course": "Media Arts EHS",
+      "context_id": "530"
     }
   ]
 }
