@@ -81,6 +81,42 @@
       "item": "Section 6.7 - Basic Photo Editing",
       "course": "Media Arts EHS",
       "context_id": "1341"
+    },
+    {
+      "id": "26315557",
+      "at_utc": "2026-10-09T22:23:46.043Z",
+      "at": "2026-10-09T18:23:46",
+      "kind": "page_viewed",
+      "item": "Section 6.8 - Touching Up and Adding Effects",
+      "course": "Media Arts EHS",
+      "context_id": "570"
+    },
+    {
+      "id": "26315658",
+      "at_utc": "2026-10-09T22:26:45.704Z",
+      "at": "2026-10-09T18:26:45",
+      "kind": "page_viewed",
+      "item": "Section 6.7 - Basic Photo Editing",
+      "course": "Media Arts EHS",
+      "context_id": "1341"
+    },
+    {
+      "id": "26315660",
+      "at_utc": "2026-10-09T22:26:52.586Z",
+      "at": "2026-10-09T18:26:52",
+      "kind": "page_viewed",
+      "item": "Section 6.7 - Basic Photo Editing",
+      "course": "Media Arts EHS",
+      "context_id": "1341"
+    },
+    {
+      "id": "26315661",
+      "at_utc": "2026-10-09T22:26:57.119Z",
+      "at": "2026-10-09T18:26:57",
+      "kind": "page_viewed",
+      "item": "Section 6.8 - Touching Up and Adding Effects",
+      "course": "Media Arts EHS",
+      "context_id": "570"
     }
   ]
 }
