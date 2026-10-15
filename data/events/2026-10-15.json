@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-15",
+  "events": [
+    {
+      "id": "26605758",
+      "at_utc": "2026-10-15T16:14:20.237Z",
+      "at": "2026-10-15T12:14:20",
+      "kind": "page_viewed",
+      "item": "Section 7.1 - Moving Pictures",
+      "course": "Media Arts EHS",
+      "context_id": "549"
+    },
+    {
+      "id": "26606597",
+      "at_utc": "2026-10-15T16:25:00.385Z",
+      "at": "2026-10-15T12:25:00",
+      "kind": "page_viewed",
+      "item": "Section 7.2 - Recording Video",
+      "course": "Media Arts EHS",
+      "context_id": "1213"
+    }
+  ]
+}
