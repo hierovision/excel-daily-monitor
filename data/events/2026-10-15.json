@@ -63,6 +63,24 @@
       "item": "Section 7.6 - Video Production Roles and Styles",
       "course": "Media Arts EHS",
       "context_id": "1351"
+    },
+    {
+      "id": "26616402",
+      "at_utc": "2026-10-15T18:26:15.207Z",
+      "at": "2026-10-15T14:26:15",
+      "kind": "page_viewed",
+      "item": "Section 7.4 - The Moving Camera",
+      "course": "Media Arts EHS",
+      "context_id": "1223"
+    },
+    {
+      "id": "26616410",
+      "at_utc": "2026-10-15T18:26:18.588Z",
+      "at": "2026-10-15T14:26:18",
+      "kind": "page_viewed",
+      "item": "Section 7.7 - Transitions",
+      "course": "Media Arts EHS",
+      "context_id": "504"
     }
   ]
 }
