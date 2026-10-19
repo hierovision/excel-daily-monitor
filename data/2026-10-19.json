@@ -1,13 +1,13 @@
 {
   "date": "2026-10-19",
   "first_activity_at": "15:09:26",
-  "last_activity_at": "18:45:18",
-  "span_minutes": 216,
+  "last_activity_at": "19:11:26",
+  "span_minutes": 242,
   "measured_quiz_minutes": 0,
-  "reading_minutes_low": 45,
-  "reading_minutes_high": 77,
-  "active_minutes_low": 45,
-  "active_minutes_high": 77,
+  "reading_minutes_low": 60,
+  "reading_minutes_high": 103,
+  "active_minutes_low": 60,
+  "active_minutes_high": 103,
   "sessions": [
     {
       "start": "15:09",
@@ -16,24 +16,24 @@
     },
     {
       "start": "18:45",
-      "end": "18:45",
-      "minutes": 0
+      "end": "19:11",
+      "minutes": 26
     }
   ],
   "by_course": [
     {
       "course": "Media Arts EHS",
       "measured_quiz_minutes": 0,
-      "reading_minutes_low": 45,
-      "reading_minutes_high": 77,
-      "active_minutes_low": 45,
-      "active_minutes_high": 77,
-      "pages_viewed": 5,
+      "reading_minutes_low": 60,
+      "reading_minutes_high": 103,
+      "active_minutes_low": 60,
+      "active_minutes_high": 103,
+      "pages_viewed": 6,
       "quiz_submissions": []
     }
   ],
   "event_counts": {
-    "page_viewed": 5,
+    "page_viewed": 6,
     "quiz_viewed": 0,
     "quiz_submitted": 0,
     "other": 0
