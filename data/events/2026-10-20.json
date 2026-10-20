@@ -36,6 +36,24 @@
       "item": "Module 8 Quiz",
       "course": "Media Arts EHS",
       "context_id": "16112"
+    },
+    {
+      "id": "26877863",
+      "at_utc": "2026-10-20T17:13:07.392Z",
+      "at": "2026-10-20T13:13:07",
+      "kind": "quiz_submitted",
+      "item": "Module 8 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16112"
+    },
+    {
+      "id": "26877913",
+      "at_utc": "2026-10-20T17:14:08.566Z",
+      "at": "2026-10-20T13:14:08",
+      "kind": "page_viewed",
+      "item": "Section 9.1 - Inspiration From Accomplished Professionals",
+      "course": "Media Arts EHS",
+      "context_id": "1253"
     }
   ]
 }
