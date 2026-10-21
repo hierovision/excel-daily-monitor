@@ -45,6 +45,15 @@
       "item": "Section 9.9 - DVDs and Merchandise",
       "course": "Media Arts EHS",
       "context_id": "593"
+    },
+    {
+      "id": "26957552",
+      "at_utc": "2026-10-21T18:45:27.043Z",
+      "at": "2026-10-21T14:45:27",
+      "kind": "quiz_viewed",
+      "item": "Module 9 Quiz",
+      "course": "Media Arts EHS",
+      "context_id": "16120"
     }
   ]
 }

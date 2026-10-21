@@ -1,8 +1,8 @@
 {
   "date": "2026-10-21",
   "first_activity_at": "12:04:13",
-  "last_activity_at": "13:27:26",
-  "span_minutes": 83,
+  "last_activity_at": "14:45:27",
+  "span_minutes": 161,
   "measured_quiz_minutes": 0,
   "reading_minutes_low": 58,
   "reading_minutes_high": 81,
@@ -13,6 +13,11 @@
       "start": "12:04",
       "end": "13:27",
       "minutes": 83
+    },
+    {
+      "start": "14:45",
+      "end": "14:45",
+      "minutes": 0
     }
   ],
   "by_course": [
@@ -29,7 +34,7 @@
   ],
   "event_counts": {
     "page_viewed": 5,
-    "quiz_viewed": 0,
+    "quiz_viewed": 1,
     "quiz_submitted": 0,
     "other": 0
   },
