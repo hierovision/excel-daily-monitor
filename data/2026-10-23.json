@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-23",
+  "first_activity_at": "12:13:27",
+  "last_activity_at": "12:28:27",
+  "span_minutes": 15,
+  "measured_quiz_minutes": 0,
+  "reading_minutes_low": 15,
+  "reading_minutes_high": 15,
+  "active_minutes_low": 15,
+  "active_minutes_high": 15,
+  "sessions": [
+    {
+      "start": "12:13",
+      "end": "12:28",
+      "minutes": 15
+    }
+  ],
+  "by_course": [
+    {
+      "course": "English 10 EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 8,
+      "reading_minutes_high": 8,
+      "active_minutes_low": 8,
+      "active_minutes_high": 8,
+      "pages_viewed": 1,
+      "quiz_submissions": []
+    },
+    {
+      "course": "Biology EHS",
+      "measured_quiz_minutes": 0,
+      "reading_minutes_low": 8,
+      "reading_minutes_high": 8,
+      "active_minutes_low": 8,
+      "active_minutes_high": 8,
+      "pages_viewed": 1,
+      "quiz_submissions": []
+    }
+  ],
+  "event_counts": {
+    "page_viewed": 2,
+    "quiz_viewed": 0,
+    "quiz_submitted": 0,
+    "other": 0
+  },
+  "submissions_and_grades": []
+}

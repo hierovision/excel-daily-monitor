@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-23",
+  "events": [
+    {
+      "id": "27084401",
+      "at_utc": "2026-10-23T16:13:27.340Z",
+      "at": "2026-10-23T12:13:27",
+      "kind": "page_viewed",
+      "item": "Module 1 Wrap Up",
+      "course": "English 10 EHS",
+      "context_id": "189928"
+    },
+    {
+      "id": "27085442",
+      "at_utc": "2026-10-23T16:28:27.490Z",
+      "at": "2026-10-23T12:28:27",
+      "kind": "page_viewed",
+      "item": "3.2.1 - Cell Cycle Checkpoints",
+      "course": "Biology EHS",
+      "context_id": "192590"
+    }
+  ]
+}
