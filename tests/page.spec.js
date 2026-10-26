@@ -842,6 +842,42 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     `OQ3 a true zero renders 0m without the ≈ prefix (got "${zeroLine.trim()}")`);
   overrides.delete("/data/2026-09-15.json");
 
+  // 2026-10-26 report: two page opens 119 min apart are two one-event
+  // sessions. The floor gives each session 5/15 min, so the day reads 10/30
+  // active and 10/30 reading while each session keeps its raw zero-minute
+  // span. The session bullets must render a single time for a one-event
+  // session, never a degenerate "11:04–11:04 AM" range; the summary keeps the
+  // day's first–last span.
+  const pointSessions = fixture("2026-09-15");
+  pointSessions.measured_quiz_minutes = 0;
+  pointSessions.active_minutes_low = 10;
+  pointSessions.active_minutes_high = 30;
+  pointSessions.reading_minutes_low = 10;
+  pointSessions.reading_minutes_high = 30;
+  pointSessions.first_activity_at = "11:04:19";
+  pointSessions.last_activity_at = "13:03:30";
+  pointSessions.sessions = [
+    { start: "11:04", end: "11:04", minutes: 0, minutes_low: 5, minutes_high: 15 },
+    { start: "13:03", end: "13:03", minutes: 0, minutes_low: 5, minutes_high: 15 },
+  ];
+  overrides.set("/data/2026-09-15.json", Buffer.from(JSON.stringify(pointSessions)));
+  await page.reload({ waitUntil: "load" });
+  await page.waitForSelector("[data-testid=day-card]");
+  const pointCard = cardFor(page, "2026-09-15");
+  await safeClick(pointCard.locator("[data-testid=day-summary]"));
+  assert(await readText(pointCard.locator("[data-testid=active-minutes]")) === "10m–30m",
+    `floored one-event day active value (got "${await readText(pointCard.locator("[data-testid=active-minutes]"))}")`);
+  assert(await readText(pointCard.locator("[data-testid=reading-line]")) === "10m–30m",
+    `floored one-event day reading value (got "${await readText(pointCard.locator("[data-testid=reading-line]"))}")`);
+  const pointDisclosure = pointCard.locator("[data-testid=sessions]");
+  assert(norm(await pointDisclosure.locator("summary").textContent().catch(() => "")) === "Sessions (2) · 11:04 AM–1:03 PM",
+    `point-session summary keeps the day span (got "${norm(await pointDisclosure.locator("summary").textContent().catch(() => ""))}")`);
+  await safeClick(pointDisclosure.locator("summary"));
+  const pointBullets = (await pointDisclosure.locator("li").allTextContents().catch(() => [])).map(norm);
+  assert(pointBullets.join(" | ") === "11:04 AM | 1:03 PM",
+    `one-event sessions render as a single time, not a zero-length range (got ${JSON.stringify(pointBullets)})`);
+  overrides.delete("/data/2026-09-15.json");
+
   assert(pageerrors.length === 0, `no pageerrors, got ${JSON.stringify(pageerrors)}`);
   await page.close();
 

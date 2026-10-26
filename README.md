@@ -71,7 +71,25 @@ How the numbers are built:
 - **Reading/work (estimated)** — the platform logs page opens, not time on
   page, so gaps between events are capped (15–30 min) and shown as a range.
   Gaps of 45+ minutes split sessions and count as idle.
+- **Session floor** — every session with at least one event contributes a
+  bounded 5–15 minutes. A one-event session (for example, a single page open)
+  is therefore counted as 5–15 minutes rather than zero; a session's raw
+  `minutes` span stays unchanged, and the floored estimate is carried as
+  `minutes_low`/`minutes_high`. The floor residual is attributed to the
+  session's terminal (last) event's course.
 - `active = measured quiz time + estimated reading range`.
+
+After a change to the measurement model, rebuild the derived day files and
+manifest from the committed event store:
+
+```
+node summarize.js --rebuild
+```
+
+That command reads `data/events/`, rewrites every `data/YYYY-MM-DD.json`, and
+rebuilds `data/index.json`; it leaves `data/status.json` and `data/events/`
+untouched. The normal `node summarize.js data/raw-events.json` path still
+recomputes only changed days.
 
 ## Keeping the current day fresh
 

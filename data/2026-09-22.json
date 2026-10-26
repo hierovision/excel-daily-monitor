@@ -5,19 +5,23 @@
   "span_minutes": 200,
   "measured_quiz_minutes": 4,
   "reading_minutes_low": 44,
-  "reading_minutes_high": 68,
+  "reading_minutes_high": 71,
   "active_minutes_low": 48,
-  "active_minutes_high": 72,
+  "active_minutes_high": 75,
   "sessions": [
     {
       "start": "11:31",
       "end": "12:32",
-      "minutes": 61
+      "minutes": 61,
+      "minutes_low": 35,
+      "minutes_high": 60
     },
     {
       "start": "14:38",
       "end": "14:51",
-      "minutes": 13
+      "minutes": 13,
+      "minutes_low": 13,
+      "minutes_high": 15
     }
   ],
   "by_course": [
@@ -25,9 +29,9 @@
       "course": "World History EHS",
       "measured_quiz_minutes": 4,
       "reading_minutes_low": 44,
-      "reading_minutes_high": 68,
+      "reading_minutes_high": 71,
       "active_minutes_low": 48,
-      "active_minutes_high": 72,
+      "active_minutes_high": 75,
       "pages_viewed": 7,
       "quiz_submissions": [
         {

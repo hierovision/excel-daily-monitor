@@ -4,35 +4,41 @@
   "last_activity_at": "17:52:22",
   "span_minutes": 187,
   "measured_quiz_minutes": 0,
-  "reading_minutes_low": 20,
-  "reading_minutes_high": 26,
-  "active_minutes_low": 20,
-  "active_minutes_high": 26,
+  "reading_minutes_low": 25,
+  "reading_minutes_high": 51,
+  "active_minutes_low": 25,
+  "active_minutes_high": 51,
   "sessions": [
     {
       "start": "14:45",
       "end": "14:49",
-      "minutes": 5
+      "minutes": 5,
+      "minutes_low": 5,
+      "minutes_high": 15
     },
     {
       "start": "16:05",
       "end": "16:05",
-      "minutes": 0
+      "minutes": 0,
+      "minutes_low": 5,
+      "minutes_high": 15
     },
     {
       "start": "17:31",
       "end": "17:52",
-      "minutes": 21
+      "minutes": 21,
+      "minutes_low": 15,
+      "minutes_high": 21
     }
   ],
   "by_course": [
     {
       "course": "World History EHS",
       "measured_quiz_minutes": 0,
-      "reading_minutes_low": 20,
-      "reading_minutes_high": 26,
-      "active_minutes_low": 20,
-      "active_minutes_high": 26,
+      "reading_minutes_low": 25,
+      "reading_minutes_high": 51,
+      "active_minutes_low": 25,
+      "active_minutes_high": 51,
       "pages_viewed": 5,
       "quiz_submissions": []
     }

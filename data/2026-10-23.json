@@ -4,25 +4,31 @@
   "last_activity_at": "14:38:56",
   "span_minutes": 145,
   "measured_quiz_minutes": 0,
-  "reading_minutes_low": 15,
-  "reading_minutes_high": 15,
-  "active_minutes_low": 15,
-  "active_minutes_high": 15,
+  "reading_minutes_low": 25,
+  "reading_minutes_high": 45,
+  "active_minutes_low": 25,
+  "active_minutes_high": 45,
   "sessions": [
     {
       "start": "12:13",
       "end": "12:28",
-      "minutes": 15
+      "minutes": 15,
+      "minutes_low": 15,
+      "minutes_high": 15
     },
     {
       "start": "13:18",
       "end": "13:18",
-      "minutes": 0
+      "minutes": 0,
+      "minutes_low": 5,
+      "minutes_high": 15
     },
     {
       "start": "14:38",
       "end": "14:38",
-      "minutes": 0
+      "minutes": 0,
+      "minutes_low": 5,
+      "minutes_high": 15
     }
   ],
   "by_course": [
@@ -39,10 +45,10 @@
     {
       "course": "Biology EHS",
       "measured_quiz_minutes": 0,
-      "reading_minutes_low": 8,
-      "reading_minutes_high": 8,
-      "active_minutes_low": 8,
-      "active_minutes_high": 8,
+      "reading_minutes_low": 18,
+      "reading_minutes_high": 38,
+      "active_minutes_low": 18,
+      "active_minutes_high": 38,
       "pages_viewed": 3,
       "quiz_submissions": []
     }

@@ -12,7 +12,9 @@
     {
       "start": "11:38",
       "end": "14:53",
-      "minutes": 195
+      "minutes": 195,
+      "minutes_low": 159,
+      "minutes_high": 184
     }
   ],
   "by_course": [
