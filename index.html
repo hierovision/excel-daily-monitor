@@ -179,6 +179,9 @@ function fmt12(t) {
 function timeRange(a, b) {
   const at = fmt12(a);
   const bt = fmt12(b);
+  // A one-event session has no interval: render the point time, never a
+  // degenerate "11:04–11:04 AM" range.
+  if (a === b) return at;
   const am = at.slice(-2);
   const bm = bt.slice(-2);
   if (am === bm) return `${at.slice(0, -3)}–${bt}`;

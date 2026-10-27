@@ -4,30 +4,34 @@
   "last_activity_at": "13:09:01",
   "span_minutes": 58,
   "measured_quiz_minutes": 0,
-  "reading_minutes_low": 4,
-  "reading_minutes_high": 4,
-  "active_minutes_low": 4,
-  "active_minutes_high": 4,
+  "reading_minutes_low": 10,
+  "reading_minutes_high": 30,
+  "active_minutes_low": 10,
+  "active_minutes_high": 30,
   "sessions": [
     {
       "start": "12:11",
       "end": "12:13",
-      "minutes": 3
+      "minutes": 3,
+      "minutes_low": 5,
+      "minutes_high": 15
     },
     {
       "start": "13:08",
       "end": "13:09",
-      "minutes": 1
+      "minutes": 1,
+      "minutes_low": 5,
+      "minutes_high": 15
     }
   ],
   "by_course": [
     {
       "course": "English 10 EHS",
       "measured_quiz_minutes": 0,
-      "reading_minutes_low": 4,
-      "reading_minutes_high": 4,
-      "active_minutes_low": 4,
-      "active_minutes_high": 4,
+      "reading_minutes_low": 10,
+      "reading_minutes_high": 30,
+      "active_minutes_low": 10,
+      "active_minutes_high": 30,
       "pages_viewed": 5,
       "quiz_submissions": []
     }

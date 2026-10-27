@@ -12,12 +12,16 @@
     {
       "start": "15:09",
       "end": "16:34",
-      "minutes": 85
+      "minutes": 85,
+      "minutes_low": 45,
+      "minutes_high": 77
     },
     {
       "start": "18:45",
       "end": "19:11",
-      "minutes": 26
+      "minutes": 26,
+      "minutes_low": 15,
+      "minutes_high": 26
     }
   ],
   "by_course": [

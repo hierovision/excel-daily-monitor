@@ -5,14 +5,16 @@
   "span_minutes": 6,
   "measured_quiz_minutes": 0,
   "reading_minutes_low": 6,
-  "reading_minutes_high": 6,
+  "reading_minutes_high": 15,
   "active_minutes_low": 6,
-  "active_minutes_high": 6,
+  "active_minutes_high": 15,
   "sessions": [
     {
       "start": "12:28",
       "end": "12:34",
-      "minutes": 6
+      "minutes": 6,
+      "minutes_low": 6,
+      "minutes_high": 15
     }
   ],
   "by_course": [
@@ -60,9 +62,9 @@
       "course": "Media Arts EHS",
       "measured_quiz_minutes": 0,
       "reading_minutes_low": 0,
-      "reading_minutes_high": 0,
+      "reading_minutes_high": 10,
       "active_minutes_low": 0,
-      "active_minutes_high": 0,
+      "active_minutes_high": 10,
       "pages_viewed": 2,
       "quiz_submissions": []
     }
