@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-27",
+  "events": [
+    {
+      "id": "27305302",
+      "at_utc": "2026-10-27T16:32:17.077Z",
+      "at": "2026-10-27T12:32:17",
+      "kind": "quiz_viewed",
+      "item": "Module 3 Quiz",
+      "course": "Biology EHS",
+      "context_id": "53649"
+    }
+  ]
+}
