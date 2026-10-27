@@ -1,39 +1,51 @@
 {
   "date": "2026-10-27",
   "first_activity_at": "12:32:17",
-  "last_activity_at": "12:32:17",
-  "span_minutes": 0,
-  "measured_quiz_minutes": 0,
-  "reading_minutes_low": 5,
-  "reading_minutes_high": 15,
-  "active_minutes_low": 5,
-  "active_minutes_high": 15,
+  "last_activity_at": "13:53:02",
+  "span_minutes": 81,
+  "measured_quiz_minutes": 73,
+  "reading_minutes_low": 8,
+  "reading_minutes_high": 8,
+  "active_minutes_low": 81,
+  "active_minutes_high": 81,
   "sessions": [
     {
       "start": "12:32",
-      "end": "12:32",
-      "minutes": 0,
-      "minutes_low": 5,
-      "minutes_high": 15
+      "end": "13:53",
+      "minutes": 81,
+      "minutes_low": 81,
+      "minutes_high": 81
     }
   ],
   "by_course": [
     {
       "course": "Biology EHS",
-      "measured_quiz_minutes": 0,
-      "reading_minutes_low": 5,
-      "reading_minutes_high": 15,
-      "active_minutes_low": 5,
-      "active_minutes_high": 15,
-      "pages_viewed": 0,
-      "quiz_submissions": []
+      "measured_quiz_minutes": 73,
+      "reading_minutes_low": 8,
+      "reading_minutes_high": 8,
+      "active_minutes_low": 81,
+      "active_minutes_high": 81,
+      "pages_viewed": 2,
+      "quiz_submissions": [
+        {
+          "item": "Module 3 Quiz",
+          "at": "13:45"
+        }
+      ]
     }
   ],
   "event_counts": {
-    "page_viewed": 0,
+    "page_viewed": 2,
     "quiz_viewed": 1,
-    "quiz_submitted": 0,
+    "quiz_submitted": 1,
     "other": 0
   },
-  "submissions_and_grades": []
+  "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 3 Quiz",
+      "course": "Biology EHS",
+      "at": "13:45"
+    }
+  ]
 }

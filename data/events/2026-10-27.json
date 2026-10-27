@@ -9,6 +9,33 @@
       "item": "Module 3 Quiz",
       "course": "Biology EHS",
       "context_id": "53649"
+    },
+    {
+      "id": "27312233",
+      "at_utc": "2026-10-27T17:45:13.057Z",
+      "at": "2026-10-27T13:45:13",
+      "kind": "quiz_submitted",
+      "item": "Module 3 Quiz",
+      "course": "Biology EHS",
+      "context_id": "53649"
+    },
+    {
+      "id": "27312251",
+      "at_utc": "2026-10-27T17:45:21.931Z",
+      "at": "2026-10-27T13:45:21",
+      "kind": "page_viewed",
+      "item": "Module 4 Overview",
+      "course": "Biology EHS",
+      "context_id": "192594"
+    },
+    {
+      "id": "27312874",
+      "at_utc": "2026-10-27T17:53:02.884Z",
+      "at": "2026-10-27T13:53:02",
+      "kind": "page_viewed",
+      "item": "4.1.1 - Why Meiosis",
+      "course": "Biology EHS",
+      "context_id": "192595"
     }
   ]
 }
