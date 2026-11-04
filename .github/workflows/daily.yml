@@ -46,12 +46,13 @@ jobs:
         with:
           name: scrape-failure
           # trace.zip stays on the runner: traces embed full URLs/network bodies.
+          # console.log / network.log stay on the runner too: this repository is
+          # public, so their URLs and request bodies would be published as
+          # artifacts (2026-11-03 security pass).
           path: |
             data/failure/failure.json
             data/failure/*.png
             data/failure/*.html
-            data/failure/console.log
-            data/failure/network.log
           if-no-files-found: ignore
           retention-days: 14
       - name: Commit data (no-op when unchanged)
