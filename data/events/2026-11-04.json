@@ -18,6 +18,15 @@
       "item": "4.3.1 - Reading Pedigrees",
       "course": "Biology EHS",
       "context_id": "192600"
+    },
+    {
+      "id": "27772390",
+      "at_utc": "2026-11-04T16:57:59.225Z",
+      "at": "2026-11-04T11:57:59",
+      "kind": "page_viewed",
+      "item": "4.3.2 - Pedigree Annotator",
+      "course": "Biology EHS",
+      "context_id": "192601"
     }
   ]
 }
