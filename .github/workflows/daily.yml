@@ -62,6 +62,10 @@ jobs:
           git add -A -- data
           if git diff --cached --quiet; then echo "no changes"; exit 0; fi
           git commit -m "daily summary $(date -u +%F)"
+          # `main` is protected by a ruleset (no force-push, no deletion). This
+          # normal fast-forward data commit is the deployment path; do not add a
+          # PR requirement without changing this workflow. The GitHub Actions
+          # integration cannot be a ruleset bypass actor on this personal repo.
           # A concurrent run may have pushed between checkout and push; rebase
           # (keeping our status timestamp on conflict) and retry.
           for i in 1 2 3; do
