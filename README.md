@@ -16,8 +16,15 @@ line and `Refresh` button; a separate **Today** strip is pinned above the band
 only while you browse a past week, so the live day never leaves the screen.
 Each day is one collapsed line — `Mon 14` on the left, the estimated duration
 on the right (`≈1h 05m active`, quantized to the nearest 5 minutes; the
-expanded detail keeps the exact range) — that expands to the shared compact
-detail. Day states carry text, not tint alone: elapsed days with no capture
+expanded detail keeps the exact range) and, when the day's window is longer
+than that printed estimate, the observed span beside it as one unbreakable
+unit (`≈1h 05m active · 1h 30m first–last`) — that expands to the shared
+compact detail. A one-event day says so in both places
+(`≈10m active · single event 11:04 AM`). The band carries the same figure
+summed across the week, with the number of days it covers so the total
+reconciles with the rows below
+(`First–last 6h 00m across 4 days (sum of daily spans, idle gaps included)`).
+Day states carry text, not tint alone: elapsed days with no capture
 show `No activity`, days that have not happened yet show a non-interactive
 `Not yet` chip. The visible label is weekday + day number; the full date lives
 in the day's accessible name (`Monday, 2026-09-14`) and repeats inside the
@@ -50,6 +57,12 @@ a day file; the picker's `max` is today.
 - `Active` shows the estimated range (`1h 00m–1h 14m`), `Quizzes (measured)`
   the measured quiz time, and `Reading` its estimated range. A range renders
   only when the low and high estimates differ; otherwise one value.
+- `First–last` shows the day's observed window: the 12-hour first-to-last
+  reading plus its raw duration (`4:00–5:30 PM · 1h 30m`). A day with a single
+  event has no interval, so it reads `11:04 AM · single event`; a day file
+  without a span renders no row at all. The times are exact — only the active
+  estimate carries `≈`. At the seven-up desktop tier the label and the value
+  stack (label above, value on one line) so a `·` never starts a line.
 - `Courses` lists each course with the **low** estimate only — the same page
   gaps are apportioned across courses, so per-course ranges would imply
   precision that does not exist.
@@ -59,7 +72,7 @@ a day file; the picker's `max` is today.
 - Submissions render course-first with a 12-hour time (`Course — Item ·
   5:21 PM`), inline up to three, then collapsed under `Submissions (N)`.
 - A one-line legend under the week band defines the estimate basis:
-  `Unmarked durations are estimated from page-open gaps; quizzes are measured.`
+  `Durations marked ≈ are estimated from page-open gaps; quizzes are measured; first–last is the observed wall clock.`
 - Days captured with the legacy v1 summarizer show only a single `Active`
   value, their per-course `estimated_minutes`, and the muted note
   `estimated from session span` (their basis differs from page gaps).
@@ -78,6 +91,16 @@ How the numbers are built:
   `minutes_low`/`minutes_high`. The floor residual is attributed to the
   session's terminal (last) event's course.
 - `active = measured quiz time + estimated reading range`.
+- **First–last (observed, not estimated)** — the day's first and last activity
+  timestamps, straight wall clock: it spans idle gaps, is never quantized, and
+  is a different quantity from `active`. Because each gap contributes at most
+  its 15–30 minute cap to `active`, `window − active` is **not** idle time and
+  the page never presents it as a percentage, ratio or efficiency figure. The
+  collapsed line appends it only when the window is longer than the estimate
+  that line actually prints, and the week line sums the visible days' spans
+  and states how many days it covers and that idle gaps are included.
+  `first_activity_at`, `last_activity_at` and `span_minutes` are already
+  written by the summarizer, so no data rebuild is required for this figure.
 
 After a change to the measurement model, rebuild the derived day files and
 manifest from the committed event store:

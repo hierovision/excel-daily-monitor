@@ -35,6 +35,18 @@
   .metrics dt { min-width: 0; }
   .metrics dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .metrics dd.hero { font-size: 1.05rem; font-weight: 600; }
+  /* The first–last value is longer than any other dd: wrap it, but only before
+     the duration figure — the "·" lives inside the second span, so no line can
+     ever end on a bare separator. */
+  .metrics dd.first-last { white-space: normal; }
+  .first-last-when, .first-last-dur, .window-suffix { white-space: nowrap; }
+  /* 7-up tier (≥1800px) gives a card ~224px of content, which cannot hold the
+     label and the value on one line. Stack the row instead of squeezing it:
+     label above, value below on one unbroken line. */
+  @media (min-width: 1800px) {
+    .metrics dt.first-last-label, .metrics dd.first-last { grid-column: 1 / -1; }
+    .metrics dd.first-last { text-align: left; }
+  }
   .courses-label { margin: 8px 0 2px; }
   .course-line { display: flex; justify-content: space-between; gap: 10px; margin: 2px 0; min-width: 0; }
   .course-line span:first-child { min-width: 0; overflow-wrap: anywhere; }
@@ -194,6 +206,27 @@ function dayStats(d) {
   }
   return { v2: false, low: d.estimated_active_minutes, high: d.estimated_active_minutes };
 }
+// Raw first→last wall clock (Rev 2026-11-06): span_minutes counts idle gaps, so
+// it is never a duration estimate — the times stay exact and only the active
+// figure carries "≈". A day without a numeric span invents no row.
+const spanOf = (d) => (typeof d.span_minutes === "number" && Number.isFinite(d.span_minutes) ? d.span_minutes : null);
+function firstLastValue(d) {
+  const span = spanOf(d);
+  if (span === null) return null;
+  const first = d.first_activity_at ? String(d.first_activity_at).slice(0, 5) : "";
+  const last = d.last_activity_at ? String(d.last_activity_at).slice(0, 5) : "";
+  if (!first || !last) return null;
+  const when = timeRange(first, last);
+  // A one-event day has no interval: a point time, no duration.
+  const single = first === last;
+  return { when, dur: single ? "single event" : fmtMin(span), single };
+}
+function firstLastRow(d) {
+  const v = firstLastValue(d);
+  if (!v) return "";
+  return `
+    <dt class="first-last-label">First–last</dt><dd class="first-last" data-testid="first-last"><span class="first-last-when">${esc(v.when)}</span> <span class="first-last-dur">· ${esc(v.dur)}</span></dd>`;
+}
 function coursesBlock(d, v2) {
   const courses = d.by_course || [];
   if (!courses.length) return "";
@@ -224,9 +257,11 @@ function dayDetail(d, { withDate = true } = {}) {
     <dt>Active</dt><dd class="hero" data-testid="active-minutes">${rangeValue(s.low, s.high)}</dd>
     <dt>Quizzes (measured)</dt><dd data-testid="quiz-line">${fmtMin(d.measured_quiz_minutes || 0)}</dd>
     <dt>Reading</dt><dd data-testid="reading-line">${rangeValue(d.reading_minutes_low || 0, d.reading_minutes_high || 0)}</dd>
+    ${firstLastRow(d)}
   </dl>`
     : `<dl class="metrics">
     <dt>Active</dt><dd class="hero" data-testid="active-minutes">${fmtMin(d.estimated_active_minutes)}</dd>
+    ${firstLastRow(d)}
   </dl>
   <p class="v1-note muted" data-testid="v1-note">estimated from session span</p>`;
   const dateLine = withDate ? `<p class="day-date muted" data-testid="day-date">${esc(d.date)}</p>` : "";
@@ -317,12 +352,14 @@ function renderTodayPinned(date, day) {
 
 function renderBand(days, dates) {
   const present = days.filter(Boolean);
-  let low = 0, high = 0, quizzes = 0;
+  let low = 0, high = 0, quizzes = 0, windowMinutes = 0, windowDays = 0;
   const items = [];
   for (const d of present) {
     const s = dayStats(d);
     low += s.low;
     high += s.high;
+    const span = spanOf(d);
+    if (span !== null && span > 0) { windowMinutes += span; windowDays++; }
     for (const sub of d.submissions_and_grades || []) { quizzes++; items.push(sub); }
   }
   const heading = state.anchor === weekStart(todayEt()) ? "This week" : `Week of ${fmtWeekOf(state.anchor)}`;
@@ -345,6 +382,7 @@ function renderBand(days, dates) {
     totals = `<p data-testid="week-worked">Worked ${present.length} of ${elapsedDays} days${isCurrent ? " so far" : ""}</p>
     <p role="group" data-testid="week-active" aria-label="${esc(`Active: ${active}`)}">Active ${active}</p>
     <p data-testid="week-quizzes">Quizzes submitted: ${quizzes}</p>
+    <p data-testid="week-first-last">First–last ${fmtMin(windowMinutes)} across ${windowDays} ${windowDays === 1 ? "day" : "days"} (sum of daily spans, idle gaps included)</p>
     ${submissions}`;
   }
   return `<section class="week-band" data-testid="week-band">
@@ -354,15 +392,30 @@ function renderBand(days, dates) {
   </section>`;
 }
 
-function collapsedMeta(d) {
+// The figure the collapsed line prints (Rev 2026-11-06c): the window suffix is
+// gated on THIS number. Gating on the raw low bound let a line read
+// "≈1h 45m active · 1h 40m first–last" — an estimate larger than its own window.
+function displayedActive(d) {
   const s = dayStats(d);
-  if (s.v2) {
-    if (s.low === 0 && s.high === 0) return "0m active";
-    return `≈${fmtMin(mid(s.low, s.high))} active`;
-  }
+  if (s.v2) return s.low === 0 && s.high === 0 ? 0 : mid(s.low, s.high);
   const est = Math.round(d.estimated_active_minutes);
-  if (!est) return "0m active";
-  return `≈${fmtMin(quantize5(est))} active`;
+  return est ? quantize5(est) : 0;
+}
+// The collapsed line appends the raw window (Rev 2026-11-06) only when it says
+// something the printed estimate cannot. The suffix is one nowrap unit, so a
+// narrow column moves the whole figure instead of orphaning "first–last"; a
+// one-event day repeats the detail row's point form.
+function windowSuffix(d) {
+  const span = spanOf(d);
+  const v = firstLastValue(d);
+  if (span === null || !v) return "";
+  if (span === 0) return v.single ? ` <span class="window-suffix">· single event ${esc(v.when)}</span>` : "";
+  if (!(span > displayedActive(d))) return "";
+  return ` <span class="window-suffix">· ${fmtMin(span)} first–last</span>`;
+}
+function collapsedMeta(d) {
+  const shown = displayedActive(d);
+  return (shown === 0 ? "0m active" : `≈${fmtMin(shown)} active`) + windowSuffix(d);
 }
 
 function quizBadge(d) {
@@ -500,7 +553,7 @@ async function render({ anchorToday = false } = {}) {
     const html =
       (inList ? "" : renderTodayPinned(today, state.todayDay)) +
       renderBand(days, dates) +
-      `<p class="legend" data-testid="legend">Unmarked durations are estimated from page-open gaps; quizzes are measured.</p>` +
+      `<p class="legend" data-testid="legend">Durations marked ≈ are estimated from page-open gaps; quizzes are measured; first–last is the observed wall clock.</p>` +
       dayCards +
       footer;
     const snapshot = captureDisclosure(root);

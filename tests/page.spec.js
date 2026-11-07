@@ -320,7 +320,20 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   for (const sel of ["active-minutes", "quiz-line", "reading-line", "courses", "sessions", "submissions"]) {
     assert(await safeHidden(cardFor(page, "2026-09-16").locator(`[data-testid=${sel}]`)), `detail ${sel} hidden before expansion`);
   }
-  assert(await page.locator("[data-testid=first-last]").count() === 0, "first-last testid is gone");
+  // Superseded by activity-window (Rev 2026-11-06): the first-last window row is
+  // a contract surface again, so the old "testid is gone" absence check becomes
+  // a presence guard — exactly one row per rendered day detail, shown only where
+  // the detail is open. Counted per card, not as a page total.
+  const flPerCard = await page.$$eval("[data-testid=day-card]", (cards) => cards.map((c) => ({
+    details: c.querySelectorAll("[data-testid=day-detail]").length,
+    rows: c.querySelectorAll("[data-testid=first-last]").length,
+  })));
+  assert(flPerCard.filter((c) => c.details === 1).length === 4,
+    `first-last setup: four day cards render a detail (got ${JSON.stringify(flPerCard)})`);
+  assert(flPerCard.every((c) => c.rows === c.details),
+    `first-last renders once per rendered day detail (got ${JSON.stringify(flPerCard)})`);
+  assert(await page.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count() === 1,
+    `first-last shows only in the open detail (got ${await page.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count()})`);
   for (const date of ["2026-09-18", "2026-09-19", "2026-09-20"]) {
     const card = cardFor(page, date);
     // Rev 2026-09-27 (W5): supersedes the muted "—" future marker with a text chip.
@@ -1028,7 +1041,10 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     `W12 AC2 sessions summary (got "${await readText(todayCard2.locator("[data-testid=sessions] summary"))}")`);
   assert(await safeVisible(todayCard2.locator("[data-testid=submissions]").getByText("Media Arts EHS — Module 1 Quiz · 5:21 PM")),
     "W12 AC2 submission visible inline");
-  assert(await tp.locator("[data-testid=first-last]").count() === 0, "AC2 first-last testid removed");
+  // Superseded by activity-window (Rev 2026-11-06): the first-last row is a
+  // contract surface; the absence check becomes a presence guard.
+  assert(await tp.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count() === 1,
+    `AW2 the open Today detail carries exactly one first-last row (got ${await tp.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count()})`);
 
   // AC13 — compact v2 detail; no repeated estimate wording.
   const topCard = cardFor(tp, "2026-09-16");
@@ -1036,7 +1052,8 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   const topDetail = topCard.locator("[data-testid=day-detail]");
   assert(await topDetail.count() === 1, "AC13 card expands into the shared detail");
   const dts = await topDetail.locator("dt").allTextContents().catch(() => []);
-  assert(dts.map(norm).join(" | ") === "Active | Quizzes (measured) | Reading",
+  // activity-window (Rev 2026-11-06): AC1 places the First–last row after Reading.
+  assert(dts.map(norm).join(" | ") === "Active | Quizzes (measured) | Reading | First–last",
     `AC13 metric labels are exact (got ${JSON.stringify(dts)})`);
   assert(await readText(topDetail.locator("[data-testid=active-minutes]")) === "58m–1h 12m", "AC13 active value");
   assert(await readText(topDetail.locator("[data-testid=quiz-line]")) === "24m", "AC13 quiz value");
@@ -1052,17 +1069,20 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     assert(!detailText.includes(s), `AC13 detail keeps raw exact values — no "${s}" (got ${JSON.stringify(detailText)})`);
   }
   assert(await tp.locator("[data-testid=legend]").count() === 1, "AC13 exactly one legend");
-  assert(await textIfPresent(tp, "[data-testid=legend]") === "Unmarked durations are estimated from page-open gaps; quizzes are measured.",
+  assert(await textIfPresent(tp, "[data-testid=legend]") === "Durations marked ≈ are estimated from page-open gaps; quizzes are measured; first–last is the observed wall clock.",
     `AC13 legend text (got "${await textIfPresent(tp, "[data-testid=legend]")}")`);
 
   // AC16 — compact detail fits 390px; metric values are tabular.
+  // activity-window (AC12): the first-last row is present before the fit checks run.
+  assert(await tp.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count() === 2,
+    `AC12 the two visible details carry the first-last row before the fit check (got ${await tp.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count()})`);
   const detailWidths = await tp.$$eval("[data-testid=day-detail]:visible", (els) => els.map((e) => ({ sw: e.scrollWidth, cw: e.clientWidth })));
   assert(detailWidths.length === 2 && detailWidths.every((w) => w.sw <= w.cw),
     `AC16 Today + expanded card details fit 390px (got ${JSON.stringify(detailWidths)})`);
   const fvn = await tp.$$eval(
-    "[data-testid=day-detail]:visible [data-testid=active-minutes], [data-testid=day-detail]:visible [data-testid=quiz-line], [data-testid=day-detail]:visible [data-testid=reading-line]",
+    "[data-testid=day-detail]:visible [data-testid=active-minutes], [data-testid=day-detail]:visible [data-testid=quiz-line], [data-testid=day-detail]:visible [data-testid=reading-line], [data-testid=day-detail]:visible [data-testid=first-last]",
     (els) => els.map((e) => getComputedStyle(e).fontVariantNumeric));
-  assert(fvn.length === 6 && fvn.every((v) => v === "tabular-nums"),
+  assert(fvn.length === 8 && fvn.every((v) => v === "tabular-nums"),
     `AC16 metric values compute tabular-nums (got ${JSON.stringify(fvn)})`);
 
   // AC10/W3 — pinned strip when browsing away.
@@ -1105,9 +1125,13 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(await readText(v1d.locator("[data-testid=v1-note]")) === "estimated from session span", "AC14 v1 note text");
   // AC14's "no – range" is scoped to the metric duration values: the sessions
   // summary legitimately carries a time en-dash (4:00–5:30 PM) per the plan.
-  const v1metrics = await v1d.locator("dl.metrics dd").allTextContents().catch(() => []);
+  // activity-window (AC5): the observed First–last window is a time range, not
+  // a duration estimate, so the honesty scan skips that dd only.
+  const v1metrics = await v1d.locator("dl.metrics dd:not([data-testid=first-last])").allTextContents().catch(() => []);
   assert(v1metrics.length > 0 && !v1metrics.some((x) => x.includes("–")),
     `AC14 v1 metric values invent no durational range (got ${JSON.stringify(v1metrics)})`);
+  assert(await readText(v1d.locator("[data-testid=first-last]")) === "4:00–5:30 PM · 1h 30m",
+    `AW5 a legacy v1 day still renders the observed first→last window (got "${await readText(v1d.locator("[data-testid=first-last]"))}")`);
   await safeClick(v1p.locator("[data-testid=day-summary]"));
   await tp.close();
 
@@ -1433,6 +1457,9 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   const grew = await safeEval(expandCard, (el) => el.getBoundingClientRect().height > 120);
   assert(grew === true, "W7 the expanded column grows downward");
   // D6: two-column metrics restored, no overflow, no same-row text collision.
+  // activity-window (AC12): the first-last row is present in both blocks checked.
+  assert(await pp.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count() === 2,
+    `AC12 first-last present in both visible metric blocks at 1280 (got ${await pp.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count()})`);
   const metrics1280 = await metricsCheck(pp);
   assert(metrics1280.length >= 2, `D6 at least two metric blocks render at 1280 (got ${metrics1280.length})`);
   assert(metrics1280.every((m) => m.tracks === 2), `D6 .metrics computes exactly 2 tracks at 1280 (got ${JSON.stringify(metrics1280.map((m) => m.tracks))})`);
@@ -1558,11 +1585,42 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
     assert(innerScroll1920 === 0, `D7 no expanded detail element scrolls internally at 1920px (got ${innerScroll1920})`);
     const overflow1920 = await p17.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
     assert(overflow1920 === true, "D7 no horizontal overflow at 1920px");
+    // activity-window (AC12): the row is present in the 1920 metric blocks.
+    assert(await p17.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count() === 2,
+      `AC12 first-last present in both visible metric blocks at 1920 (got ${await p17.locator("[data-testid=day-detail]:visible [data-testid=first-last]").count()})`);
     const metrics1920 = await metricsCheck(p17);
     assert(metrics1920.length >= 2, `D6 at least two metric blocks render at 1920 (got ${metrics1920.length})`);
     assert(metrics1920.every((m) => m.tracks === 2), `D6 .metrics computes exactly 2 tracks at 1920 (got ${JSON.stringify(metrics1920.map((m) => m.tracks))})`);
     assert(metrics1920.every((m) => m.sw <= m.cw), `D6 no .metrics overflows at 1920 (got ${JSON.stringify(metrics1920.map((m) => ({ sw: m.sw, cw: m.cw })))})`);
     assert(metrics1920.every((m) => m.collisions === 0), `D6 no same-row dt/dd text collision at 1920 (got ${JSON.stringify(metrics1920.map((m) => m.collisions))})`);
+    // Rev 2026-11-06c (AC12): at the 7-up tier the row stacks — the label above
+    // the value, the value on one unbroken line, so no line starts on a bare ·.
+    const awStack = await p17.evaluate(() => {
+      const dds = [...document.querySelectorAll("[data-testid=day-detail] .metrics dd.first-last")]
+        .filter((e) => e.getClientRects().length > 0);
+      const dd = dds[0];
+      const dt = dd && dd.previousElementSibling;
+      if (!dd || !dt) return null;
+      const dtCs = getComputedStyle(dt);
+      const ddCs = getComputedStyle(dd);
+      const range = document.createRange();
+      range.selectNodeContents(dd);
+      const lineTops = new Set([...range.getClientRects()].map((r) => Math.round(r.top)));
+      return {
+        dtStart: dtCs.gridColumnStart, dtEnd: dtCs.gridColumnEnd,
+        ddStart: ddCs.gridColumnStart, ddEnd: ddCs.gridColumnEnd,
+        dtClass: dt.className,
+        valueAbove: Math.round(dd.getBoundingClientRect().top) > Math.round(dt.getBoundingClientRect().top),
+        lines: lineTops.size,
+        text: dd.textContent.replace(/\s+/g, " ").trim(),
+      };
+    });
+    assert(awStack && awStack.dtStart === "1" && awStack.dtEnd === "-1" && awStack.ddStart === "1" && awStack.ddEnd === "-1",
+      `AW12 the row's dt and dd each span the full metric width at 1920 (got ${JSON.stringify(awStack)})`);
+    assert(awStack && awStack.dtClass.includes("first-last-label") && awStack.valueAbove === true,
+      `AW12 the label sits above the value at 1920 (got ${JSON.stringify(awStack)})`);
+    assert(awStack && awStack.lines === 1,
+      `AW12 the window value renders on one line at 1920 (got ${JSON.stringify(awStack)})`);
     assert(p17e.length === 0, `W17 no pageerrors, got ${JSON.stringify(p17e)}`);
     await p17.close();
   }
@@ -1622,6 +1680,220 @@ const norm = (s) => String(s == null ? "" : s).replace(/\s+/g, " ").trim();
   assert(singleCol700 !== "grid", `W6 single column at 700px (got "${singleCol700}")`);
   assert(wpe.length === 0, `W6 no pageerrors at 700px, got ${JSON.stringify(wpe)}`);
   await wp.close();
+
+  // ================= activity-window (Rev 2026-11-06) — first-to-last window =================
+  // The day's raw first→last wall clock (idle gaps included) beside the active
+  // estimate, on three surfaces: the shared detail row, the collapsed line's
+  // suffix, and the week band's summed line. The times stay exact — only the
+  // active figure carries "≈".
+  {
+    const mins = (m) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${String(m % 60).padStart(2, "0")}m` : `${m}m`; };
+    const X = await openPage({ now: "2026-09-17T20:00:00Z", pollMs: 600000 });
+    const xp = X.page;
+    const xpe = X.pageerrors;
+
+    // AC1 — day detail row (v2 day): exact first→last reading + raw span.
+    assert(await waitSel(xp, "[data-testid=today] [data-testid=first-last]"), "AW1 setup: the open Today detail renders a first-last row");
+    const x17 = cardFor(xp, "2026-09-17");
+    const x17val = await readText(x17.locator("[data-testid=first-last]"));
+    assert(x17val === "4:00–5:30 PM · 1h 30m",
+      `AW1 the detail row reads the raw first→last window plus its span (got "${x17val}")`);
+    const x17row = await ev(x17.locator("[data-testid=first-last]"), (e) => {
+      const dt = e.previousElementSibling;
+      const before = dt && dt.previousElementSibling;
+      return {
+        tag: e.tagName,
+        dt: dt ? { tag: dt.tagName, text: dt.textContent.trim() } : null,
+        before: before ? before.textContent.trim() : "",
+        quantized: /\u2248/.test(e.textContent),
+      };
+    });
+    assert(x17row && x17row.tag === "DD" && x17row.dt && x17row.dt.tag === "DT" && x17row.dt.text === "First–last",
+      `AW1 the row is a dt/dd pair labelled First–last (got ${JSON.stringify(x17row)})`);
+    assert(x17row && x17row.before === "35m–49m",
+      `AW1 the row follows the Reading row (got ${JSON.stringify(x17row)})`);
+    assert(x17row && x17row.quantized === false,
+      `AW1 the observed reading is never quantized — no ≈ on the window (got ${JSON.stringify(x17row)})`);
+
+    // AC2 — Today parity: the in-list card and the pinned strip share dayDetail().
+    const inList = xp.locator("[data-testid=day-card] [data-testid=today] [data-testid=first-last]");
+    assert(await inList.count() === 1, `AW2 the in-list Today card carries exactly one first-last row (got ${await inList.count()})`);
+    assert(await readText(inList) === "4:00–5:30 PM · 1h 30m",
+      `AW2 the in-list Today row matches the shared detail (got "${await readText(inList)}")`);
+
+    // AC11 — wrap contract: the dd wraps, the figures never break, the "·"
+    // separator is inside the duration span (no line can end on it).
+    const wrapc = await ev(x17.locator("[data-testid=first-last]"), (e) => {
+      const when = e.querySelector(".first-last-when");
+      const dur = e.querySelector(".first-last-dur");
+      return {
+        dd: getComputedStyle(e).whiteSpace,
+        when: when ? getComputedStyle(when).whiteSpace : null,
+        dur: dur ? getComputedStyle(dur).whiteSpace : null,
+        whenText: when ? when.textContent.trim() : "",
+        durText: dur ? dur.textContent.trim() : "",
+        spans: e.children.length,
+      };
+    });
+    assert(wrapc && wrapc.dd === "normal" && wrapc.spans === 2,
+      `AW11 the dd is the only wrapping cell (got ${JSON.stringify(wrapc)})`);
+    assert(wrapc && wrapc.when === "nowrap" && wrapc.dur === "nowrap",
+      `AW11 both figures compute nowrap (got ${JSON.stringify(wrapc)})`);
+    assert(wrapc && !wrapc.whenText.includes("·") && wrapc.durText.startsWith("·"),
+      `AW11 the separator lives inside the duration span (got ${JSON.stringify(wrapc)})`);
+
+    // AC7 — week band line: the sum of the four fixture days (4 × 90 min), with
+    // the contributing-day count so the total reconciles with the day rows.
+    assert(await textIfPresent(xp, "[data-testid=week-first-last]") === "First–last 6h 00m across 4 days (sum of daily spans, idle gaps included)",
+      `AW7 the band sums the daily spans and names how many days it covers (got "${await textIfPresent(xp, "[data-testid=week-first-last]")}")`);
+
+    // AC8 — band order: the window line is not adjacent to the active line.
+    const bandOrder = await ev(xp.locator("[data-testid=week-band]"), (band) => {
+      const q = (id) => band.querySelector(`[data-testid=${id}]`);
+      const a = q("week-worked"), b = q("week-active"), c = q("week-quizzes"), d = q("week-first-last");
+      const follows = (x, y) => !!(x && y && (x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING));
+      return { all: !!(a && b && c && d), workedActive: follows(a, b), activeQuizzes: follows(b, c), quizzesWindow: follows(c, d) };
+    });
+    assert(bandOrder && bandOrder.workedActive === true && bandOrder.activeQuizzes === true && bandOrder.quizzesWindow === true,
+      `AW8 band order is worked → active → quizzes → first-last (got ${JSON.stringify(bandOrder)})`);
+
+    // AC6 — collapsed line suffix, quantized estimate unchanged.
+    const aw6lines = await xp.$$eval("[data-testid=day-summary]", (els) => els.map((e) => (e.textContent || "").replace(/\s+/g, " ").trim()));
+    const aw6s17 = aw6lines.find((s) => s.includes("Thu 17")) || "";
+    const aw6s16 = aw6lines.find((s) => s.includes("Wed 16")) || "";
+    assert(aw6s17.includes("≈1h 05m active · 1h 30m first–last"),
+      `AW6 Thu 17 collapsed line keeps the quantized estimate and appends the window (got "${aw6s17}")`);
+    assert(aw6s16.includes("≈1h 05m active · 1h 30m first–last"),
+      `AW6 Wed 16 collapsed line keeps the quantized estimate and appends the window (got "${aw6s16}")`);
+    // Rev 2026-11-06c: the appended window is one unbreakable unit, so a narrow
+    // column moves the whole figure to the next line instead of orphaning it.
+    const suffixUnit = await ev(x17.locator("[data-testid=day-summary]"), (e) => {
+      const el = e.querySelector(".window-suffix");
+      return el ? { text: el.textContent.replace(/\s+/g, " ").trim(), ws: getComputedStyle(el).whiteSpace } : null;
+    });
+    assert(suffixUnit && suffixUnit.ws === "nowrap" && suffixUnit.text === "· 1h 30m first–last",
+      `AW6 the collapsed suffix is a single nowrap unit with its separator inside (got ${JSON.stringify(suffixUnit)})`);
+
+    // AC2 — the pinned strip (browsing away) renders the same row.
+    await safeClick(xp.locator("[data-testid=prev-week]"));
+    assert(await waitAnchor(xp, "2026-09-07"), "AW2 setup: browsing away pins Today above the band");
+    const pinned = xp.locator("section[data-testid=today] [data-testid=first-last]");
+    assert(await pinned.count() === 1, `AW2 the pinned Today strip carries exactly one first-last row (got ${await pinned.count()})`);
+    assert(await readText(pinned) === "4:00–5:30 PM · 1h 30m",
+      `AW2 the pinned strip row matches the shared detail (got "${await readText(pinned)}")`);
+
+    // AC10 — a mixed v1/v2 week totals every rendered day's positive span.
+    const aw10dates = ["2026-08-31", "2026-09-01", "2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-06"];
+    const aw10sum = aw10dates.reduce((acc, d) => {
+      const file = path.join(site, "data", `${d}.json`);
+      if (!fs.existsSync(file)) return acc;
+      const span = fixture(d).span_minutes;
+      return typeof span === "number" && span > 0 ? { minutes: acc.minutes + span, days: acc.days + 1 } : acc;
+    }, { minutes: 0, days: 0 });
+    const aw10expected = aw10sum.minutes;
+    await xp.fill("[data-testid=picker]", "2026-09-03");
+    await xp.dispatchEvent("[data-testid=picker]", "change");
+    assert(await waitAnchor(xp, "2026-08-31"), "AW10 setup: the mixed v1/v2 week is shown");
+    const aw10line = await textIfPresent(xp, "[data-testid=week-first-last]");
+    assert(aw10expected > 0 && aw10line === `First–last ${mins(aw10expected)} across ${aw10sum.days} days (sum of daily spans, idle gaps included)`,
+      `AW10 the band totals every rendered day's span, the legacy v1 day included (expected ${mins(aw10expected)} across ${aw10sum.days} days, got "${aw10line}")`);
+    assert(xpe.length === 0, `AW1/AW6/AW7/AW8/AW10 no pageerrors, got ${JSON.stringify(xpe)}`);
+    await xp.close();
+
+    // AC3/AC4/AC6 guards — overridden day payloads on their own page.
+    const Y = await openPage({ now: "2026-09-17T20:00:00Z", pollMs: 600000 });
+    const yp = Y.page;
+    const ype = Y.pageerrors;
+    const aw3single = fixture("2026-09-15");
+    aw3single.first_activity_at = "11:04:00";
+    aw3single.last_activity_at = "11:04:00";
+    aw3single.span_minutes = 0;
+    overrides.set("/data/2026-09-15.json", Buffer.from(JSON.stringify(aw3single)));
+    await yp.reload({ waitUntil: "load" });
+    await yp.waitForSelector("[data-testid=day-card]");
+    const aw3card = cardFor(yp, "2026-09-15");
+    await safeClick(aw3card.locator("[data-testid=day-summary]"));
+    const aw3text = await readText(aw3card.locator("[data-testid=first-last]"));
+    assert(aw3text === "11:04 AM · single event",
+      `AW3 a one-event day renders the point time and no duration (got "${aw3text}")`);
+    assert(!aw3text.includes("–"), `AW3 the single-event form carries no range dash (got "${aw3text}")`);
+    assert(aw3text !== "4:00–5:30 PM · 1h 30m" && aw3text !== "No activity",
+      `AW3 the three day states stay textually distinct (got "${aw3text}")`);
+    const aw3summary = norm(await aw3card.locator("[data-testid=day-summary]").textContent().catch(() => ""));
+    assert(!aw3summary.includes("first–last"),
+      `AW6 a zero span adds no first–last suffix (got "${aw3summary}")`);
+    // Rev 2026-11-06c (AC3 parity): the collapsed line and the expanded row agree
+    // — a one-event day says so in both places.
+    assert(aw3summary.includes("≈1h 05m active · single event 11:04 AM"),
+      `AW3 the collapsed line carries the same point form as the detail row (got "${aw3summary}")`);
+    overrides.delete("/data/2026-09-15.json");
+
+    const aw6short = fixture("2026-09-16");
+    aw6short.span_minutes = 40; // below the day's 58-minute low estimate
+    overrides.set("/data/2026-09-16.json", Buffer.from(JSON.stringify(aw6short)));
+    await yp.reload({ waitUntil: "load" });
+    await yp.waitForSelector("[data-testid=day-card]");
+    const aw6shortSummary = norm(await cardFor(yp, "2026-09-16").locator("[data-testid=day-summary]").textContent().catch(() => ""));
+    assert(aw6shortSummary.includes("≈1h 05m active") && !aw6shortSummary.includes("first–last"),
+      `AW6 a span no larger than the low estimate adds no suffix (got "${aw6shortSummary}")`);
+    overrides.delete("/data/2026-09-16.json");
+
+    // Rev 2026-11-06c: the guard compares the span with the figure the line
+    // actually prints, not the raw low bound. low 95/high 115 prints ≈1h 45m, so
+    // a 100-minute window is suppressed even though it exceeds the low bound.
+    const aw6mid = fixture("2026-09-16");
+    aw6mid.active_minutes_low = 95;
+    aw6mid.active_minutes_high = 115;
+    aw6mid.span_minutes = 100;
+    overrides.set("/data/2026-09-16.json", Buffer.from(JSON.stringify(aw6mid)));
+    await yp.reload({ waitUntil: "load" });
+    await yp.waitForSelector("[data-testid=day-card]");
+    const aw6midSummary = norm(await cardFor(yp, "2026-09-16").locator("[data-testid=day-summary]").textContent().catch(() => ""));
+    assert(aw6midSummary.includes("≈1h 45m active") && !aw6midSummary.includes("first–last"),
+      `AW6 a window below the displayed estimate adds no suffix (got "${aw6midSummary}")`);
+    overrides.delete("/data/2026-09-16.json");
+
+    const aw4nospan = fixture("2026-09-16");
+    delete aw4nospan.span_minutes;
+    overrides.set("/data/2026-09-16.json", Buffer.from(JSON.stringify(aw4nospan)));
+    await yp.reload({ waitUntil: "load" });
+    await yp.waitForSelector("[data-testid=day-card]");
+    const aw4card = cardFor(yp, "2026-09-16");
+    await safeClick(aw4card.locator("[data-testid=day-summary]"));
+    assert(await aw4card.locator("[data-testid=day-detail]").count() === 1, "AW4 setup: the detail rendered for the field-less day");
+    assert(await aw4card.locator("[data-testid=first-last]").count() === 0,
+      `AW4 a day file without span_minutes renders no first-last row (got ${await aw4card.locator("[data-testid=first-last]").count()})`);
+    assert(!(await norm(await aw4card.locator("[data-testid=day-summary]").textContent().catch(() => ""))).includes("first–last"),
+      "AW4 a day file without span_minutes adds no collapsed suffix either");
+    overrides.delete("/data/2026-09-16.json");
+    assert(ype.length === 0, `AW3/AW4/AW6 no pageerrors, got ${JSON.stringify(ype)}`);
+    await yp.close();
+
+    // AC9 — the zero-activity week's empty branch carries no window line.
+    const Z0 = await openPage({ now: "2026-09-21T13:00:00Z" });
+    const z0 = Z0.page;
+    assert(await waitSel(z0, "[data-testid=week-empty]"), "AW9 setup: the zero-activity week rendered");
+    assert(await z0.locator("[data-testid=week-first-last]").count() === 0,
+      `AW9 the empty-state band carries no window line (got ${await z0.locator("[data-testid=week-first-last]").count()})`);
+    assert(Z0.pageerrors.length === 0, `AW9 no pageerrors, got ${JSON.stringify(Z0.pageerrors)}`);
+    await z0.close();
+
+    // AC12 — the narrowest tier: the changed .metrics block does not overflow.
+    const N3 = await openPage({ now: "2026-09-17T20:00:00Z", width: 320, height: 844 });
+    const n3 = N3.page;
+    assert(await waitSel(n3, "[data-testid=today] [data-testid=first-last]"), "AW12 setup: the row renders at 320px");
+    await safeClick(cardFor(n3, "2026-09-16").locator("[data-testid=day-summary]"));
+    const m320 = await n3.$$eval("[data-testid=day-detail]:visible .metrics", (els) => els.map((m) => ({ sw: m.scrollWidth, cw: m.clientWidth })));
+    assert(m320.length === 2 && m320.every((m) => m.sw <= m.cw),
+      `AW12 .metrics fits 320px with the row present (got ${JSON.stringify(m320)})`);
+    const d320 = await n3.$$eval("[data-testid=day-detail]:visible", (els) => els.map((e) => ({ sw: e.scrollWidth, cw: e.clientWidth })));
+    assert(d320.length === 2 && d320.every((d) => d.sw <= d.cw),
+      `AW12 the day details fit 320px (got ${JSON.stringify(d320)})`);
+    const o320 = await n3.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+    assert(o320 === true, "AW12 no horizontal page overflow at 320px");
+    assert(N3.pageerrors.length === 0, `AW12 no pageerrors at 320px, got ${JSON.stringify(N3.pageerrors)}`);
+    await n3.close();
+  }
 
   await browser.close();
   server.close();
