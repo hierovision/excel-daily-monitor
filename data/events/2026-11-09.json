@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-09",
+  "events": [
+    {
+      "id": "28004877",
+      "at_utc": "2026-11-09T17:21:48.255Z",
+      "at": "2026-11-09T12:21:48",
+      "kind": "page_viewed",
+      "item": "1.4 Deductive Reasoning & Valid Arguments",
+      "course": "Geometry EHS",
+      "context_id": "193307"
+    },
+    {
+      "id": "28004880",
+      "at_utc": "2026-11-09T17:21:50.871Z",
+      "at": "2026-11-09T12:21:50",
+      "kind": "page_viewed",
+      "item": "1.1 Inductive Reasoning",
+      "course": "Geometry EHS",
+      "context_id": "193312"
+    }
+  ]
+}
