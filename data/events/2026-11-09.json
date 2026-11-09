@@ -45,6 +45,15 @@
       "item": "1.4 Deductive Reasoning & Valid Arguments",
       "course": "Geometry EHS",
       "context_id": "193307"
+    },
+    {
+      "id": "28017043",
+      "at_utc": "2026-11-09T19:59:54.016Z",
+      "at": "2026-11-09T14:59:54",
+      "kind": "page_viewed",
+      "item": "1.5 The Tools Of Proof",
+      "course": "Geometry EHS",
+      "context_id": "193303"
     }
   ]
 }
