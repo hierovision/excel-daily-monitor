@@ -36,6 +36,15 @@
       "item": "1.AI Geometric Proof Analysis",
       "course": "Geometry EHS",
       "context_id": "193310"
+    },
+    {
+      "id": "28138702",
+      "at_utc": "2026-11-11T21:13:27.012Z",
+      "at": "2026-11-11T16:13:27",
+      "kind": "quiz_viewed",
+      "item": "Module 1 Quiz",
+      "course": "Geometry EHS",
+      "context_id": "53796"
     }
   ]
 }
