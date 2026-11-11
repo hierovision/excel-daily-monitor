@@ -18,6 +18,24 @@
       "item": "1.4 Deductive Reasoning & Valid Arguments",
       "course": "Geometry EHS",
       "context_id": "193307"
+    },
+    {
+      "id": "28135359",
+      "at_utc": "2026-11-11T20:14:52.872Z",
+      "at": "2026-11-11T15:14:52",
+      "kind": "page_viewed",
+      "item": "1.5 The Tools Of Proof",
+      "course": "Geometry EHS",
+      "context_id": "193303"
+    },
+    {
+      "id": "28135863",
+      "at_utc": "2026-11-11T20:24:39.815Z",
+      "at": "2026-11-11T15:24:39",
+      "kind": "page_viewed",
+      "item": "1.AI Geometric Proof Analysis",
+      "course": "Geometry EHS",
+      "context_id": "193310"
     }
   ]
 }
