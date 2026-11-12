@@ -1,0 +1,39 @@
+name: ci
+on:
+  pull_request: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # The same pinned image as the scheduled scrape: browsers and OS
+    # dependencies are baked in, so the PR gate proves the exact environment
+    # that will run the scrape. Keep the tag/digest and PLAYWRIGHT_VERSION in
+    # sync with package.json/package-lock.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+      options: --user 1001 --ipc=host
+    defaults:
+      run:
+        shell: bash
+    env:
+      PLAYWRIGHT_VERSION: "1.63.0"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: npm ci
+      - name: Verify Playwright version matches the container image
+        run: |
+          installed="$(npx playwright --version | awk '{print $2}')"
+          if [ "$installed" != "$PLAYWRIGHT_VERSION" ]; then
+            echo "::error::Playwright $installed does not match the container's $PLAYWRIGHT_VERSION"
+            exit 1
+          fi
+      - name: Test
+        run: npm test

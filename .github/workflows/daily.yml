@@ -20,17 +20,34 @@ concurrency:
 
 jobs:
   scrape-and-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # The image ships Chromium and the OS dependencies, so this job never runs
+    # apt. The tag and digest must match the exact Playwright version in
+    # package.json/package-lock.json (1.63.0); the guard step below fails on
+    # drift. `ubuntu-24.04` only hosts Docker — the image digest is the
+    # reproducibility boundary for the browser environment.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
+      options: --user 1001 --ipc=host
+    # GitHub runs container jobs with `sh`; keep the existing bash semantics.
+    defaults:
+      run:
+        shell: bash
+    env:
+      PLAYWRIGHT_VERSION: "1.63.0"
     permissions:
       contents: write # commit data/*.json back to main
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 22
-          cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - name: Verify Playwright version matches the container image
+        run: |
+          installed="$(npx playwright --version | awk '{print $2}')"
+          if [ "$installed" != "$PLAYWRIGHT_VERSION" ]; then
+            echo "::error::Playwright $installed does not match the container's $PLAYWRIGHT_VERSION"
+            exit 1
+          fi
       - name: Test
         run: npm test
       - name: Scrape (credentials are secrets; never echoed)
