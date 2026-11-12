@@ -54,6 +54,15 @@
       "item": "2.3 Reflections",
       "course": "Geometry EHS",
       "context_id": "193321"
+    },
+    {
+      "id": "28200084",
+      "at_utc": "2026-11-12T22:05:04.113Z",
+      "at": "2026-11-12T17:05:04",
+      "kind": "page_viewed",
+      "item": "2.4 Rotations",
+      "course": "Geometry EHS",
+      "context_id": "193322"
     }
   ]
 }
