@@ -27,6 +27,33 @@
       "item": "2.2 Translations",
       "course": "Geometry EHS",
       "context_id": "193325"
+    },
+    {
+      "id": "28198745",
+      "at_utc": "2026-11-12T21:40:31.934Z",
+      "at": "2026-11-12T16:40:31",
+      "kind": "page_viewed",
+      "item": "2.3 Reflections",
+      "course": "Geometry EHS",
+      "context_id": "193321"
+    },
+    {
+      "id": "28198996",
+      "at_utc": "2026-11-12T21:44:38.692Z",
+      "at": "2026-11-12T16:44:38",
+      "kind": "page_viewed",
+      "item": "Module 1 Wrap Up",
+      "course": "Geometry EHS",
+      "context_id": "193319"
+    },
+    {
+      "id": "28199006",
+      "at_utc": "2026-11-12T21:44:44.294Z",
+      "at": "2026-11-12T16:44:44",
+      "kind": "page_viewed",
+      "item": "2.3 Reflections",
+      "course": "Geometry EHS",
+      "context_id": "193321"
     }
   ]
 }
