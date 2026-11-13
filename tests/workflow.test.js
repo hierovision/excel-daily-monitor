@@ -41,7 +41,7 @@ for (const [name, text] of [["daily.yml", daily], ["ci.yml", ci]]) {
   assert(!/ubuntu-latest/.test(text), `${name}: no ubuntu-latest`);
   assert(/timeout-minutes:\s*15/.test(text), `${name}: bounds the job to 15 minutes`);
   assert(/shell:\s*bash/.test(text), `${name}: keeps bash semantics`);
-  assert(/PLAYWRIGHT_VERSION:\s*"?1\.63\.0"?/.test(text), `${name}: pins PLAYWRIGHT_VERSION`);
+  assert(new RegExp(`PLAYWRIGHT_VERSION:\\s*"?${version.replace(/\./g, "\\.")}"?`).test(text), `${name}: pins PLAYWRIGHT_VERSION`);
   assert(
     /Verify Playwright version matches the container image/.test(text),
     `${name}: guards Playwright version drift`,
