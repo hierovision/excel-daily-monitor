@@ -192,12 +192,13 @@ npm test
 ## CI browser environment
 
 The scheduled scrape and the PR test gate run in the official Playwright
-container `mcr.microsoft.com/playwright:v1.63.0-noble` pinned by digest,
+container `mcr.microsoft.com/playwright:v1.65.1-noble` pinned by digest,
 matching the exact `playwright` version in `package.json` and
 `package-lock.json`. The image already contains Chromium and the OS
-libraries, so no `apt` step runs; the jobs use the image's bundled Node 24
-and do not use `actions/setup-node`. `ubuntu-24.04` is only the Docker host
-label — the image digest is the reproducibility boundary.
+libraries, so no `apt` step runs; the jobs use the image's bundled Node,
+pinned by the image digest, and do not use `actions/setup-node`.
+`ubuntu-24.04` is only the Docker host label — the image digest is the
+reproducibility boundary.
 
 To bump Playwright, change all of these together and open a PR:
 
