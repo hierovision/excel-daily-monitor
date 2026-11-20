@@ -1,39 +1,51 @@
 {
   "date": "2026-11-19",
   "first_activity_at": "13:38:50",
-  "last_activity_at": "13:38:50",
-  "span_minutes": 0,
-  "measured_quiz_minutes": 0,
-  "reading_minutes_low": 5,
-  "reading_minutes_high": 15,
-  "active_minutes_low": 5,
-  "active_minutes_high": 15,
+  "last_activity_at": "21:38:48",
+  "span_minutes": 480,
+  "measured_quiz_minutes": 480,
+  "reading_minutes_low": 0,
+  "reading_minutes_high": 0,
+  "active_minutes_low": 480,
+  "active_minutes_high": 480,
   "sessions": [
     {
       "start": "13:38",
-      "end": "13:38",
-      "minutes": 0,
-      "minutes_low": 5,
-      "minutes_high": 15
+      "end": "21:38",
+      "minutes": 480,
+      "minutes_low": 480,
+      "minutes_high": 480
     }
   ],
   "by_course": [
     {
       "course": "Geometry EHS",
-      "measured_quiz_minutes": 0,
-      "reading_minutes_low": 5,
-      "reading_minutes_high": 15,
-      "active_minutes_low": 5,
-      "active_minutes_high": 15,
-      "pages_viewed": 0,
-      "quiz_submissions": []
+      "measured_quiz_minutes": 480,
+      "reading_minutes_low": 0,
+      "reading_minutes_high": 0,
+      "active_minutes_low": 480,
+      "active_minutes_high": 480,
+      "pages_viewed": 1,
+      "quiz_submissions": [
+        {
+          "item": "Module 2 Review",
+          "at": "21:38"
+        }
+      ]
     }
   ],
   "event_counts": {
-    "page_viewed": 0,
+    "page_viewed": 1,
     "quiz_viewed": 1,
-    "quiz_submitted": 0,
+    "quiz_submitted": 1,
     "other": 0
   },
-  "submissions_and_grades": []
+  "submissions_and_grades": [
+    {
+      "kind": "quiz_submitted",
+      "item": "Module 2 Review",
+      "course": "Geometry EHS",
+      "at": "21:38"
+    }
+  ]
 }
