@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-23",
+  "events": [
+    {
+      "id": "28681389",
+      "at_utc": "2026-11-23T16:25:21.072Z",
+      "at": "2026-11-23T11:25:21",
+      "kind": "page_viewed",
+      "item": "Module 3 Overview",
+      "course": "Geometry EHS",
+      "context_id": "193338"
+    },
+    {
+      "id": "28681397",
+      "at_utc": "2026-11-23T16:25:25.537Z",
+      "at": "2026-11-23T11:25:25",
+      "kind": "page_viewed",
+      "item": "3.1 Classifying Triangles",
+      "course": "Geometry EHS",
+      "context_id": "193336"
+    }
+  ]
+}
