@@ -54,6 +54,78 @@
       "item": "3.4 Congruence Criteria I: SSS & SAS",
       "course": "Geometry EHS",
       "context_id": "193333"
+    },
+    {
+      "id": "28691804",
+      "at_utc": "2026-11-23T18:54:33.964Z",
+      "at": "2026-11-23T13:54:33",
+      "kind": "page_viewed",
+      "item": "3.5 Congruence Criteria II: ASA, AAS & HL",
+      "course": "Geometry EHS",
+      "context_id": "193332"
+    },
+    {
+      "id": "28692153",
+      "at_utc": "2026-11-23T19:01:09.191Z",
+      "at": "2026-11-23T14:01:09",
+      "kind": "page_viewed",
+      "item": "3.6 Writing Triangle Congruence Proofs",
+      "course": "Geometry EHS",
+      "context_id": "193331"
+    },
+    {
+      "id": "28692185",
+      "at_utc": "2026-11-23T19:01:49.221Z",
+      "at": "2026-11-23T14:01:49",
+      "kind": "page_viewed",
+      "item": "3.5 Congruence Criteria II: ASA, AAS & HL",
+      "course": "Geometry EHS",
+      "context_id": "193332"
+    },
+    {
+      "id": "28692242",
+      "at_utc": "2026-11-23T19:02:36.198Z",
+      "at": "2026-11-23T14:02:36",
+      "kind": "page_viewed",
+      "item": "3.4 Congruence Criteria I: SSS & SAS",
+      "course": "Geometry EHS",
+      "context_id": "193333"
+    },
+    {
+      "id": "28692347",
+      "at_utc": "2026-11-23T19:03:23.846Z",
+      "at": "2026-11-23T14:03:23",
+      "kind": "page_viewed",
+      "item": "3.3 Angle Relationships for Proofs",
+      "course": "Geometry EHS",
+      "context_id": "193335"
+    },
+    {
+      "id": "28692424",
+      "at_utc": "2026-11-23T19:04:12.326Z",
+      "at": "2026-11-23T14:04:12",
+      "kind": "page_viewed",
+      "item": "3.2 Isosceles & Equilateral Triangles",
+      "course": "Geometry EHS",
+      "context_id": "193334"
+    },
+    {
+      "id": "28692489",
+      "at_utc": "2026-11-23T19:04:59.027Z",
+      "at": "2026-11-23T14:04:59",
+      "kind": "page_viewed",
+      "item": "3.1 Classifying Triangles",
+      "course": "Geometry EHS",
+      "context_id": "193336"
+    },
+    {
+      "id": "28692563",
+      "at_utc": "2026-11-23T19:05:46.668Z",
+      "at": "2026-11-23T14:05:46",
+      "kind": "page_viewed",
+      "item": "Module 3 Overview",
+      "course": "Geometry EHS",
+      "context_id": "193338"
     }
   ]
 }
