@@ -126,6 +126,42 @@
       "item": "Module 3 Overview",
       "course": "Geometry EHS",
       "context_id": "193338"
+    },
+    {
+      "id": "28694044",
+      "at_utc": "2026-11-23T19:36:32.799Z",
+      "at": "2026-11-23T14:36:32",
+      "kind": "page_viewed",
+      "item": "3.7 CPCTC & Proving Properties of Figures",
+      "course": "Geometry EHS",
+      "context_id": "193330"
+    },
+    {
+      "id": "28694049",
+      "at_utc": "2026-11-23T19:36:38.055Z",
+      "at": "2026-11-23T14:36:38",
+      "kind": "page_viewed",
+      "item": "3.6 Writing Triangle Congruence Proofs",
+      "course": "Geometry EHS",
+      "context_id": "193331"
+    },
+    {
+      "id": "28694055",
+      "at_utc": "2026-11-23T19:36:43.071Z",
+      "at": "2026-11-23T14:36:43",
+      "kind": "page_viewed",
+      "item": "3.7 CPCTC & Proving Properties of Figures",
+      "course": "Geometry EHS",
+      "context_id": "193330"
+    },
+    {
+      "id": "28694433",
+      "at_utc": "2026-11-23T19:44:43.025Z",
+      "at": "2026-11-23T14:44:43",
+      "kind": "page_viewed",
+      "item": "3.AI Triangle Congruence Proof Analysis",
+      "course": "Geometry EHS",
+      "context_id": "193337"
     }
   ]
 }
