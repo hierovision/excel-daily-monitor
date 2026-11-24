@@ -27,6 +27,15 @@
       "item": "Module 3 Quiz",
       "course": "Geometry EHS",
       "context_id": "53800"
+    },
+    {
+      "id": "28745039",
+      "at_utc": "2026-11-24T21:26:23.157Z",
+      "at": "2026-11-24T16:26:23",
+      "kind": "quiz_viewed",
+      "item": "Module 3 Quiz",
+      "course": "Geometry EHS",
+      "context_id": "53800"
     }
   ]
 }
