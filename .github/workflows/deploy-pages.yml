@@ -37,12 +37,38 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      # Resolved after the attempts below: whichever one published wins. The
+      # later steps are skipped on success, so their outputs are empty then.
+      url: ${{ steps.deployment_final.outputs.page_url || steps.deployment_retry.outputs.page_url || steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: .
+      # Bounded retry: from 2026-11-19 `deploy-pages` intermittently fails with
+      # "No artifacts named github-pages were found for this workflow run" while
+      # the artifact is provably present in the same run — finalized 0.02s
+      # earlier (the same gap as succeeding runs), listed by the runs API, not
+      # expired. Upload and deploy steps are identical between success and
+      # failure, so the fault is artifact registration on GitHub's side, not
+      # this workflow. Publishing is idempotent (it only moves the artifact this
+      # run just uploaded), so retrying is an honest mitigation: every attempt
+      # must still succeed, and a persistent failure stays red after the last
+      # one. Remove this only once GitHub's artifact listing is reliable again.
       - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        continue-on-error: true
+      - name: Wait before retrying the Pages deploy
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 10
+      - id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        continue-on-error: true
+      - name: Wait before the final Pages deploy attempt
+        if: steps.deployment_retry.outcome == 'failure'
+        run: sleep 20
+      - id: deployment_final
+        if: steps.deployment_retry.outcome == 'failure'
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

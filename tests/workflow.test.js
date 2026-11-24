@@ -63,5 +63,28 @@ assert(/cancel-in-progress:\s*true/.test(ci), "ci.yml cancels superseded PR runs
 assert(!/EXCEL_USERNAME|EXCEL_PASSWORD/.test(ci), "ci.yml does not use scrape secrets");
 assert(/node tests\/workflow\.test\.js/.test(read("package.json")), "npm test runs this policy test");
 
+// Pages deploy policy: publish only after a successful scrape, and keep the
+// bounded retry that covers GitHub's intermittent "no artifacts found" listing
+// fault (2026-11-19 onward). Three attempts, one pinned SHA — a dropped attempt
+// would silently restore the flake, a diverged SHA would run two versions.
+const deploy = read(".github/workflows/deploy-pages.yml");
+assert(fs.existsSync(path.join(root, ".github/workflows/deploy-pages.yml")), "deploy-pages.yml exists");
+assert(/workflow_run:/.test(deploy), "deploy-pages.yml still runs on scrape completion");
+assert(
+  /github\.event\.workflow_run\.conclusion == 'success'/.test(deploy),
+  "deploy-pages.yml only deploys after a successful scrape",
+);
+assert(/pages:\s*write/.test(deploy), "deploy-pages.yml keeps the Pages publish permission");
+assert(/id-token:\s*write/.test(deploy), "deploy-pages.yml keeps the OIDC permission");
+assert(/upload-pages-artifact@[0-9a-f]{40}/.test(deploy), "deploy-pages.yml uploads the Pages artifact");
+const deployPins = deploy.match(/actions\/deploy-pages@[0-9a-f]{40}/g) || [];
+assert(deployPins.length === 3, "deploy-pages.yml keeps three deploy attempts");
+assert(new Set(deployPins).size === 1, "deploy-pages.yml pins one deploy-pages SHA");
+assert(
+  /if: steps\.deployment\.outcome == 'failure'/.test(deploy) &&
+    /if: steps\.deployment_retry\.outcome == 'failure'/.test(deploy),
+  "deploy-pages.yml gates each retry on the previous attempt failing",
+);
+
 console.log(failures ? "workflow.test.js FAILED" : "workflow.test.js ok");
 process.exit(failures ? 1 : 0);
