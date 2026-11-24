@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-24",
+  "events": [
+    {
+      "id": "28728862",
+      "at_utc": "2026-11-24T16:00:36.780Z",
+      "at": "2026-11-24T11:00:36",
+      "kind": "quiz_viewed",
+      "item": "Module 3 Review",
+      "course": "Geometry EHS",
+      "context_id": "53799"
+    }
+  ]
+}
