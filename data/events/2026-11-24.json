@@ -36,6 +36,24 @@
       "item": "Module 3 Quiz",
       "course": "Geometry EHS",
       "context_id": "53800"
+    },
+    {
+      "id": "28746151",
+      "at_utc": "2026-11-24T21:55:53.832Z",
+      "at": "2026-11-24T16:55:53",
+      "kind": "quiz_submitted",
+      "item": "Module 3 Quiz",
+      "course": "Geometry EHS",
+      "context_id": "53800"
+    },
+    {
+      "id": "28746174",
+      "at_utc": "2026-11-24T21:56:20.108Z",
+      "at": "2026-11-24T16:56:20",
+      "kind": "page_viewed",
+      "item": "Module 3 Wrap Up",
+      "course": "Geometry EHS",
+      "context_id": "193350"
     }
   ]
 }
