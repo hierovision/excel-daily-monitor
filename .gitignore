@@ -4,3 +4,7 @@ data/raw-page.html
 .opencode/
 data/failure/
 *.local.js
+# Local agent scratch: opencode plugins write live runtime state here (the
+# delegation-observer heartbeat among them). It must stay inside the worktree,
+# never in /tmp, and it is never committed.
+.scratch/
